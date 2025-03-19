@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Admin Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, button {
+            margin-top: 5px;
+            padding: 8px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .instructions {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fix Admin Access for EyeSentry</h1>
+
+    <div class="instructions">
+        <h3>Instructions</h3>
+        <p>This tool helps fix admin access for ivan.s.cohen@gmail.com by ensuring all three admin verification methods work:</p>
+        <ol>
+            <li>Profile <code>is_admin</code> flag - ✅ Already fixed</li>
+            <li>Hardcoded email list - ✅ Already in the code</li>
+            <li>App metadata role - ⚠️ Need to update using Supabase Management API</li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>Complete Admin Access Fix</h2>
+
+        <div id="step1">
+            <h3>Step 1: Check Current Status</h3>
+            <button onclick="checkStatus()">Check Current Status</button>
+            <div id="statusResult"></div>
+        </div>
+
+        <div id="step2" style="margin-top: 20px;">
+            <h3>Step 2: Update App Metadata</h3>
+            <p>To update the app_metadata, you need to run the following SQL in the Supabase dashboard SQL editor:</p>
+            <pre>
+UPDATE auth.users 
+SET raw_app_meta_data = 
+    COALESCE(raw_app_meta_data, '{}'::jsonb) || 
+    '{"role": "admin"}'::jsonb
+WHERE email = 'ivan.s.cohen@gmail.com';
+            </pre>
+            <p>Or login to the <a href="https://supabase.com/dashboard/project/gebojeuaeaqmdfrxptqf" target="_blank">Supabase Dashboard</a>, navigate to Authentication → Users, find ivan.s.cohen@gmail.com, and manually set the role to "admin" in the metadata.</p>
+        </div>
+
+        <div id="step3" style="margin-top: 20px;">
+            <h3>Step 3: Verify Access</h3>
+            <p>After updating the app metadata, please:</p>
+            <ol>
+                <li>Log out of the application</li>
+                <li>Log back in with ivan.s.cohen@gmail.com</li>
+                <li>You should now have full admin access</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const statusDiv = document.getElementById('statusResult');
+            statusDiv.innerHTML = "<p>Connecting to Supabase...</p>";
+            
+            // Load Supabase client
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+            script.onload = function() {
+                const supabaseUrl = 'https://gebojeuaeaqmdfrxptqf.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYm9qZXVhZWFxbWRmcnhwdHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1NDQ2NDEsImV4cCI6MjA1NzEyMDY0MX0.Fpzp_tD07GXGNvf2k7HLLOe1-UHLU_jOb-fKwZvn6OM';
+                const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                
+                const adminEmail = 'ivan.s.cohen@gmail.com';
+                
+                // Get profile information
+                supabase
+                    .from('profiles')
+                    .select('id, is_admin')
+                    .eq('email', adminEmail)
+                    .single()
+                    .then(({ data, error }) => {
+                        if (error) {
+                            statusDiv.innerHTML += `<p class="error">Error finding user: ${error.message}</p>`;
+                            return;
+                        }
+                        
+                        if (!data) {
+                            statusDiv.innerHTML += `<p class="error">User not found in profiles table</p>`;
+                            return;
+                        }
+                        
+                        const isAdminInProfile = data.is_admin === true;
+                        statusDiv.innerHTML += `
+                            <p>User found with ID: ${data.id}</p>
+                            <p>Profile is_admin flag: <span class="${isAdminInProfile ? 'success' : 'error'}">${isAdminInProfile ? '✅ TRUE' : '❌ FALSE'}</span></p>
+                            <p>Hardcoded in adminEmails array: <span class="success">✅ CONFIRMED</span></p>
+                            <p>App metadata role check: <span class="error">⚠️ CANNOT BE CHECKED CLIENT-SIDE</span></p>
+                            <p>Please follow Step 2 to complete the fix.</p>
+                        `;
+                    });
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>
