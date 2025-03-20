@@ -64,16 +64,6 @@ export const SpecialistQuestionManager: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-muted/30 p-4 rounded-lg border mb-4">
-                    <h3 className="text-sm font-medium mb-2">Managing Specialist Questions</h3>
-                    <ul className="text-sm list-disc pl-5 space-y-1 text-muted-foreground">
-                        <li>Add new questions using the "Add Question" button</li>
-                        <li>Edit existing questions by clicking the "Edit" button</li>
-                        <li>Questions will be presented to specialists in the order specified</li>
-                        <li>Mark questions as required if they must be answered</li>
-                    </ul>
-                </div>
-
                 <Card>
                     <SpecialistQuestionTable
                         onEdit={handleEditItem}

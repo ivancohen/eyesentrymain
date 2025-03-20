@@ -24,27 +24,34 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Index />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/questionnaire" element={<PatientQuestionnaire />} />
-        <Route path="/questionnaire/edit/:id" element={<QuestionnaireEdit />} />
-        <Route path="/questionnaires" element={<Questionnaires />} />
         <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/reset-confirmation" element={<ResetConfirmation />} />
         <Route path="/pending-approval" element={<PendingApproval />} />
-        {/* Redirect old admin path to new admin */}
-        <Route path="/admin" element={<Navigate to="/new-admin" replace />} />
-        <Route path="/new-admin" element={<NewAdmin />} />
-        <Route path="/doctor" element={<Doctor />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/user-profile" element={<UserProfile />} />
-        <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        
         {/* Specialist routes - no auth required */}
         <Route path="/specialist" element={<SpecialistQuestionnaire />} />
         <Route path="/specialist/:code" element={<SpecialistQuestionnaire />} />
         <Route path="/specialist-thank-you" element={<SpecialistThankYou />} />
+
+        {/* Protected routes */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/questionnaire" element={<PatientQuestionnaire />} />
+        <Route path="/questionnaire/edit/:id" element={<QuestionnaireEdit />} />
+        <Route path="/questionnaires" element={<Questionnaires />} />
+        <Route path="/new-admin" element={<NewAdmin />} />
+        <Route path="/doctor" element={<Doctor />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/ai-assistant" element={<AIAssistantPage />} />
+
+        {/* Legacy redirects */}
+        <Route path="/admin" element={<Navigate to="/new-admin" replace />} />
+        <Route path="/user-profile" element={<Navigate to="/profile" replace />} />
+
+        {/* Catch all route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster richColors />

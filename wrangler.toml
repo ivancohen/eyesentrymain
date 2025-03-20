@@ -3,10 +3,15 @@ compatibility_date = "2024-01-01"
 
 [site]
 bucket = "./dist"
+include = ["**/*"]
+exclude = ["node_modules/*"]
 
 [build]
 command = "npm run build"
 cwd = "."
+
+[build.environment]
+NODE_VERSION = "20"
 
 [[redirects]]
 from = "/*"

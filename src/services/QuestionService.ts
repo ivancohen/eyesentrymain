@@ -61,12 +61,28 @@ export const QuestionService = {
         .from('questions')
         .select('*')
         .order('page_category', { ascending: true })
-        .order('display_order', { ascending: true }) as PostgrestResponse<Question>;
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true }) as PostgrestResponse<Question>;
 
       if (error) throw error;
 
-      console.log("Questions fetched successfully:", data?.length || 0, "results");
-      return data || [];
+      // Remove duplicates based on question text, keeping the most recent version
+      const uniqueQuestions = data?.reduce((acc, current) => {
+        const existingIndex = acc.findIndex(q => q.question === current.question);
+        if (existingIndex === -1) {
+          acc.push(current);
+        } else {
+          // If we find a duplicate, keep the most recent version
+          const existing = acc[existingIndex];
+          if (new Date(current.created_at) > new Date(existing.created_at)) {
+            acc[existingIndex] = current;
+          }
+        }
+        return acc;
+      }, [] as Question[]) || [];
+
+      console.log("Questions fetched successfully:", uniqueQuestions.length, "unique results");
+      return uniqueQuestions;
     } catch (error: unknown) {
       console.error("Error fetching questions:", error);
       toast.error(`Error fetching questions: ${getErrorMessage(error)}`);

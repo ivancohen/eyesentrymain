@@ -85,15 +85,6 @@ const EnhancedQuestionManager = () => {
             </div>
           </div>
           
-          <div className="bg-muted/30 p-4 rounded-lg border mb-4">
-            <h3 className="text-sm font-medium mb-2">Managing Questions</h3>
-            <ul className="text-sm list-disc pl-5 space-y-1 text-muted-foreground">
-              <li>Add new questions using the "Add Question" button</li>
-              <li>Edit existing questions by clicking the "Edit" button</li>
-              <li>Questions are grouped by page category for better organization</li>
-            </ul>
-          </div>
-          
           <QuestionTable
             onAdd={handleAddItem}
             onEdit={handleEditItem}

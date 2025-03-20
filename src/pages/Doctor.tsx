@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { 
   SidebarProvider, 
   Sidebar, 
@@ -31,6 +30,7 @@ import {
   Home,
   LogOut,
 } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface DashboardCard {
   title: string;

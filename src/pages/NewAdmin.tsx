@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   AlertTriangle, 
-  Users, 
+  Users,
   Database, 
   Shield, 
   FileQuestion, 
@@ -167,8 +167,8 @@ const NewAdmin = () => {
         return (
           <>
             <div className="mb-6 flex items-center">
-              <Button
-                variant="outline"
+              <Button 
+                variant="outline" 
                 className="mr-4"
                 onClick={() => changeSection('dashboard')}
               >
