@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Bell, Check, Clock, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,12 @@ interface Notification {
   type: string;
   title: string;
   message: string;
-  content: Record<string, any>;
+  content: {
+    doctor_id?: string;
+    doctor_name?: string;
+    doctor_email?: string;
+    timestamp?: string;
+  };
   related_id: string;
   is_read: boolean;
   created_at: string;
@@ -33,8 +38,7 @@ const AdminNotifications = () => {
       // Try to get notifications, handle if table doesn't exist yet
       try {
         const { data, error } = await supabase
-          .rpc('get_admin_notifications', { limit_count: 10 })
-          .select();
+          .rpc('get_admin_notifications', { limit_count: 10 });
 
         if (error) {
           console.error("Error loading notifications:", error);
@@ -42,8 +46,9 @@ const AdminNotifications = () => {
         }
 
         if (data) {
-          setNotifications(data as Notification[]);
-          setUnreadCount((data as Notification[]).filter(n => !n.is_read).length);
+          const typedData = data as unknown as Notification[];
+          setNotifications(typedData);
+          setUnreadCount(typedData.filter(n => !n.is_read).length);
         }
       } catch (err) {
         console.log("Admin notifications not available yet:", err);
@@ -61,28 +66,50 @@ const AdminNotifications = () => {
     loadNotifications();
 
     // Set up channel for real-time notifications
-    try {
-      const channel = supabase
-        .channel('admin_notification_changes')
-        .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'admin_notifications' 
-        }, () => {
-          loadNotifications();
-          
-          // Show toast notification for new doctor registration
-          toast.info("New doctor registration requires approval");
-        })
-        .subscribe();
+    const setupRealtimeSubscription = async () => {
+      try {
+        // Get the current session
+        const { data: { session } } = await supabase.auth.getSession();
         
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } catch (err) {
-      console.log("Could not set up notification channel:", err);
-      return () => {};
-    }
+        if (!session) {
+          console.log("No active session, skipping realtime subscription");
+          return;
+        }
+
+        // Create a simple channel without presence
+        const channel = supabase
+          .channel('admin_notification_changes')
+          .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'admin_notifications' 
+          }, () => {
+            loadNotifications();
+            toast.info("New doctor registration requires approval");
+          })
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              console.log('Successfully subscribed to admin notifications');
+            } else if (status === 'CHANNEL_ERROR') {
+              console.error('Failed to subscribe to admin notifications');
+            }
+          });
+          
+        return () => {
+          if (channel) {
+            channel.unsubscribe();
+          }
+        };
+      } catch (err) {
+        console.error("Error setting up realtime subscription:", err);
+        return () => {};
+      }
+    };
+
+    const cleanup = setupRealtimeSubscription();
+    return () => {
+      cleanup.then(cleanupFn => cleanupFn?.());
+    };
   }, []);
 
   const markAsRead = async (notificationId: string) => {

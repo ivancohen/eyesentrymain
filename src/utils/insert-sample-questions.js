@@ -1,5 +1,5 @@
 // Script to insert sample questions through the Supabase client
-import { supabase } from "../lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from 'uuid';
 
 // Immediately invoked async function

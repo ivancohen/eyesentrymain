@@ -1,4 +1,3 @@
-
 import { Field } from "@/components/DataForm";
 
 export const QUESTION_COLUMNS = [
@@ -23,6 +22,13 @@ export const QUESTION_FORM_FIELDS: Field[] = [
     type: "text" as const,
     required: true,
     helpText: "The question text"
+  },
+  {
+    key: "tooltip",
+    label: "Tooltip",
+    type: "text" as const,
+    required: false,
+    helpText: "Additional information shown when hovering over the question"
   },
   {
     key: "question_type",
@@ -59,6 +65,13 @@ export const CONDITIONAL_ITEM_FIELDS: Field[] = [
     type: "text" as const,
     required: true,
     helpText: "Message to show when condition is met"
+  },
+  {
+    key: "tooltip",
+    label: "Tooltip",
+    type: "text" as const,
+    required: false,
+    helpText: "Additional information shown when hovering over the conditional item"
   },
   {
     key: "condition_type",

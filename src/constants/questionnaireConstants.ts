@@ -2,6 +2,7 @@
 export interface QuestionOption {
   value: string;
   label: string;
+  tooltip?: string;
 }
 
 export interface QuestionItem {
@@ -10,6 +11,7 @@ export interface QuestionItem {
   type: "text" | "number" | "select";
   options?: QuestionOption[];
   required?: boolean;
+  tooltip?: string;
   conditionalOptions?: {
     parentValue: string;
     options: QuestionOption[];
@@ -120,27 +122,31 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       id: "firstName",
       text: "Patient First Name",
       type: "text",
-      required: true
+      required: true,
+      tooltip: "Enter the patient's legal first name"
     },
     {
       id: "lastName",
       text: "Patient Last Name",
       type: "text",
-      required: true
+      required: true,
+      tooltip: "Enter the patient's legal last name"
     },
     {
       id: "age",
       text: "Age",
       type: "select",
       options: ageRangeOptions,
-      required: true
+      required: true,
+      tooltip: "Select the patient's age range"
     },
     {
       id: "race",
       text: "Race",
       type: "select",
       options: raceOptions,
-      required: true
+      required: true,
+      tooltip: "Select the patient's race/ethnicity"
     }
   ],
   
@@ -151,14 +157,16 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       text: "Has anyone in your immediate family been diagnosed with open-angle glaucoma?",
       type: "select",
       options: familyHistoryOptions,
-      required: true
+      required: true,
+      tooltip: "Include immediate family members (parents, siblings, children) who have been diagnosed with open-angle glaucoma"
     },
     {
       id: "ocularSteroid",
       text: "Are you taking and have you ever taken any ophthalmic topical steroids?",
       type: "select",
       options: yesNoOptions,
-      required: true
+      required: true,
+      tooltip: "Include any eye drops or ointments containing steroids that have been prescribed"
     },
     {
       id: "steroidType",
@@ -166,6 +174,7 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       type: "select",
       options: steroidTypeOptions,
       required: true,
+      tooltip: "Select the specific type of ophthalmic steroid medication",
       conditionalOptions: {
         parentValue: "ocularSteroid:yes",
         options: steroidTypeOptions
@@ -176,7 +185,8 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       text: "Are you Taking and have you ever taken any Intravitreal Steroids?",
       type: "select",
       options: yesNoOptions,
-      required: true
+      required: true,
+      tooltip: "Include any steroid injections directly into the eye"
     },
     {
       id: "intravitealType",
@@ -184,6 +194,7 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       type: "select",
       options: intravitealSteroidOptions,
       required: true,
+      tooltip: "Select the specific type of intravitreal steroid medication",
       conditionalOptions: {
         parentValue: "intravitreal:yes",
         options: intravitealSteroidOptions
@@ -194,7 +205,8 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       text: "Are you taking and have you ever taken any systemic steroids?",
       type: "select",
       options: yesNoOptions,
-      required: true
+      required: true,
+      tooltip: "Include any oral or injected steroids taken for any condition"
     },
     {
       id: "systemicSteroidType",
@@ -202,6 +214,7 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       type: "select",
       options: systemicSteroidOptions,
       required: true,
+      tooltip: "Select the specific type of systemic steroid medication",
       conditionalOptions: {
         parentValue: "systemicSteroid:yes",
         options: systemicSteroidOptions
@@ -216,21 +229,24 @@ export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
       text: "IOP Baseline is >22 \\ Handheld Tonometer",
       type: "select",
       options: clinicalMeasurementOptions,
-      required: true
+      required: true,
+      tooltip: "Intraocular pressure measurement using a handheld tonometer"
     },
     {
       id: "verticalAsymmetry",
       text: "Vertical C:D disc asymmetry (>0.2) \\ Fundoscope",
       type: "select",
       options: asymmetryOptions,
-      required: true
+      required: true,
+      tooltip: "Difference in vertical cup-to-disc ratio between eyes"
     },
     {
       id: "verticalRatio",
       text: "Vertical C:D ratio (>0.6)",
       type: "select",
       options: cdRatioOptions,
-      required: true
+      required: true,
+      tooltip: "Vertical cup-to-disc ratio measurement"
     }
   ]
 ];

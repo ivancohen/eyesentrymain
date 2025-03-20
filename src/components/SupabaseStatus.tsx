@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const SupabaseStatus = () => {

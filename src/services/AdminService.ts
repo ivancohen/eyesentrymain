@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 export interface UserProfile {
@@ -305,38 +305,18 @@ export const AdminService = {
     try {
       console.log("Fetching question scores...");
       
-      // With RLS policies, we can directly query with nested selects
-      // First, get dropdown option scores
-      const { data: dropdownData, error: dropdownError } = await supabase
+      // Query questions with nested selects for dropdown options
+      const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
         .select(`
           id,
-          question_text,
+          question,
           question_type,
           dropdown_options (
             id,
             option_text,
             score
-          )
-        `);
-      
-      if (dropdownError) {
-        console.error("Error fetching dropdown scores:", dropdownError);
-        if (dropdownError.message.includes('permission denied')) {
-          toast.error('Permission denied. Your account may not have admin privileges.');
-        } else {
-          toast.error(`Error fetching dropdown scores: ${dropdownError.message}`);
-        }
-        throw dropdownError;
-      }
-      
-      // Then get conditional item scores
-      const { data: conditionalData, error: conditionalError } = await supabase
-        .from('questions')
-        .select(`
-          id,
-          question_text,
-          question_type,
+          ),
           conditional_items (
             id,
             condition_value,
@@ -344,66 +324,52 @@ export const AdminService = {
           )
         `);
       
-      if (conditionalError) {
-        console.error("Error fetching conditional scores:", conditionalError);
-        if (conditionalError.message.includes('permission denied')) {
-          toast.error('Permission denied. Your account may not have admin privileges.');
-        } else {
-          toast.error(`Error fetching conditional scores: ${conditionalError.message}`);
-        }
-        throw conditionalError;
+      if (questionsError) {
+        console.error("Error fetching questions:", questionsError);
+        throw questionsError;
       }
       
-      console.log("Question scores fetched successfully");
-      
-      // Transform the data into the expected format
+      // Transform the data into QuestionScore format
       const questionScores: QuestionScore[] = [];
       
-      // Process dropdown options
-      dropdownData?.forEach((question: any) => {
+      // Process the data
+      questionsData?.forEach((question: any) => {
+        // Add dropdown options
         if (question.dropdown_options && question.dropdown_options.length > 0) {
-          // Add each dropdown option score
           question.dropdown_options.forEach((option: any) => {
             questionScores.push({
               id: question.id,
-              question: question.question_text,
+              question: question.question,
               question_type: question.question_type,
               score: option.score || 0,
               option_id: option.id,
               option_text: option.option_text
             });
           });
-        } else {
-          // Question with no dropdown options
-          questionScores.push({
-            id: question.id,
-            question: question.question_text,
-            question_type: question.question_type,
-            score: 0
+        }
+        
+        // Add conditional items
+        if (question.conditional_items && question.conditional_items.length > 0) {
+          question.conditional_items.forEach((item: any) => {
+            questionScores.push({
+              id: question.id,
+              question: question.question,
+              question_type: question.question_type,
+              score: item.score || 0,
+              option_id: item.id,
+              option_text: item.condition_value
+            });
           });
         }
-      });
-      
-      // Process conditional items
-      conditionalData?.forEach((question: any) => {
-        if (question.conditional_items && question.conditional_items.length > 0) {
-          // Add each conditional item score
-          question.conditional_items.forEach((item: any) => {
-            // Only add if not already added from dropdown options
-            const existing = questionScores.find(
-              q => q.id === question.id && q.option_id === item.id
-            );
-            
-            if (!existing) {
-              questionScores.push({
-                id: question.id,
-                question: question.question_text,
-                question_type: question.question_type,
-                score: item.score || 0,
-                option_id: item.id,
-                option_text: item.condition_value
-              });
-            }
+        
+        // If no options or items, add the base question
+        if ((!question.dropdown_options || question.dropdown_options.length === 0) &&
+            (!question.conditional_items || question.conditional_items.length === 0)) {
+          questionScores.push({
+            id: question.id,
+            question: question.question,
+            question_type: question.question_type,
+            score: 0
           });
         }
       });

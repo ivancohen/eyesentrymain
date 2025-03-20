@@ -188,7 +188,7 @@ const Admin = () => {
                     <FileQuestion className="h-5 w-5" /> Question Management
                   </CardTitle>
                   <CardDescription>
-                    Create, edit and manage questionnaire questions
+                    Manage and customize assessment questions
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -204,7 +204,7 @@ const Admin = () => {
                     <Bot className="h-5 w-5" /> AI Assistant
                   </CardTitle>
                   <CardDescription>
-                    Get insights and generate reports from questionnaire data
+                    Generate insights from patient data
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

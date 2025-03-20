@@ -103,7 +103,7 @@
   console.log('2. Ensure no browser extensions are blocking authentication:');
   console.log('   Try in incognito mode or with extensions disabled');
   console.log('3. Verify Supabase project settings:');
-  console.log('   Check URL and API keys in supabase-client.ts');
+  console.log('   Check URL and API keys in src/lib/supabase.ts');
   console.log('4. Check for issues with browser storage:');
   console.log('   Some privacy settings/extensions may block localStorage');
   

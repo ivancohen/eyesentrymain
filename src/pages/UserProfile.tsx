@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User, Mail, Key, Calendar, UserCircle, Phone, Home, Stethoscope } from "lucide-react";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 
 const UserProfile = () => {
   const { user } = useAuth();

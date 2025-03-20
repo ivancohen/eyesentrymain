@@ -1,5 +1,4 @@
-
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 interface PatientQuestionnaireData {
@@ -79,6 +78,25 @@ export async function submitPatientQuestionnaire(data: PatientQuestionnaireData)
       riskLevel = "Moderate";
     }
 
+    // Get advice based on risk level
+    const { data: adviceData } = await supabase
+      .from('risk_assessment_advice')
+      .select('advice')
+      .eq('risk_level', riskLevel)
+      .single();
+
+    // Create contributing factors array
+    const contributing_factors = [
+      { question: "Race", answer: data.race, score: raceScore },
+      { question: "Family History of Glaucoma", answer: data.familyGlaucoma, score: riskFactorScores[0] },
+      { question: "Ocular Steroid Use", answer: data.ocularSteroid, score: riskFactorScores[1] },
+      { question: "Intravitreal Steroid Use", answer: data.intravitreal, score: riskFactorScores[2] },
+      { question: "Systemic Steroid Use", answer: data.systemicSteroid, score: riskFactorScores[3] },
+      { question: "IOP Baseline", answer: data.iopBaseline, score: riskFactorScores[4] },
+      { question: "Vertical Asymmetry", answer: data.verticalAsymmetry, score: riskFactorScores[5] },
+      { question: "Vertical Ratio", answer: data.verticalRatio, score: riskFactorScores[6] }
+    ].filter(factor => factor.score > 0); // Only include factors that contributed to the score
+
     console.log("Submitting questionnaire with RPC function");
     console.log("Risk level:", riskLevel, "Total score:", totalScore);
     
@@ -113,7 +131,13 @@ export async function submitPatientQuestionnaire(data: PatientQuestionnaireData)
     }
 
     console.log("Questionnaire created successfully with ID:", newId);
-    return { success: true, score: totalScore, riskLevel };
+    return { 
+      success: true, 
+      score: totalScore, 
+      riskLevel,
+      contributing_factors,
+      advice: adviceData?.advice || ""
+    };
   } catch (error) {
     console.error("Failed to submit questionnaire:", error);
     throw error;
@@ -227,6 +251,25 @@ export async function updateQuestionnaire(id: string, data: PatientQuestionnaire
       riskLevel = "Moderate";
     }
 
+    // Get advice based on risk level
+    const { data: adviceData } = await supabase
+      .from('risk_assessment_advice')
+      .select('advice')
+      .eq('risk_level', riskLevel)
+      .single();
+
+    // Create contributing factors array
+    const contributing_factors = [
+      { question: "Race", answer: data.race, score: raceScore },
+      { question: "Family History of Glaucoma", answer: data.familyGlaucoma, score: riskFactorScores[0] },
+      { question: "Ocular Steroid Use", answer: data.ocularSteroid, score: riskFactorScores[1] },
+      { question: "Intravitreal Steroid Use", answer: data.intravitreal, score: riskFactorScores[2] },
+      { question: "Systemic Steroid Use", answer: data.systemicSteroid, score: riskFactorScores[3] },
+      { question: "IOP Baseline", answer: data.iopBaseline, score: riskFactorScores[4] },
+      { question: "Vertical Asymmetry", answer: data.verticalAsymmetry, score: riskFactorScores[5] },
+      { question: "Vertical Ratio", answer: data.verticalRatio, score: riskFactorScores[6] }
+    ].filter(factor => factor.score > 0); // Only include factors that contributed to the score
+
     console.log("Updating questionnaire with RPC function, ID:", id);
     console.log("Risk level:", riskLevel, "Total score:", totalScore);
     
@@ -254,16 +297,42 @@ export async function updateQuestionnaire(id: string, data: PatientQuestionnaire
 
     if (error) {
       console.error("Error updating questionnaire:", error);
-      throw error;
+      throw new Error(error.message);
     }
 
     if (updateResult === false) {
       throw new Error("No questionnaire was updated. Ensure you have permission to edit this questionnaire.");
     }
 
-    return { success: true, score: totalScore, riskLevel };
+    return { 
+      success: true, 
+      score: totalScore, 
+      riskLevel,
+      contributing_factors,
+      advice: adviceData?.advice || ""
+    };
   } catch (error) {
     console.error("Failed to update questionnaire:", error);
+    throw error;
+  }
+}
+
+export async function getQuestionsWithTooltips() {
+  try {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .order('page_category', { ascending: true })
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching questions:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching questions with tooltips:", error);
     throw error;
   }
 }

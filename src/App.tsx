@@ -14,6 +14,8 @@ import PasswordReset from "@/pages/PasswordReset";
 import ResetConfirmation from "@/pages/ResetConfirmation";
 import PendingApproval from "@/pages/PendingApproval";
 import AIAssistantPage from "@/pages/AIAssistantPage";
+import SpecialistQuestionnaire from "@/pages/SpecialistQuestionnaire";
+import SpecialistThankYou from "@/pages/SpecialistThankYou";
 import QuestionnaireEdit from "@/components/questionnaires/QuestionnaireEdit";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
@@ -39,6 +41,10 @@ function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        {/* Specialist routes - no auth required */}
+        <Route path="/specialist" element={<SpecialistQuestionnaire />} />
+        <Route path="/specialist/:code" element={<SpecialistQuestionnaire />} />
+        <Route path="/specialist-thank-you" element={<SpecialistThankYou />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster richColors />

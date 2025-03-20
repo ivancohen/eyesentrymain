@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // Interfaces for the different data types (same as FixedAdminService)

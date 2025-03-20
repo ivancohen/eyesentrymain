@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 
 const Login = () => {
   const { login, loginWithGoogle, user, loading: authLoading } = useAuth();

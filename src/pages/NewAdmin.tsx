@@ -20,6 +20,7 @@ import {
   Home,
   Settings,
   LogOut,
+  Stethoscope
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
@@ -43,10 +44,12 @@ import EnhancedUserManagement from "@/components/admin/EnhancedUserManagement";
 import EnhancedQuestionManager from "@/components/admin/EnhancedQuestionManager";
 import PatientAnalyticsDashboard from "@/components/admin/PatientAnalyticsDashboard";
 import AdminNotifications from "@/components/admin/AdminNotifications";
+import RiskAssessmentAdmin from "@/components/admin/RiskAssessmentAdmin";
+import { SpecialistQuestionManager } from "@/components/admin/SpecialistQuestionManager";
 import { UserProfile } from "@/services/FixedAdminService";
 
 // Admin section types
-type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai';
+type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions';
 
 const NewAdmin = () => {
   const { user, isAdmin, loading, logout } = useAuth();
@@ -59,7 +62,7 @@ const NewAdmin = () => {
   
   // State to track which admin section is currently being displayed
   const [currentSection, setCurrentSection] = useState<AdminSection>(
-    sectionParam && ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai'].includes(sectionParam) 
+    sectionParam && ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions'].includes(sectionParam) 
       ? sectionParam 
       : 'dashboard'
   );
@@ -97,7 +100,7 @@ const NewAdmin = () => {
   // Update section based on URL search params
   useEffect(() => {
     if (sectionParam && sectionParam !== currentSection && 
-        ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai'].includes(sectionParam)) {
+        ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions'].includes(sectionParam)) {
       setCurrentSection(sectionParam);
     }
   }, [sectionParam]);
@@ -237,6 +240,40 @@ const NewAdmin = () => {
             <span className="ml-3">Redirecting to AI Assistant...</span>
           </div>
         );
+      case 'risk-assessment':
+        return (
+          <>
+            <div className="mb-6 flex items-center">
+              <Button
+                variant="outline"
+                className="mr-4"
+                onClick={() => changeSection('dashboard')}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <h2 className="text-2xl font-bold">Risk Assessment</h2>
+            </div>
+            <RiskAssessmentAdmin />
+          </>
+        );
+      case 'specialist-questions':
+        return (
+          <>
+            <div className="mb-6 flex items-center">
+              <Button
+                variant="outline"
+                className="mr-4"
+                onClick={() => changeSection('dashboard')}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <h2 className="text-2xl font-bold">Specialist Questions</h2>
+            </div>
+            <SpecialistQuestionManager />
+          </>
+        );
       default:
         return (
           <>
@@ -342,6 +379,44 @@ const NewAdmin = () => {
                     onClick={() => changeSection('questions')}
                   >
                     Manage Questions
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="glass-panel hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-amber-500" /> Risk Assessment
+                  </CardTitle>
+                  <CardDescription>
+                    Configure risk scores and advice for questionnaire responses
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    className="w-full hover-lift"
+                    onClick={() => changeSection('risk-assessment')}
+                  >
+                    Manage Risk Assessment
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="glass-panel hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Stethoscope className="h-5 w-5 text-blue-500" /> Specialist Questions
+                  </CardTitle>
+                  <CardDescription>
+                    Create and manage questions for specialist assessments
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    className="w-full hover-lift"
+                    onClick={() => changeSection('specialist-questions')}
+                  >
+                    Manage Specialist Questions
                   </Button>
                 </CardFooter>
               </Card>
@@ -465,6 +540,26 @@ const NewAdmin = () => {
                   >
                     <Bot className="h-4 w-4" />
                     <span>AI Assistant</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    isActive={currentSection === 'risk-assessment'} 
+                    tooltip="Risk Assessment" 
+                    onClick={() => changeSection('risk-assessment')}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Risk Assessment</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    isActive={currentSection === 'specialist-questions'} 
+                    tooltip="Specialist Questions" 
+                    onClick={() => changeSection('specialist-questions')}
+                  >
+                    <Stethoscope className="h-4 w-4" />
+                    <span>Specialist Questions</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { UserProfile } from "@/services/AdminService";
 import { NewAdminService } from "@/services/NewAdminService";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Shield, Users, Search, CheckCircle, XCircle, Plus, Pencil } from "lucide-react";

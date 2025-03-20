@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 // Interfaces for the different data types
@@ -429,7 +429,7 @@ export const NewAdminService = {
         .from('questions')
         .select(`
           id,
-          question_text,
+          question,
           question_type,
           dropdown_options (
             id,
@@ -458,7 +458,7 @@ export const NewAdminService = {
           question.dropdown_options.forEach((option: any) => {
             questionScores.push({
               id: question.id,
-              question: question.question_text,
+              question: question.question,
               question_type: question.question_type,
               score: option.score || 0,
               option_id: option.id,
@@ -472,7 +472,7 @@ export const NewAdminService = {
           question.conditional_items.forEach((item: any) => {
             questionScores.push({
               id: question.id,
-              question: question.question_text,
+              question: question.question,
               question_type: question.question_type,
               score: item.score || 0,
               option_id: item.id,
@@ -486,7 +486,7 @@ export const NewAdminService = {
             (!question.conditional_items || question.conditional_items.length === 0)) {
           questionScores.push({
             id: question.id,
-            question: question.question_text,
+            question: question.question,
             question_type: question.question_type,
             score: 0
           });

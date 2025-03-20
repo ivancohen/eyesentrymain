@@ -1,5 +1,5 @@
 // Script to add sample questions with page categories
-import { supabase } from "../lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from 'uuid';
 
 // Immediately invoked async function

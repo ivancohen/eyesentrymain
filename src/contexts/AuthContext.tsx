@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { Session, User as SupabaseUser, AuthError } from '@supabase/supabase-js';
 
 interface User {
@@ -30,6 +30,16 @@ interface RegisterResult {
   };
 }
 
+interface DoctorApprovalStatus {
+  isPending: boolean;
+  isDoctor: boolean;
+}
+
+interface AuthErrorResponse {
+  error_code?: string;
+  message?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -50,14 +60,25 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  error?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const AUTH_TIMEOUT = 10000; // 10 seconds
+const SESSION_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+// Add a global flag to track initialization
+let isGlobalAuthInitialized = false;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const sessionRefreshRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMount = useRef(true);
+  const adminCheckRef = useRef<boolean | null>(null);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,119 +86,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Get the current URL origin for redirects
   const currentOrigin = window.location.origin;
 
-  // Function to check if a user is a doctor pending approval
-  const checkDoctorApprovalStatus = async (userId: string): Promise<{ isPending: boolean, isDoctor: boolean }> => {
-    try {
-      // Check approval status using the doctor approval status function
-      const { data, error } = await supabase
-        .rpc('check_doctor_approval_status', {
-          p_user_id: userId
-        }) as unknown as { 
-          data: { status: string | null } | null, 
-          error: Error | null 
-        };
-
-      if (error) {
-        console.error("Error checking doctor approval status:", error);
-        return { isPending: false, isDoctor: false };
-      }
-
-      if (data && data.status) {
-        if (data.status === "pending") {
-          return { isPending: true, isDoctor: true };
-        } else if (data.status === "approved") {
-          return { isPending: false, isDoctor: true };
-        } else {
-          // Status is rejected or other
-          return { isPending: false, isDoctor: false };
-        }
-      }
-
-      // If doctor_approvals record doesn't exist, check metadata for doctor flag
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error("Error fetching user data:", userError);
-        return { isPending: false, isDoctor: false };
-      }
-
-      const isDocRegistration = 
-        userData.user?.user_metadata?.doctorName || 
-        userData.user?.user_metadata?.requestRole === 'doctor' ||
-        userData.user?.app_metadata?.role === 'doctor';
-
-      return { isPending: isDocRegistration, isDoctor: isDocRegistration };
-    } catch (error) {
-      console.error("Error in checkDoctorApprovalStatus:", error);
-      return { isPending: false, isDoctor: false };
+  // Function to clear timeouts and subscriptions
+  const cleanup = () => {
+    if (sessionRefreshRef.current) {
+      clearInterval(sessionRefreshRef.current);
+      sessionRefreshRef.current = null;
     }
   };
 
-  // Function to notify admins about new doctor registration
-  const notifyAdminsAboutNewDoctor = async (userId: string, doctorName: string, email: string) => {
+  // Function to refresh session
+  const refreshSession = async () => {
     try {
-      console.log("Notifying admins about new doctor registration:", {userId, doctorName, email});
-      
-      // Get admin emails from profiles
-      const { data: admins, error: adminsError } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('is_admin', true);
-      
-      if (adminsError) {
-        console.error("Error fetching admin emails:", adminsError);
-        return;
-      }
-      
-      if (!admins || admins.length === 0) {
-        console.warn("No admin users found to notify");
-        return;
-      }
-      
-      // Call the notify_admins function if available
-      const { error: notifyError } = await supabase.rpc('notify_admins_new_doctor', {
-        p_doctor_id: userId,
-        p_doctor_name: doctorName || email,
-        p_doctor_email: email,
-        p_admin_emails: admins.map(a => a.email).filter(Boolean)
-      });
-      
-      if (notifyError) {
-        console.error("Error notifying admins:", notifyError);
-      } else {
-        console.log("Admin notification sent successfully");
+      const { data: { session: newSession }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      if (newSession) {
+        setSession(newSession);
       }
     } catch (error) {
-      console.error("Error in notifyAdminsAboutNewDoctor:", error);
+      console.error('Error refreshing session:', error);
     }
   };
 
-  const updateUserProfile = async (sessionUser: SupabaseUser) => {
+  const updateUserProfile = async (sessionUser: SupabaseUser): Promise<User> => {
     try {
-      console.log("Fetching profile for user:", sessionUser.id);
-      
-      // Initialize admin status determination flags for better tracking
       const userMetadata = sessionUser.app_metadata || {};
       const userEmail = sessionUser.email || '';
       
       // Method 1: Check if role is admin in app_metadata
       const isAdminByRole = userMetadata.role === 'admin';
-      console.log("Admin by role:", isAdminByRole);
       
       // Method 2: Check against hardcoded admin emails
-      // Add all admin emails here
       const adminEmails = [
         'ivan.s.cohen@gmail.com',
         // Add other admin emails here as needed
       ];
       const isAdminByEmail = adminEmails.includes(userEmail);
-      console.log("Admin by email match:", isAdminByEmail);
-      
-      // Set initial admin status based on the first two checks
-      let isUserAdmin = isAdminByRole || isAdminByEmail;
       
       // Method 3: Check against profiles table is_admin flag
+      let isAdminInProfile = false;
       try {
-        // First try to fetch from profiles
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
@@ -185,55 +132,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
 
         if (!error && profile) {
-          console.log("Profile found:", profile);
-          
-          // Method 3: Check is_admin flag in profile
-          const isAdminInProfile = profile.is_admin === true;
-          console.log("Admin by profile flag:", isAdminInProfile);
-          
-          // Update admin status if profile says they're an admin
-          isUserAdmin = isUserAdmin || isAdminInProfile;
-          console.log("Final admin status:", isUserAdmin);
-          
-          // Check if user is a doctor and get approval status
-          const { isPending, isDoctor } = await checkDoctorApprovalStatus(sessionUser.id);
-          
-          // Create and return user profile with admin status
-          return {
-            id: sessionUser.id,
-            email: userEmail,
-            name: profile.name || sessionUser.user_metadata?.name || '',
-            isAdmin: isUserAdmin,
-            isDoctor: isDoctor,
-            isPendingApproval: isPending,
-            avatarUrl: profile.avatar_url,
-            doctorName: sessionUser.user_metadata?.doctorName || null,
-            phoneNumber: sessionUser.user_metadata?.phoneNumber || null,
-            streetAddress: sessionUser.user_metadata?.streetAddress || null,
-            city: sessionUser.user_metadata?.city || null,
-            state: sessionUser.user_metadata?.state || null,
-            zipCode: sessionUser.user_metadata?.zipCode || null,
-            address: sessionUser.user_metadata?.address || null,
-            specialty: sessionUser.user_metadata?.specialty || null,
-          };
+          isAdminInProfile = profile.is_admin === true;
         }
       } catch (profileError) {
-        console.error("Error fetching profile (continuing):", profileError);
+        console.error("Error fetching profile:", profileError);
       }
 
-      // If we couldn't get a profile, check doctor status separately
+      // Combine all admin checks
+      const isAdmin = isAdminByRole || isAdminByEmail || isAdminInProfile;
+
+      // Check if user is a doctor and get approval status
       const { isPending, isDoctor } = await checkDoctorApprovalStatus(sessionUser.id);
-            
-      // If we couldn't get a profile, at least we have the admin status
-      // from the first two checks (role and email)
-      console.log("Using default user info with admin status:", isUserAdmin);
+      
+      // Create and return user profile
       return {
         id: sessionUser.id,
-        email: userEmail,
-        name: sessionUser.user_metadata?.name || userEmail.split('@')[0] || '',
-        isAdmin: isUserAdmin,
+        email: sessionUser.email || '',
+        name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || '',
+        isAdmin: isAdmin,
         isDoctor: isDoctor,
         isPendingApproval: isPending,
+        avatarUrl: sessionUser.user_metadata?.avatarUrl || null,
         doctorName: sessionUser.user_metadata?.doctorName || null,
         phoneNumber: sessionUser.user_metadata?.phoneNumber || null,
         streetAddress: sessionUser.user_metadata?.streetAddress || null,
@@ -250,25 +169,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: sessionUser.email || '',
         name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || '',
         isAdmin: false,
+        isDoctor: false,
+        isPendingApproval: false,
+        avatarUrl: null
       };
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const initializeAuth = async () => {
       try {
-        console.log("Initial auth check");
-        setLoading(true);
+        if (mounted) {
+          setLoading(true);
+          setAuthError(null);
+        }
         
         // Check for confirmation hash in the URL (for email confirmations)
         if (location.hash.includes('type=signup')) {
-          console.log("Detected confirmation hash in URL");
-          // Let Supabase Auth handle the token in the URL
           const { data, error } = await supabase.auth.getSession();
-          
           if (error) {
             toast.error("Failed to confirm email. Please try again.");
-            console.error("Email confirmation error:", error);
           } else if (data.session) {
             toast.success("Email confirmed successfully! You are now logged in.");
           }
@@ -276,74 +198,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         const { data: { session } } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          console.log("Initial session found, user data:", {
-            id: session.user.id,
-            email: session.user.email,
-            role: session.user.role
-          });
-          
+        if (session?.user && mounted) {
           const userProfile = await updateUserProfile(session.user);
-          console.log("Initial user profile:", userProfile);
           setUser(userProfile);
           setSession(session);
-        } else {
-          console.log("No initial session found");
+
+          // Set up session refresh
+          sessionRefreshRef.current = setInterval(refreshSession, SESSION_REFRESH_INTERVAL);
+        } else if (mounted) {
           setUser(null);
           setSession(null);
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
-        setUser(null);
-        setSession(null);
+        if (mounted) {
+          setAuthError("Failed to initialize authentication");
+          setUser(null);
+          setSession(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    const setupAuthListener = () => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (_event, newSession) => {
-          console.log("Auth state changed, event:", _event, "session:", newSession ? "exists" : "null");
-          
-          try {
-            setLoading(true);
-            setSession(newSession);
-            
-            if (newSession?.user) {
-              console.log("Session user data:", {
-                id: newSession.user.id,
-                email: newSession.user.email,
-                role: newSession.user.role,
-                metadata: newSession.user.user_metadata
-              });
-              
-              const userProfile = await updateUserProfile(newSession.user);
-              console.log("Setting user profile:", userProfile);
-              setUser(userProfile);
-            } else {
-              console.log("No session, clearing user");
-              setUser(null);
-            }
-          } catch (error) {
-            console.error("Error in auth state change handler:", error);
-            setUser(null);
-          } finally {
-            setLoading(false);
-          }
-        }
-      );
-
-      return subscription;
+    initializeAuth();
+    
+    return () => {
+      mounted = false;
+      cleanup();
     };
-
-    initializeAuth().then(() => {
-      const subscription = setupAuthListener();
-      
-      return () => {
-        subscription?.unsubscribe();
-      };
-    });
   }, [location.hash]);
 
   const register = async (
@@ -439,13 +324,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       return { data };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Unexpected registration error:", error);
       
-      if (error.error_code) {
-        return { 
-          error: error as AuthError
-        };
+      if (error && typeof error === 'object' && 'error_code' in error) {
+        const authError = new Error((error as AuthErrorResponse).message || 'Registration failed') as AuthError;
+        authError.code = (error as AuthErrorResponse).error_code || 'unknown';
+        return { error: authError };
       }
       
       throw error;
@@ -490,7 +375,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return userProfile;
       }
       return null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error in context:", error);
       throw error;
     } finally {
@@ -512,8 +397,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) throw error;
-    } catch (error: any) {
-      toast.error(error.message || 'Google login failed');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        toast.error((error as AuthErrorResponse).message || 'Google login failed');
+      } else {
+        toast.error('Google login failed');
+      }
       throw error;
     }
   };
@@ -551,8 +440,98 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       toast.success("Logged out successfully");
       navigate('/');
-    } catch (error: any) {
-      toast.error(error.message || 'Logout failed');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        toast.error((error as AuthErrorResponse).message || 'Logout failed');
+      } else {
+        toast.error('Logout failed');
+      }
+    }
+  };
+
+  // Function to check if a user is a doctor pending approval
+  const checkDoctorApprovalStatus = async (userId: string): Promise<DoctorApprovalStatus> => {
+    try {
+      // Check approval status using the doctor approval status function
+      const { data, error } = await supabase
+        .rpc('check_doctor_approval_status', {
+          p_user_id: userId
+        }) as unknown as { 
+          data: { status: string | null } | null, 
+          error: Error | null 
+        };
+
+      if (error) {
+        console.error("Error checking doctor approval status:", error);
+        return { isPending: false, isDoctor: false };
+      }
+
+      if (data && data.status) {
+        if (data.status === "pending") {
+          return { isPending: true, isDoctor: true };
+        } else if (data.status === "approved") {
+          return { isPending: false, isDoctor: true };
+        } else {
+          // Status is rejected or other
+          return { isPending: false, isDoctor: false };
+        }
+      }
+
+      // If doctor_approvals record doesn't exist, check metadata for doctor flag
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        return { isPending: false, isDoctor: false };
+      }
+
+      const isDocRegistration = 
+        userData.user?.user_metadata?.doctorName || 
+        userData.user?.user_metadata?.requestRole === 'doctor' ||
+        userData.user?.app_metadata?.role === 'doctor';
+
+      return { isPending: isDocRegistration, isDoctor: isDocRegistration };
+    } catch (error) {
+      console.error("Error in checkDoctorApprovalStatus:", error);
+      return { isPending: false, isDoctor: false };
+    }
+  };
+
+  // Function to notify admins about new doctor registration
+  const notifyAdminsAboutNewDoctor = async (userId: string, doctorName: string, email: string) => {
+    try {
+      console.log("Notifying admins about new doctor registration:", {userId, doctorName, email});
+      
+      // Get admin emails from profiles
+      const { data: admins, error: adminsError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('is_admin', true);
+      
+      if (adminsError) {
+        console.error("Error fetching admin emails:", adminsError);
+        return;
+      }
+      
+      if (!admins || admins.length === 0) {
+        console.warn("No admin users found to notify");
+        return;
+      }
+      
+      // Call the notify_admins function if available
+      const { error: notifyError } = await supabase.rpc('notify_admins_new_doctor', {
+        p_doctor_id: userId,
+        p_doctor_name: doctorName || email,
+        p_doctor_email: email,
+        p_admin_emails: admins.map(a => a.email).filter(Boolean)
+      });
+      
+      if (notifyError) {
+        console.error("Error notifying admins:", notifyError);
+      } else {
+        console.log("Admin notification sent successfully");
+      }
+    } catch (error) {
+      console.error("Error in notifyAdminsAboutNewDoctor:", error);
     }
   };
 
@@ -566,7 +545,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login, 
         loginWithGoogle,
         logout, 
-        isAdmin: user?.isAdmin || false 
+        isAdmin: user?.isAdmin || false,
+        error: authError || undefined
       }}
     >
       {children}

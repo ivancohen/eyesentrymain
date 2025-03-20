@@ -1,5 +1,5 @@
 // Script to import existing questionnaire questions into the management system
-import { supabase } from "../lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from 'uuid';
 import { QUESTIONNAIRE_PAGES } from "../constants/questionnaireConstants";
 
@@ -61,7 +61,7 @@ import { QUESTIONNAIRE_PAGES } from "../constants/questionnaireConstants";
     const { error: deleteError } = await supabase
       .from('questions')
       .delete()
-      .is('question_text', null); // Questions without question_text are likely sample questions
+      .is('question', null); // Questions without question are likely sample questions
     
     if (deleteError) {
       console.error("Error deleting sample questions:", deleteError);

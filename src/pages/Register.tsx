@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import AuthForm from "@/components/AuthForm";
@@ -8,7 +7,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { InfoIcon, HourglassIcon } from "lucide-react";
-import { supabase } from "@/lib/supabase-client";
+import { supabase } from "@/lib/supabase";
 
 const Register = () => {
   const { register, user, loading } = useAuth();
@@ -73,14 +72,14 @@ const Register = () => {
       
       // Show a different toast message depending on the account type
       if (isDocRegistration) {
-        toast.success("Registration successful! Please check your email for the verification link. Your account will require admin approval.");
+        toast.success("Registration successful! Your account will require admin approval.");
         
         // Notify admins directly in the UI
         setTimeout(() => {
           toast.info("Admins have been notified about your registration");
         }, 2000);
       } else {
-        toast.success("Registration successful! Please check your email for the verification link.");
+        toast.success("Registration successful!");
       }
 
     } catch (error: unknown) {
@@ -112,22 +111,14 @@ const Register = () => {
               <h1 className="text-2xl font-bold text-green-700 mb-2">Registration Successful!</h1>
             </div>
             
-            <Alert className="mb-6 bg-blue-50 border-blue-200">
-              <InfoIcon className="h-4 w-4 text-blue-500" />
-              <AlertDescription className="text-blue-700">
-                Please check your email for the verification link.
-                You need to verify your email before you can log in.
-              </AlertDescription>
-            </Alert>
-            
-            {isDoctor && (
+            {isDoctor ? (
               <div>
                 <Alert className="mb-6 bg-amber-50 border-amber-200">
                   <HourglassIcon className="h-4 w-4 text-amber-500" />
                   <AlertDescription className="text-amber-700">
                     <p className="font-medium">Your doctor account requires approval</p>
                     <p className="mt-1">
-                      After verifying your email, your account will need to be approved by an administrator 
+                      Your account will need to be approved by an administrator 
                       before you can access the doctor dashboard. This usually takes 1-2 business days.
                     </p>
                   </AlertDescription>
@@ -137,7 +128,6 @@ const Register = () => {
                   <CardContent className="pt-4 px-2">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">What happens next?</h3>
                     <ol className="space-y-2 text-sm text-gray-600 list-decimal pl-5">
-                      <li>Check your email for a verification link and click it</li>
                       <li>Our administrators have been notified of your registration</li>
                       <li>Once approved, you'll receive a confirmation email</li>
                       <li>You can then log in with your credentials</li>
@@ -145,11 +135,18 @@ const Register = () => {
                   </CardContent>
                 </Card>
               </div>
+            ) : (
+              <Alert className="mb-6 bg-green-50 border-green-200">
+                <InfoIcon className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-green-700">
+                  Your account has been created successfully.
+                </AlertDescription>
+              </Alert>
             )}
             
             <div className="mt-6 text-center animate-fade-in">
               <p className="text-sm text-muted-foreground">
-                Already verified?{" "}
+                Ready to start?{" "}
                 <Link to="/login" className="text-primary font-medium hover:underline">
                   Sign in
                 </Link>

@@ -29,6 +29,12 @@ interface QuestionnaireFormProps {
   onAnswerChange?: (questionId: string, value: AnswerValue) => void;
   setAnswers?: (answers: Record<string, AnswerValue>) => void;
   skipQuestions?: string[]; // New prop to allow skipping certain questions
+  questions: Array<{
+    id: string;
+    question: string;
+    tooltip?: string;
+    page_category: string;
+  }>;
 }
 
 const QuestionnaireForm = ({
@@ -37,10 +43,44 @@ const QuestionnaireForm = ({
   onAnswerChange,
   setAnswers,
   skipQuestions = [], // Default to empty array if not provided
+  questions
 }: QuestionnaireFormProps) => {
   // Get questions for current page, make sure it's defined with an empty array fallback
   const currentQuestions = QUESTIONNAIRE_PAGES[currentPage] || [];
   
+  // Map the current questions with their tooltips from the database
+  const questionsWithTooltips = currentQuestions.map(q => {
+    // Find the matching question in the database by matching the question text
+    const dbQuestion = questions.find(dbQ => dbQ.question === q.text);
+    console.log('Question:', {
+      id: q.id,
+      text: q.text,
+      dbQuestion: dbQuestion,
+      hasTooltip: !!dbQuestion?.tooltip,
+      tooltipContent: dbQuestion?.tooltip,
+      matchingQuestion: dbQuestion?.question
+    });
+    return {
+      ...q,
+      tooltip: dbQuestion?.tooltip || undefined
+    };
+  });
+
+  // Log the final questions with tooltips
+  console.log('Questions with tooltips:', questionsWithTooltips.map(q => ({
+    id: q.id,
+    text: q.text,
+    hasTooltip: !!q.tooltip,
+    tooltipContent: q.tooltip
+  })));
+
+  // Log the raw questions prop with more detail
+  console.log('Raw questions prop:', questions.map(q => ({
+    id: q.id,
+    question: q.question,
+    tooltip: q.tooltip
+  })));
+
   // Handle answer changes based on which prop was provided
   const handleValueChange = (questionId: string, value: AnswerValue) => {
     if (onAnswerChange) {
@@ -105,6 +145,19 @@ const QuestionnaireForm = ({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardContent className="pt-6">
+        {/* Add tooltip instruction note */}
+        <div className="mb-6 p-4 bg-muted rounded-lg border">
+          <div className="flex items-start gap-2">
+            <Info className="h-5 w-5 text-primary mt-0.5" />
+            <div>
+              <p className="text-sm font-medium mb-1">Helpful Information Available</p>
+              <p className="text-sm text-muted-foreground">
+                Look for the <Info className="h-4 w-4 inline-block mx-1 text-muted-foreground" /> icon next to questions for additional information and guidance. Hover over the icon to view helpful details about each question.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {showFamilyGlaucomaWarning && (
           <Alert className="mb-6" variant="default">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -128,8 +181,8 @@ const QuestionnaireForm = ({
         )}
         
         <div className="space-y-5">
-          {currentQuestions && currentQuestions.length > 0 ? (
-            currentQuestions.map((question, index) => {
+          {questionsWithTooltips && questionsWithTooltips.length > 0 ? (
+            questionsWithTooltips.map((question, index) => {
               // Skip questions that are in the skipQuestions array
               if (skipQuestions.includes(question.id)) return null;
               
@@ -137,10 +190,23 @@ const QuestionnaireForm = ({
               if (question.id === "firstName" || question.id === "lastName") {
                 return (
                   <div key={question.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                    <label className="text-base font-medium leading-6 mb-2 block">
+                    <label htmlFor={question.id} className="text-base font-medium leading-6 mb-2 block">
                       {question.text}
+                      {question.tooltip && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 inline-block ml-1 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[300px] p-4">
+                              <p className="text-sm">{question.tooltip}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </label>
                     <Input
+                      id={question.id}
                       type="text"
                       name={question.id}
                       value={String(answers[question.id] || "")}
@@ -159,7 +225,7 @@ const QuestionnaireForm = ({
                   onValueChange={(value) => handleValueChange(question.id, value)}
                   disabled={isDisabled}
                 >
-                  <SelectTrigger className={`w-full input-animation ${isDisabled ? 'opacity-70 cursor-not-allowed bg-muted' : ''}`}>
+                  <SelectTrigger id={question.id} className={`w-full input-animation ${isDisabled ? 'opacity-70 cursor-not-allowed bg-muted' : ''}`}>
                     <SelectValue placeholder="Select an option" />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,8 +247,20 @@ const QuestionnaireForm = ({
 
               return (
                 <div key={question.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <label className={`text-base font-medium leading-6 mb-2 block ${isDisabled ? 'text-muted-foreground' : ''}`}>
+                  <label htmlFor={question.id} className={`text-base font-medium leading-6 mb-2 block ${isDisabled ? 'text-muted-foreground' : ''}`}>
                     {question.text}
+                    {question.tooltip && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 inline-block ml-1 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[300px] p-4">
+                            <p className="text-sm">{question.tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </label>
                   {isDisabled ? (
                     <TooltipProvider>
@@ -207,6 +285,18 @@ const QuestionnaireForm = ({
                                   {question.conditionalOptions.options.map((option) => (
                                     <li key={option.value} className="text-muted-foreground">
                                       • {option.label}
+                                      {option.tooltip && (
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Info className="h-3 w-3 inline-block ml-1 text-muted-foreground" />
+                                            </TooltipTrigger>
+                                            <TooltipContent className="max-w-[300px] p-4">
+                                              <p className="text-sm">{option.tooltip}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      )}
                                     </li>
                                   ))}
                                 </ul>

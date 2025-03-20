@@ -1,17 +1,11 @@
 // Emergency Fix Script for Database Access Issues
-import { createClient } from '@supabase/supabase-js';
-
-// Use the same Supabase configuration from the app
-const supabaseUrl = 'https://gebojeuaeaqmdfrxptqf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYm9qZXVhZWFxbWRmcnhwdHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1NDQ2NDEsImV4cCI6MjA1NzEyMDY0MX0.Fpzp_tD07GXGNvf2k7HLLOe1-UHLU_jOb-fKwZvn6OM';
+import { supabase } from "@/lib/supabase";
 
 const main = async () => {
   try {
     console.log('EMERGENCY FIX FOR DATABASE ACCESS ISSUES');
     console.log('=======================================');
     console.log('This script will diagnose and fix RLS-related permission issues');
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
     console.log('\nStep 1: Testing Database Access...');
     

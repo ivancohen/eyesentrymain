@@ -13,5 +13,17 @@
     "autoApprove": [
       "execute_postgresql"
     ]
+  },
+  "github.com/perplexity-ai/perplexity-mcp-server": {
+    "command": "python -m perplexity_mcp_server",
+    "env": {
+      "perplexityApiKey": "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"
+    },
+    "disabled": false,
+    "autoApprove": [
+      "search",
+      "generate_text",
+      "analyze_text"
+    ]
   }
 } 

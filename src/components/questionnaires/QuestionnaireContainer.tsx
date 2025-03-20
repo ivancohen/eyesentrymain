@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
@@ -9,15 +9,37 @@ import QuestionnaireProgress from "@/components/questionnaires/QuestionnaireProg
 import QuestionnaireNavigation from "@/components/questionnaires/QuestionnaireNavigation";
 import QuestionnaireResults from "@/components/questionnaires/QuestionnaireResults";
 import { validateQuestionnairePage } from "@/components/questionnaires/QuestionnaireValidation";
-import { submitPatientQuestionnaire } from "@/services/PatientQuestionnaireService";
+import { submitPatientQuestionnaire, getQuestionsWithTooltips } from "@/services/PatientQuestionnaireService";
 import { QUESTIONNAIRE_PAGES } from "@/constants/questionnaireConstants";
 import { toast } from "sonner";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 // Define user type
 interface User {
   id: string;
   email?: string;
   user_metadata?: Record<string, unknown>;
+}
+
+interface Question {
+  id: string;
+  question: string;
+  tooltip?: string;
+  page_category: string;
+  display_order?: number;
+}
+
+interface ContributingFactor {
+  question: string;
+  answer: string;
+  score: number;
+}
+
+interface QuestionnaireResult {
+  score: number;
+  riskLevel: string;
+  contributing_factors: ContributingFactor[];
+  advice: string;
 }
 
 interface QuestionnaireContainerProps {
@@ -34,7 +56,25 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [results, setResults] = useState<{ score: number; riskLevel: string } | null>(null);
+  const [results, setResults] = useState<QuestionnaireResult | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const questionsData = await getQuestionsWithTooltips();
+        setQuestions(questionsData);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        toast.error("Failed to load questions. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
     setAnswers(prev => ({
@@ -100,7 +140,9 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
       
       setResults({
         score: result.score,
-        riskLevel: result.riskLevel
+        riskLevel: result.riskLevel,
+        contributing_factors: result.contributing_factors || [],
+        advice: result.advice || ""
       });
       
       toast.success("Questionnaire submitted successfully!");
@@ -119,14 +161,24 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
       <Navbar />
       <main className="flex-1 container px-4 py-4 mb-8 animate-fade-in">
         <PageHeader
-          title="Patient Questionnaire"
+          title="Risk Assessment Questionnaire"
           icon={<Clipboard size={20} />}
-          description="Please answer the following questions about the patient."
+          description="Complete the questionnaire to assess the patient's risk of developing glaucoma."
         />
 
         <div className="max-w-2xl mx-auto mt-6">
-          {isCompleted && results ? (
-            <QuestionnaireResults score={results.score} riskLevel={results.riskLevel} />
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <LoadingSpinner />
+              <span className="ml-3 text-lg">Loading questions...</span>
+            </div>
+          ) : isCompleted && results ? (
+            <QuestionnaireResults 
+              score={results.score} 
+              riskLevel={results.riskLevel}
+              contributing_factors={results.contributing_factors}
+              advice={results.advice}
+            />
           ) : (
             <>
               {validationError && (
@@ -146,6 +198,7 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
                 currentPage={currentPage}
                 onAnswerChange={handleAnswerChange}
                 answers={answers}
+                questions={questions}
               />
 
               <QuestionnaireNavigation

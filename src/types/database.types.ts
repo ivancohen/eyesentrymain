@@ -333,6 +333,64 @@ export interface Database {
           created_at?: string;
         };
       };
+      specialist_consultation_links: {
+        Row: {
+          id: string;
+          patient_id: string;
+          consultation_token: string;
+          created_at: string;
+          expires_at: string;
+          is_used: boolean;
+        };
+        Insert: {
+          id?: string;
+          patient_id: string;
+          consultation_token: string;
+          created_at?: string;
+          expires_at: string;
+          is_used?: boolean;
+        };
+        Update: {
+          id?: string;
+          patient_id?: string;
+          consultation_token?: string;
+          created_at?: string;
+          expires_at?: string;
+          is_used?: boolean;
+        };
+      };
+      specialist_consultations: {
+        Row: {
+          id: string;
+          consultation_link_id: string;
+          specialist_name: string;
+          specialist_credentials: string;
+          specialty: string;
+          consultation_notes: string;
+          recommendations: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          consultation_link_id: string;
+          specialist_name: string;
+          specialist_credentials: string;
+          specialty: string;
+          consultation_notes: string;
+          recommendations: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          consultation_link_id?: string;
+          specialist_name?: string;
+          specialist_credentials?: string;
+          specialty?: string;
+          consultation_notes?: string;
+          recommendations?: string;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       ai_patient_data: {

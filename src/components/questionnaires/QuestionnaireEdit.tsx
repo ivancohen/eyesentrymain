@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getQuestionnaireById, updateQuestionnaire } from "@/services/PatientQuestionnaireService";
+import { getQuestionnaireById, updateQuestionnaire, getQuestionsWithTooltips } from "@/services/PatientQuestionnaireService";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import { Clipboard, AlertCircle, User, ArrowLeft } from "lucide-react";
@@ -17,53 +16,114 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+interface Question {
+  id: string;
+  question: string;
+  tooltip?: string;
+  page_category: string;
+}
+
+interface ContributingFactor {
+  question: string;
+  answer: string;
+  score: number;
+}
+
+interface QuestionnaireData {
+  first_name: string;
+  last_name: string;
+  age: string;
+  race: string;
+  family_glaucoma: boolean;
+  ocular_steroid: boolean;
+  steroid_type: string;
+  intravitreal: boolean;
+  intravitreal_type: string;
+  systemic_steroid: boolean;
+  systemic_steroid_type: string;
+  iop_baseline: boolean;
+  vertical_asymmetry: boolean;
+  vertical_ratio: boolean;
+}
+
+interface QuestionnaireResult {
+  score: number;
+  riskLevel: string;
+  contributing_factors: ContributingFactor[];
+  advice: string;
+}
+
+// Define accepted answer value types
+type AnswerValue = string | number | boolean | null;
+
 const QuestionnaireEdit = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const [currentPage, setCurrentPage] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [results, setResults] = useState<{ score: number; riskLevel: string } | null>(null);
+  const [results, setResults] = useState<QuestionnaireResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [patientName, setPatientName] = useState({ firstName: "", lastName: "" });
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  // Fetch questions with tooltips
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const questionsData = await getQuestionsWithTooltips();
+        setQuestions(questionsData);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
+        toast.error("Failed to load questions. Please try again.");
+      }
+    };
+
+    fetchQuestions();
+  }, []);
 
   useEffect(() => {
     async function fetchQuestionnaire() {
-      if (!id) return;
+      if (!id) {
+        setLoadError("No questionnaire ID provided");
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
         setLoadError(null);
-        const data = await getQuestionnaireById(id);
+        const questionnaireData = await getQuestionnaireById(id as string) as QuestionnaireData;
         
         // Store patient name separately
         setPatientName({
-          firstName: data.first_name,
-          lastName: data.last_name
+          firstName: questionnaireData.first_name,
+          lastName: questionnaireData.last_name
         });
         
         // Transform database values back to form values, excluding first/last name
         const formattedAnswers = {
-          age: data.age,
-          race: data.race,
-          familyGlaucoma: data.family_glaucoma ? "yes" : "no",
-          ocularSteroid: data.ocular_steroid ? "yes" : "no",
-          steroidType: data.steroid_type || "",
-          intravitreal: data.intravitreal ? "yes" : "no",
-          intravitralType: data.intravitreal_type || "", // Fixed: use intravitral_type consistently
-          systemicSteroid: data.systemic_steroid ? "yes" : "no",
-          systemicSteroidType: data.systemic_steroid_type || "",
-          iopBaseline: data.iop_baseline ? "22_and_above" : "21_and_under",
-          verticalAsymmetry: data.vertical_asymmetry ? "0.2_and_above" : "under_0.2",
-          verticalRatio: data.vertical_ratio ? "0.6_and_above" : "below_0.6"
+          age: questionnaireData.age,
+          race: questionnaireData.race,
+          familyGlaucoma: questionnaireData.family_glaucoma ? "yes" : "no",
+          ocularSteroid: questionnaireData.ocular_steroid ? "yes" : "no",
+          steroidType: questionnaireData.steroid_type || "",
+          intravitreal: questionnaireData.intravitreal ? "yes" : "no",
+          intravitralType: questionnaireData.intravitreal_type || "",
+          systemicSteroid: questionnaireData.systemic_steroid ? "yes" : "no",
+          systemicSteroidType: questionnaireData.systemic_steroid_type || "",
+          iopBaseline: questionnaireData.iop_baseline ? "22_and_above" : "21_and_under",
+          verticalAsymmetry: questionnaireData.vertical_asymmetry ? "0.2_and_above" : "under_0.2",
+          verticalRatio: questionnaireData.vertical_ratio ? "0.6_and_above" : "below_0.6"
         };
         
         setAnswers(formattedAnswers);
         
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error loading questionnaire:", error);
         setLoadError("Failed to load questionnaire data. Please try again.");
         toast.error("Failed to load questionnaire data");
@@ -75,7 +135,7 @@ const QuestionnaireEdit = () => {
     fetchQuestionnaire();
   }, [id, navigate]);
 
-  const handleAnswerChange = (questionId: string, value: any) => {
+  const handleAnswerChange = (questionId: string, value: AnswerValue) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: value
@@ -145,7 +205,7 @@ const QuestionnaireEdit = () => {
         ocularSteroid: answers.ocularSteroid as string,
         steroidType: answers.steroidType as string,
         intravitreal: answers.intravitreal as string,
-        intravitralType: answers.intravitralType as string, // Consistent naming
+        intravitralType: answers.intravitralType as string,
         systemicSteroid: answers.systemicSteroid as string,
         systemicSteroidType: answers.systemicSteroidType as string,
         iopBaseline: answers.iopBaseline as string,
@@ -159,7 +219,9 @@ const QuestionnaireEdit = () => {
       
       setResults({
         score: result.score,
-        riskLevel: result.riskLevel
+        riskLevel: result.riskLevel,
+        contributing_factors: result.contributing_factors || [],
+        advice: result.advice || ""
       });
       
       toast.success("Questionnaire updated successfully!");
@@ -181,7 +243,7 @@ const QuestionnaireEdit = () => {
       try {
         setLoading(true);
         setLoadError(null);
-        const data = await getQuestionnaireById(id);
+        const data = await getQuestionnaireById(id as string) as QuestionnaireData;
         
         setPatientName({
           firstName: data.first_name,
@@ -280,7 +342,12 @@ const QuestionnaireEdit = () => {
 
         <div className="max-w-2xl mx-auto mt-6">
           {isCompleted && results ? (
-            <QuestionnaireResults score={results.score} riskLevel={results.riskLevel} />
+            <QuestionnaireResults 
+              score={results.score} 
+              riskLevel={results.riskLevel}
+              contributing_factors={results.contributing_factors}
+              advice={results.advice}
+            />
           ) : (
             <>
               {validationError && (
@@ -320,6 +387,7 @@ const QuestionnaireEdit = () => {
                         onAnswerChange={handleAnswerChange}
                         answers={answers}
                         skipQuestions={["firstName", "lastName"]}
+                        questions={questions}
                       />
                     </div>
                   </CardContent>
@@ -331,6 +399,7 @@ const QuestionnaireEdit = () => {
                   currentPage={currentPage}
                   onAnswerChange={handleAnswerChange}
                   answers={answers}
+                  questions={questions}
                 />
               )}
 

@@ -1,14 +1,9 @@
 // Script to fix admin access for ivan.s.cohen@gmail.com
-import { createClient } from '@supabase/supabase-js';
-
-// Use the same Supabase configuration from the app
-const supabaseUrl = 'https://gebojeuaeaqmdfrxptqf.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYm9qZXVhZWFxbWRmcnhwdHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1NDQ2NDEsImV4cCI6MjA1NzEyMDY0MX0.Fpzp_tD07GXGNvf2k7HLLOe1-UHLU_jOb-fKwZvn6OM';
+import { supabase } from "@/lib/supabase";
 
 const main = async () => {
   try {
     console.log('Connecting to Supabase...');
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     
     const adminEmail = 'ivan.s.cohen@gmail.com';
     console.log(`Fixing admin access for ${adminEmail}...`);
