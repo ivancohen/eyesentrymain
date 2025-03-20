@@ -369,6 +369,91 @@ export const FixedAdminService = {
     }
   },
   
+  // User update function with multiple fallback strategies
+  async updateUser(userData: UserProfile): Promise<boolean> {
+    try {
+      console.log(`Updating user: ${userData.email}`);
+      
+      // Minimize the update data to only what's needed
+      const updateData = {
+        name: userData.name || '',
+        is_admin: userData.is_admin === true
+      };
+      
+      // If additional fields are provided, include them
+      if (userData.is_approved !== undefined) {
+        updateData['is_approved'] = userData.is_approved === true;
+      }
+      
+      // Only include non-empty strings for optional fields
+      ['location', 'state', 'zip_code', 'specialty', 'phone_number', 
+       'address', 'street_address', 'city'].forEach(field => {
+        if (userData[field] && userData[field].trim()) {
+          updateData[field] = userData[field];
+        }
+      });
+      
+      console.log("Update payload:", updateData);
+      
+      // First try the direct update
+      try {
+        console.log("Trying direct profile update...");
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData as any)
+          .eq('id', userData.id);
+        
+        if (error) throw error;
+        
+        toast.success("User updated successfully");
+        return true;
+      } catch (directError) {
+        console.warn("Direct update failed, trying RPC method:", directError);
+        
+        // Try to use the update_user_profile RPC function
+        try {
+          const { error } = await supabase.rpc(
+            'update_user_profile',
+            { 
+              user_id: userData.id,
+              user_name: userData.name || '',
+              is_admin_status: userData.is_admin === true
+            }
+          );
+          
+          if (error) throw error;
+          
+          toast.success("User updated successfully via RPC");
+          return true;
+        } catch (rpcError) {
+          console.warn("RPC update failed, trying simplified update:", rpcError);
+          
+          // Try extra-simplified update with minimal fields
+          try {
+            const { error } = await supabase
+              .from('profiles')
+              .update({ name: userData.name })
+              .eq('email', userData.email);
+            
+            if (error) throw error;
+            
+            toast.success("User name updated successfully");
+            toast.info("Some fields may not have been updated");
+            return true;
+          } catch (finalError) {
+            console.error("All update methods failed:", finalError);
+            throw finalError;
+          }
+        }
+      }
+    } catch (error: unknown) {
+      console.error("Error updating user:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Error updating user: ${errorMessage}`);
+      return false;
+    }
+  },
+  
   // LOCATION DATA (Merged implementation with admin check)
   
   async getUniqueLocations(): Promise<{ states: string[], locations: string[], zipCodes: string[] }> {

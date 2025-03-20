@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Function Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .result-box {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .step {
+            margin-bottom: 30px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Function Test Tool</h1>
+    <p>This tool helps you test if the admin function fix is working correctly. Follow the steps below to check the status of the function and make a user an admin.</p>
+
+    <div class="step">
+        <h2>Step 1: Sign In</h2>
+        <p>First, sign in with your admin credentials:</p>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button id="signInBtn">Sign In</button>
+        <div id="signInResult" class="result-box" style="display: none;"></div>
+    </div>
+
+    <div class="step">
+        <h2>Step 2: Check Current User Status</h2>
+        <p>Check if your current user has admin privileges:</p>
+        <button id="checkStatusBtn" disabled>Check Admin Status</button>
+        <div id="statusResult" class="result-box" style="display: none;"></div>
+    </div>
+
+    <div class="step">
+        <h2>Step 3: Test Make Admin Function</h2>
+        <p>Enter the email of a user you want to make an admin:</p>
+        <input type="email" id="targetEmail" placeholder="User's Email" />
+        <button id="makeAdminBtn" disabled>Make Admin</button>
+        <div id="makeAdminResult" class="result-box" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://gebojeuaeaqmdfrxptqf.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlYm9qZXVhZWFxbWRmcnhwdHFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1NDQ2NDEsImV4cCI6MjA1NzEyMDY0MX0.Fpzp_tD07GXGNvf2k7HLLOe1-UHLU_jOb-fKwZvn6OM';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Elements
+        const signInBtn = document.getElementById('signInBtn');
+        const checkStatusBtn = document.getElementById('checkStatusBtn');
+        const makeAdminBtn = document.getElementById('makeAdminBtn');
+        const signInResult = document.getElementById('signInResult');
+        const statusResult = document.getElementById('statusResult');
+        const makeAdminResult = document.getElementById('makeAdminResult');
+
+        // Sign In
+        signInBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            signInResult.style.display = 'block';
+            signInResult.innerText = 'Signing in...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                signInResult.innerText = `Successfully signed in as ${data.user.email}\n\nUser ID: ${data.user.id}`;
+                checkStatusBtn.disabled = false;
+                makeAdminBtn.disabled = false;
+            } catch (error) {
+                signInResult.innerText = `Error signing in: ${error.message}`;
+            }
+        });
+
+        // Check Admin Status
+        checkStatusBtn.addEventListener('click', async () => {
+            statusResult.style.display = 'block';
+            statusResult.innerText = 'Checking admin status...';
+
+            try {
+                // Get current user
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) throw new Error('Not signed in');
+
+                // Check if user is in profiles table and is_admin
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('is_admin, email, name')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                // Check auth metadata
+                let metadataStatus = 'No role in metadata';
+                if (user.app_metadata && user.app_metadata.role === 'admin') {
+                    metadataStatus = 'Admin role in metadata';
+                }
+
+                statusResult.innerText = `User: ${profile.email}\n` +
+                    `Profile is_admin: ${profile.is_admin ? 'TRUE' : 'FALSE'}\n` +
+                    `Auth metadata: ${metadataStatus}\n\n` +
+                    `Overall admin status: ${profile.is_admin ? 'You are an admin' : 'You are NOT an admin'}`;
+
+            } catch (error) {
+                statusResult.innerText = `Error checking status: ${error.message}`;
+            }
+        });
+
+        // Make Admin
+        makeAdminBtn.addEventListener('click', async () => {
+            const targetEmail = document.getElementById('targetEmail').value;
+            
+            makeAdminResult.style.display = 'block';
+            makeAdminResult.innerText = `Attempting to make ${targetEmail} an admin...`;
+
+            try {
+                // Call the create_admin function
+                const { data, error } = await supabase.rpc(
+                    'create_admin',
+                    { 
+                        admin_email: targetEmail,
+                        admin_name: targetEmail.split('@')[0]
+                    }
+                );
+
+                if (error) throw error;
+
+                makeAdminResult.innerText = `Successfully made ${targetEmail} an admin!\n\n` +
+                    `Function result: ${data}\n\n` +
+                    `Refresh the page and sign in as ${targetEmail} to verify the change.`;
+
+            } catch (error) {
+                makeAdminResult.innerText = `Error making admin: ${error.message}\n\n` +
+                    `This could mean:\n` +
+                    `- The function doesn't exist (SQL not run)\n` +
+                    `- The user doesn't exist\n` +
+                    `- You don't have permission to run the function\n` +
+                    `- Some other database error occurred`;
+            }
+        });
+    </script>
+</body>
+</html>

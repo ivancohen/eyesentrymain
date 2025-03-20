@@ -479,12 +479,6 @@ const NewAdmin = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Settings" onClick={() => navigate("/settings")}>
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
                   <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>

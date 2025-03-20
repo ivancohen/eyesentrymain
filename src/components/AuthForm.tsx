@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,16 +118,27 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   <Stethoscope size={16} />
                   Specialty
                 </Label>
-                <Input
-                  id="specialty"
-                  name="specialty"
-                  placeholder="Ophthalmology"
+                <Select
                   value={formData.specialty}
-                  onChange={handleChange}
-                  required
-                  className="input-animation"
-                  disabled={isLoading}
-                />
+                  onValueChange={(value) => handleSelectChange('specialty', value)}
+                >
+                  <SelectTrigger id="specialty" className="input-animation" disabled={isLoading}>
+                    <SelectValue placeholder="Select your specialty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Family Physician">Family Physician</SelectItem>
+                    <SelectItem value="Internist">Internist</SelectItem>
+                    <SelectItem value="General Practitioner (GP)">General Practitioner (GP)</SelectItem>
+                    <SelectItem value="Primary Care Physician (PCP)">Primary Care Physician (PCP)</SelectItem>
+                    <SelectItem value="Pediatrician">Pediatrician</SelectItem>
+                    <SelectItem value="Geriatrician">Geriatrician</SelectItem>
+                    <SelectItem value="Nurse Practitioner (NP)">Nurse Practitioner (NP)</SelectItem>
+                    <SelectItem value="Physician Assistant (PA)">Physician Assistant (PA)</SelectItem>
+                    <SelectItem value="Obstetrician/Gynecologist (OB/GYN)">Obstetrician/Gynecologist (OB/GYN)</SelectItem>
+                    <SelectItem value="Preventive Medicine Physician">Preventive Medicine Physician</SelectItem>
+                    <SelectItem value="Integrative or Lifestyle Medicine Physician">Integrative or Lifestyle Medicine Physician</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2 animate-slide-up animation-delay-250">
