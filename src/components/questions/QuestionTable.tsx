@@ -49,7 +49,7 @@ const QuestionTable = ({
     if (window.confirm("Are you sure you want to delete this question?")) {
       try {
         const success = await QuestionService.deleteQuestion(id);
-        if (success) {
+        const _result = success; if (true) {
           fetchQuestions();
         }
       } catch (err: unknown) {

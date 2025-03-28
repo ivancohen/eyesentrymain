@@ -1,7 +1,37 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+// Import RiskAssessmentService to use its calculation logic
+import { riskAssessmentService, RiskAssessmentResult } from './RiskAssessmentService';
 
-interface PatientQuestionnaireData {
+// Define and Export DBQuestion interface
+export interface DBQuestion {
+  id: string;
+  question: string;
+  tooltip?: string;
+  page_category: string;
+  question_type?: string;
+  options?: Array<{
+      option_value: string;
+      option_text: string;
+      score?: number;
+      // display_order?: number; // Removed - Doesn't exist in DB
+  }>;
+  display_order?: number;
+  conditional_parent_id?: string;
+  conditional_required_value?: string;
+}
+
+// Define DropdownOption type locally for fetching
+interface DropdownOption {
+    option_value: string;
+    option_text: string;
+    score?: number;
+    // display_order?: number; // Removed - Doesn't exist in DB
+    question_id: string; // Foreign key
+}
+
+
+export interface PatientQuestionnaireData {
   firstName: string;
   lastName: string;
   age: string;
@@ -16,6 +46,8 @@ interface PatientQuestionnaireData {
   iopBaseline: string;
   verticalAsymmetry: string;
   verticalRatio: string;
+  // Allow any other string keys for dynamic answers
+  [key: string]: string | undefined;
 }
 
 // Interface for a questionnaire record from the database
@@ -40,107 +72,124 @@ interface PatientQuestionnaire {
   risk_level: string;
   created_at: string;
   updated_at: string;
+  // Add answers JSONB field if it exists
+  answers?: Record<string, string | undefined>;
 }
 
-export async function submitPatientQuestionnaire(data: PatientQuestionnaireData) {
+// Helper function to convert PatientQuestionnaireData to the format needed by calculateRiskScore
+function formatAnswersForScoring(data: PatientQuestionnaireData): Record<string, string> {
+    const answers: Record<string, string> = {};
+    for (const key in data) {
+        // Exclude non-answer fields like firstName, lastName
+        if (key !== 'firstName' && key !== 'lastName' && data[key] !== undefined) {
+            answers[key] = String(data[key]); // Ensure value is string
+        }
+    }
+    return answers;
+}
+
+// Helper function to map PatientQuestionnaireData to DB boolean fields
+// This needs careful alignment with question IDs used in PatientQuestionnaireData
+function mapDataToDbBooleans(data: PatientQuestionnaireData): Partial<PatientQuestionnaire> {
+    return {
+        family_glaucoma: data.familyGlaucoma === "yes",
+        ocular_steroid: data.ocularSteroid === "yes",
+        intravitreal: data.intravitreal === "yes",
+        systemic_steroid: data.systemicSteroid === "yes",
+        // Assuming these IDs map directly and represent boolean state based on value
+        iop_baseline: data.iopBaseline === "22_and_above",
+        vertical_asymmetry: data.verticalAsymmetry === "0.2_and_above",
+        vertical_ratio: data.verticalRatio === "0.6_and_above",
+    };
+}
+
+
+
+export async function submitPatientQuestionnaire(data: PatientQuestionnaireData) { // Reverted: Removed userId parameter
   try {
-    console.log("Processing questionnaire data:", data);
-    
-    // Set age score to 0 for all age ranges
-    const ageScore = 0;
+    console.log("Processing questionnaire data for submission:", data);
+    // Step 1: Calculate score using RiskAssessmentService
+    const answersForScoring = formatAnswersForScoring(data);
+    console.log("Answers formatted for scoring:", answersForScoring);
+    const assessmentResult: RiskAssessmentResult = await riskAssessmentService.calculateRiskScore(answersForScoring);
+    const totalScore = assessmentResult.total_score;
+    const riskLevel = assessmentResult.risk_level; // Get risk level from assessment
+    const contributing_factors = assessmentResult.contributing_factors;
+    const advice = assessmentResult.advice;
 
-    let raceScore = 0;
-    if (data.race === "black" || data.race === "hispanic") {
-      raceScore = 2;
-    }
+    console.log("Calculated Score:", totalScore, "Risk Level:", riskLevel);
 
-    // Calculate risk factors based on answers (each worth 2 points if "yes", 0 if "no" or "not_available")
-    const riskFactorScores = [
-      data.familyGlaucoma === "yes" ? 2 : 0,
-      // For ocular steroid, it's 2 points if yes with any steroid type
-      data.ocularSteroid === "yes" ? 2 : 0,
-      data.intravitreal === "yes" ? 2 : 0,
-      data.systemicSteroid === "yes" ? 2 : 0,
-      data.iopBaseline === "22_and_above" ? 2 : 0,
-      data.verticalAsymmetry === "0.2_and_above" ? 2 : 0,
-      data.verticalRatio === "0.6_and_above" ? 2 : 0
-    ];
-    
-    // Calculate total score by adding risk factors score to demographic scores
-    const riskFactorsScore = riskFactorScores.reduce((total, score) => total + score, 0);
-    const totalScore = riskFactorsScore + ageScore + raceScore;
-    
-    // Determine risk level based on the new requirements
-    let riskLevel = "Low";
-    if (totalScore >= 4) {
-      riskLevel = "High";
-    } else if (totalScore >= 2) {
-      riskLevel = "Moderate";
-    }
-
-    // Get advice based on risk level
-    const { data: adviceData } = await supabase
-      .from('risk_assessment_advice')
-      .select('advice')
-      .eq('risk_level', riskLevel)
-      .single();
-
-    // Create contributing factors array
-    const contributing_factors = [
-      { question: "Race", answer: data.race, score: raceScore },
-      { question: "Family History of Glaucoma", answer: data.familyGlaucoma, score: riskFactorScores[0] },
-      { question: "Ocular Steroid Use", answer: data.ocularSteroid, score: riskFactorScores[1] },
-      { question: "Intravitreal Steroid Use", answer: data.intravitreal, score: riskFactorScores[2] },
-      { question: "Systemic Steroid Use", answer: data.systemicSteroid, score: riskFactorScores[3] },
-      { question: "IOP Baseline", answer: data.iopBaseline, score: riskFactorScores[4] },
-      { question: "Vertical Asymmetry", answer: data.verticalAsymmetry, score: riskFactorScores[5] },
-      { question: "Vertical Ratio", answer: data.verticalRatio, score: riskFactorScores[6] }
-    ].filter(factor => factor.score > 0); // Only include factors that contributed to the score
-
-    console.log("Submitting questionnaire with RPC function");
-    console.log("Risk level:", riskLevel, "Total score:", totalScore);
-    
-    // Use the new RPC function to insert a questionnaire, preventing the infinite recursion error
-    const { data: newId, error } = await supabase
-      .rpc('insert_patient_questionnaire', {
+    // Step 2: Prepare data for insertion (map to DB schema)
+    const dbBooleans = mapDataToDbBooleans(data);
+    const submissionData = {
         first_name: data.firstName,
         last_name: data.lastName,
         age: data.age,
         race: data.race,
-        family_glaucoma: data.familyGlaucoma === "yes",
-        ocular_steroid: data.ocularSteroid === "yes",
+        ...dbBooleans, // Spread the calculated boolean fields
         steroid_type: data.steroidType || null,
-        intravitreal: data.intravitreal === "yes",
-        intravitreal_type: data.intravitralType || null, // Ensure consistency with frontend naming
-        systemic_steroid: data.systemicSteroid === "yes",
+        intravitreal_type: data.intravitralType || null,
         systemic_steroid_type: data.systemicSteroidType || null,
-        iop_baseline: data.iopBaseline === "22_and_above",
-        vertical_asymmetry: data.verticalAsymmetry === "0.2_and_above",
-        vertical_ratio: data.verticalRatio === "0.6_and_above",
         total_score: totalScore,
-        risk_level: riskLevel
-      });
+        risk_level: riskLevel,
+        answers: answersForScoring, // Store the raw answers JSON
+        metadata: { // Keep metadata for potential fallback/logging
+          firstName: data.firstName,
+          lastName: data.lastName,
+          answers: answersForScoring // Include answers in metadata to ensure it's available
+        }
+    };
+
+    console.log("Data prepared for RPC insert_patient_questionnaire:", submissionData);
+
+    // Step 3: Call RPC function matching our updated comprehensive fix
+    const { data: newId, error } = await supabase.rpc(
+      'insert_patient_questionnaire',
+      {
+        // Match parameters with no prefix, consistent with our SQL function
+        first_name: submissionData.first_name,
+        last_name: submissionData.last_name,
+        age: submissionData.age,
+        race: submissionData.race,
+        family_glaucoma: submissionData.family_glaucoma,
+        ocular_steroid: submissionData.ocular_steroid,
+        steroid_type: submissionData.steroid_type,
+        intravitreal: submissionData.intravitreal,
+        intravitreal_type: submissionData.intravitreal_type,
+        systemic_steroid: submissionData.systemic_steroid,
+        systemic_steroid_type: submissionData.systemic_steroid_type,
+        iop_baseline: submissionData.iop_baseline,
+        vertical_asymmetry: submissionData.vertical_asymmetry,
+        vertical_ratio: submissionData.vertical_ratio,
+        total_score: submissionData.total_score,
+        risk_level: submissionData.risk_level,
+        metadata: submissionData.metadata // Includes both names and answers
+      }
+    );
 
     if (error) {
-      console.error("Error submitting questionnaire:", error);
+      console.error("Error submitting questionnaire via RPC:", error);
       throw new Error(error.message);
     }
 
     if (!newId) {
-      throw new Error("Failed to create questionnaire. No ID returned.");
+      throw new Error("Failed to create questionnaire. No ID returned from RPC.");
     }
 
     console.log("Questionnaire created successfully with ID:", newId);
-    return { 
-      success: true, 
-      score: totalScore, 
+
+    // Step 4: Return results consistent with previous structure
+    return {
+      success: true,
+      score: totalScore,
       riskLevel,
       contributing_factors,
-      advice: adviceData?.advice || ""
+      advice
     };
   } catch (error) {
     console.error("Failed to submit questionnaire:", error);
-    throw error;
+    // Consider more specific error handling or re-throwing
+    throw error instanceof Error ? error : new Error("An unknown error occurred during submission.");
   }
 }
 
@@ -148,16 +197,16 @@ export async function getUserQuestionnaires() {
   try {
     // Get the current authenticated user directly from auth
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+
     if (userError) {
       console.error("Error getting user:", userError);
       throw new Error("User not authenticated");
     }
-    
+
     if (!user) {
       throw new Error("User not authenticated");
     }
-    
+
     // Use our new database function to avoid infinite recursion
     const { data, error } = await supabase
       .rpc('get_patient_questionnaires_for_user', { user_id_param: user.id });
@@ -178,18 +227,18 @@ export async function getQuestionnaireById(id: string) {
   try {
     // Get current authenticated user
     const { data: userData, error: userError } = await supabase.auth.getUser();
-    
+
     if (userError) {
       console.error("Error getting user:", userError);
       throw new Error("User not authenticated");
     }
-    
+
     const userId = userData.user?.id;
-    
+
     if (!userId) {
       throw new Error("User not authenticated");
     }
-    
+
     // Use our get_patient_questionnaires_for_user RPC function and filter by ID
     // This avoids the recursion issue by using a security definer function
     const { data, error } = await supabase
@@ -218,121 +267,141 @@ export async function getQuestionnaireById(id: string) {
   }
 }
 
-export async function updateQuestionnaire(id: string, data: PatientQuestionnaireData) {
+// Update function removed - we no longer support editing questionnaires
+
+// Function to check if a string is a valid UUID
+function isValidUUID(str: string | null | undefined): boolean {
+    if (!str) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+}
+
+// Type guard to ensure fetched data matches DBQuestion structure
+function isDBQuestion(obj: any): obj is DBQuestion {
+    // Add more checks if needed for robustness
+    return obj && typeof obj.id === 'string' && typeof obj.question === 'string';
+}
+
+export async function getQuestionsWithTooltips(): Promise<DBQuestion[]> {
   try {
-    // Set age score to 0 for all age ranges
-    const ageScore = 0;
+    // Step 1: Fetch active questions
+    const { data: questionsData, error: questionsError } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('status', 'Active') // Filter for active questions
+      .order('page_category', { ascending: true })
+      .order('display_order', { ascending: true });
 
-    let raceScore = 0;
-    if (data.race === "black" || data.race === "hispanic") {
-      raceScore = 2;
+    if (questionsError) {
+      console.error("Error fetching questions:", questionsError);
+      throw questionsError;
     }
 
-    // Calculate risk factors based on answers (each worth 2 points if "yes", 0 if "no" or "not_available")
-    const riskFactorScores = [
-      data.familyGlaucoma === "yes" ? 2 : 0,
-      data.ocularSteroid === "yes" ? 2 : 0,
-      data.intravitreal === "yes" ? 2 : 0,
-      data.systemicSteroid === "yes" ? 2 : 0,
-      data.iopBaseline === "22_and_above" ? 2 : 0,
-      data.verticalAsymmetry === "0.2_and_above" ? 2 : 0,
-      data.verticalRatio === "0.6_and_above" ? 2 : 0
-    ];
-    
-    // Calculate total score by adding risk factors score to demographic scores
-    const riskFactorsScore = riskFactorScores.reduce((total, score) => total + score, 0);
-    const totalScore = riskFactorsScore + ageScore + raceScore;
-    
-    // Determine risk level based on the new requirements
-    let riskLevel = "Low";
-    if (totalScore >= 4) {
-      riskLevel = "High";
-    } else if (totalScore >= 2) {
-      riskLevel = "Moderate";
+    // Filter out questions with non-UUID IDs and ensure basic structure
+    let validQuestions = questionsData?.filter(q => isValidUUID(q.id) && isDBQuestion(q)) || [];
+    console.log(`Fetched ${questionsData?.length || 0} active questions, found ${validQuestions.length} valid.`);
+
+    // Step 2: Fetch all options for the valid questions in a single query
+    const questionIds = validQuestions.map(q => q.id);
+    let allOptions: DropdownOption[] = [];
+    if (questionIds.length > 0) {
+        try {
+            // First try question_options (as recommended in our SQL fix)
+            const { data: optionsData, error: optionsError } = await supabase
+                .from('question_options')
+                .select('question_id, option_value, option_text, score')
+                .in('question_id', questionIds);
+
+            if (optionsError || !optionsData || optionsData.length === 0) {
+                console.log("Trying dropdown_options as fallback...");
+                // If that fails, try dropdown_options as fallback
+                const { data: dropdownData, error: dropdownError } = await supabase
+                    .from('dropdown_options')
+                    .select('question_id, option_value, option_text, score')
+                    .in('question_id', questionIds);
+
+                if (dropdownError) {
+                    console.error("Error fetching options from either table:", dropdownError);
+                    // Continue without options if both fetches fail
+                } else {
+                    allOptions = dropdownData || [];
+                    console.log(`Found ${allOptions.length} options from dropdown_options table`);
+                }
+            } else {
+                allOptions = optionsData || [];
+                console.log(`Found ${allOptions.length} options from question_options table`);
+            }
+        } catch (error) {
+            console.error("Error during options fetching:", error);
+            // Continue without options
+        }
     }
 
-    // Get advice based on risk level
-    const { data: adviceData } = await supabase
-      .from('risk_assessment_advice')
-      .select('advice')
-      .eq('risk_level', riskLevel)
-      .single();
+    // Step 3: Map options to their respective questions and process
+    validQuestions = validQuestions.map(q => {
+        const questionOptions = allOptions
+            .filter(opt => opt.question_id === q.id)
+            // Map to the structure expected in DBQuestion.options
+            // No sorting needed here as display_order is not available
+            .map(opt => ({
+                option_value: opt.option_value,
+                option_text: opt.option_text,
+                score: opt.score,
+                // display_order: opt.display_order // Removed
+            }));
 
-    // Create contributing factors array
-    const contributing_factors = [
-      { question: "Race", answer: data.race, score: raceScore },
-      { question: "Family History of Glaucoma", answer: data.familyGlaucoma, score: riskFactorScores[0] },
-      { question: "Ocular Steroid Use", answer: data.ocularSteroid, score: riskFactorScores[1] },
-      { question: "Intravitreal Steroid Use", answer: data.intravitreal, score: riskFactorScores[2] },
-      { question: "Systemic Steroid Use", answer: data.systemicSteroid, score: riskFactorScores[3] },
-      { question: "IOP Baseline", answer: data.iopBaseline, score: riskFactorScores[4] },
-      { question: "Vertical Asymmetry", answer: data.verticalAsymmetry, score: riskFactorScores[5] },
-      { question: "Vertical Ratio", answer: data.verticalRatio, score: riskFactorScores[6] }
-    ].filter(factor => factor.score > 0); // Only include factors that contributed to the score
+        return {
+            ...q,
+            tooltip: (q.tooltip && q.tooltip.trim()) ? q.tooltip.trim() : undefined,
+            // Assign options if type is 'select' OR 'dropdown'
+            options: (q.question_type === 'select' || q.question_type === 'dropdown') ? questionOptions : undefined,
+            conditional_parent_id: q.conditional_parent_id || undefined,
+            conditional_required_value: q.conditional_required_value || undefined,
+        };
+    });
 
-    console.log("Updating questionnaire with RPC function, ID:", id);
-    console.log("Risk level:", riskLevel, "Total score:", totalScore);
-    
-    // Use the new RPC function to update the questionnaire, preventing the infinite recursion error
-    const { data: updateResult, error } = await supabase
-      .rpc('update_patient_questionnaire', {
-        questionnaire_id: id,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        age: data.age,
-        race: data.race,
-        family_glaucoma: data.familyGlaucoma === "yes",
-        ocular_steroid: data.ocularSteroid === "yes",
-        steroid_type: data.steroidType || null,
-        intravitreal: data.intravitreal === "yes",
-        intravitreal_type: data.intravitralType || null,
-        systemic_steroid: data.systemicSteroid === "yes",
-        systemic_steroid_type: data.systemicSteroidType || null,
-        iop_baseline: data.iopBaseline === "22_and_above",
-        vertical_asymmetry: data.verticalAsymmetry === "0.2_and_above",
-        vertical_ratio: data.verticalRatio === "0.6_and_above",
-        total_score: totalScore,
-        risk_level: riskLevel
-      });
-
-    if (error) {
-      console.error("Error updating questionnaire:", error);
-      throw new Error(error.message);
-    }
-
-    if (updateResult === false) {
-      throw new Error("No questionnaire was updated. Ensure you have permission to edit this questionnaire.");
-    }
-
-    return { 
-      success: true, 
-      score: totalScore, 
-      riskLevel,
-      contributing_factors,
-      advice: adviceData?.advice || ""
-    };
+    return validQuestions;
   } catch (error) {
-    console.error("Failed to update questionnaire:", error);
+    console.error("Error fetching questions with tooltips:", error);
     throw error;
   }
 }
 
-export async function getQuestionsWithTooltips() {
+
+// Add stub for updateQuestionnaire
+export async function updateQuestionnaire(id: string, data: PatientQuestionnaireData) {
+  console.warn("updateQuestionnaire is deprecated and no longer supported");
+  throw new Error("Editing questionnaires is no longer supported");
+}
+
+// Add the calculateRiskScore function that just forwards to the service
+export async function calculateRiskScore(answers: Record<string, string>) {
+  return await riskAssessmentService.calculateRiskScore(answers);
+}
+
+export async function deleteQuestionnaireById(id: string): Promise<void> {
   try {
-    const { data, error } = await supabase
-      .from('questions')
-      .select('*')
-      .order('page_category', { ascending: true })
-      .order('display_order', { ascending: true });
-    
+    console.log(`Attempting to delete questionnaire with ID: ${id}`);
+    const { error } = await supabase
+      .from('patient_questionnaires') // Ensure this is the correct table name
+      .delete()
+      .match({ id });
+
     if (error) {
-      console.error("Error fetching questions:", error);
-      throw error;
+      console.error(`Error deleting questionnaire ${id}:`, error);
+      // Check for specific errors like RLS violation if needed
+      if (error.code === '42501') { // Example: PostgreSQL permission denied
+        throw new Error("Permission denied. You may not have the rights to delete this questionnaire.");
+      }
+      throw new Error(error.message || "Failed to delete questionnaire due to a database error.");
     }
 
-    return data;
+    console.log(`Questionnaire ${id} deleted successfully.`);
+    // No return value needed for a successful delete
+
   } catch (error) {
-    console.error("Error fetching questions with tooltips:", error);
-    throw error;
+    console.error(`Failed to delete questionnaire ${id}:`, error);
+    // Re-throw the error or a more user-friendly version
+    throw error instanceof Error ? error : new Error("An unknown error occurred while deleting the questionnaire.");
   }
 }

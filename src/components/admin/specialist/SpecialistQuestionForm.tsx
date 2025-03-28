@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { SpecialistQuestion, QuestionType } from '@/types/specialist';
 import { SpecialistService } from '@/services/SpecialistService';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { 
     Dialog, 
     DialogContent, 
@@ -92,6 +93,17 @@ export const SpecialistQuestionForm: React.FC<SpecialistQuestionFormProps> = ({
             e.preventDefault();
             handleAddOption();
         }
+    };
+    
+    // Handle drag end event for reordering dropdown options
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+        
+        const items = Array.from(dropdownOptions);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+        
+        setDropdownOptions(items);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -236,21 +248,45 @@ export const SpecialistQuestionForm: React.FC<SpecialistQuestionFormProps> = ({
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
-                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                            {dropdownOptions.map((option, index) => (
-                                <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
-                                    <span>{option}</span>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleRemoveOption(index)}
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="dropdown-options">
+                                {(provided) => (
+                                    <div
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                        className="space-y-2 max-h-[200px] overflow-y-auto"
                                     >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
+                                        {dropdownOptions.map((option, index) => (
+                                            <Draggable key={index.toString()} draggableId={index.toString()} index={index}>
+                                                {(provided) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        className="flex items-center justify-between bg-muted p-2 rounded"
+                                                    >
+                                                        <div className="flex items-center">
+                                                            <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
+                                                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                                            </div>
+                                                            <span>{option}</span>
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleRemoveOption(index)}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                     </div>
                     <DialogFooter>
                         <Button

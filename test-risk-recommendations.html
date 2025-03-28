@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Recommendations Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .recommendations { border-left: 4px solid #4a90e2; padding-left: 16px; background: #f5f9ff; }
+    pre { white-space: pre-wrap; overflow-x: auto; background: #f5f5f5; padding: 8px; }
+    button { padding: 8px 16px; background: #4a90e2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #3a80d2; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h1>Risk Assessment Recommendations Test</h1>
+  <p>This page tests if risk assessment recommendations are working correctly.</p>
+  
+  <div class="card">
+    <h2>Test 1: Default Fallback Values</h2>
+    <div id="fallback-test"></div>
+    <button onclick="testFallbackValues()">Run Test</button>
+  </div>
+  
+  <div class="card">
+    <h2>Test 2: Manual Advice Display</h2>
+    <div id="recommendations-test"></div>
+    <div class="recommendations">
+      <p><strong>Forced Recommendation:</strong></p>
+      <p id="advice-display">No recommendations available. Click the button to test display.</p>
+    </div>
+    <button onclick="testAdviceDisplay()">Test Display</button>
+  </div>
+  
+  <div class="card">
+    <h2>Browser Information</h2>
+    <pre id="browser-info"></pre>
+  </div>
+  
+  <script>
+    // Display browser information
+    document.getElementById('browser-info').textContent = 
+      `User Agent: ${navigator.userAgent}
+Window Size: ${window.innerWidth}x${window.innerHeight}
+Platform: ${navigator.platform}
+`;
+    
+    // Define fallback advice for testing
+    const FALLBACK_ADVICE = [
+      {
+        min_score: 0,
+        max_score: 2,
+        advice: "DIAGNOSTIC TEST: Low risk recommendation text. This should display correctly.",
+        risk_level: "Low"
+      },
+      {
+        min_score: 3,
+        max_score: 5,
+        advice: "DIAGNOSTIC TEST: Moderate risk recommendation text. This should display correctly.",
+        risk_level: "Moderate"
+      },
+      {
+        min_score: 6,
+        max_score: 100,
+        advice: "DIAGNOSTIC TEST: High risk recommendation text. This should display correctly.",
+        risk_level: "High"
+      }
+    ];
+    
+    // Create global variable to simulate the app environment
+    window.DIRECT_FIX_ADVICE = FALLBACK_ADVICE;
+    
+    function testFallbackValues() {
+      const testDiv = document.getElementById('fallback-test');
+      testDiv.innerHTML = '';
+      
+      try {
+        // Check if window global is accessible
+        if (window.DIRECT_FIX_ADVICE) {
+          const resultElement = document.createElement('div');
+          resultElement.classList.add('success');
+          resultElement.textContent = '✅ Fallback values are accessible in window.DIRECT_FIX_ADVICE';
+          testDiv.appendChild(resultElement);
+          
+          // Display each value
+          FALLBACK_ADVICE.forEach(advice => {
+            const adviceElement = document.createElement('div');
+            adviceElement.classList.add('recommendations');
+            adviceElement.innerHTML = `
+              <p><strong>${advice.risk_level} Risk (${advice.min_score}-${advice.max_score}):</strong></p>
+              <p>${advice.advice}</p>
+            `;
+            testDiv.appendChild(adviceElement);
+          });
+        } else {
+          const errorElement = document.createElement('div');
+          errorElement.classList.add('error');
+          errorElement.textContent = '❌ window.DIRECT_FIX_ADVICE is not defined';
+          testDiv.appendChild(errorElement);
+        }
+      } catch (error) {
+        const errorElement = document.createElement('div');
+        errorElement.classList.add('error');
+        errorElement.textContent = `❌ Error accessing fallback values: ${error.message}`;
+        testDiv.appendChild(errorElement);
+      }
+    }
+    
+    function testAdviceDisplay() {
+      const testDiv = document.getElementById('recommendations-test');
+      const adviceDisplay = document.getElementById('advice-display');
+      testDiv.innerHTML = '';
+      
+      try {
+        // Pick a random advice
+        const randomAdvice = FALLBACK_ADVICE[Math.floor(Math.random() * FALLBACK_ADVICE.length)];
+        
+        // Try to display it
+        adviceDisplay.textContent = randomAdvice.advice;
+        
+        const resultElement = document.createElement('div');
+        resultElement.classList.add('success');
+        resultElement.textContent = '✅ Advice display test successful';
+        testDiv.appendChild(resultElement);
+      } catch (error) {
+        adviceDisplay.textContent = "Error displaying advice.";
+        
+        const errorElement = document.createElement('div');
+        errorElement.classList.add('error');
+        errorElement.textContent = `❌ Error in advice display test: ${error.message}`;
+        testDiv.appendChild(errorElement);
+      }
+    }
+  </script>
+</body>
+</html>

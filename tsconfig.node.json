@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true, // Added for project reference compatibility
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
@@ -10,7 +11,7 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    // "noEmit": true, // Removed for project reference compatibility
 
     /* Linting */
     "strict": true,

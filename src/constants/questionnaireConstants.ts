@@ -1,4 +1,7 @@
-// Define question types and interfaces
+// This file contains hardcoded questions for the medical history page
+// and related option definitions needed for the hybrid approach.
+
+// Define question types and interfaces (needed for hardcoded questions)
 export interface QuestionOption {
   value: string;
   label: string;
@@ -7,23 +10,18 @@ export interface QuestionOption {
 
 export interface QuestionItem {
   id: string;
-  text: string;
+  question: string;
   type: "text" | "number" | "select";
   options?: QuestionOption[];
   required?: boolean;
   tooltip?: string;
   conditionalOptions?: {
-    parentValue: string;
-    options: QuestionOption[];
+    parentValue: string; // Format: "parentQuestionId:requiredValue"
+    options: QuestionOption[]; // Options to show when condition met (often same as main options)
   };
 }
 
-// Define yes/no/na options for family history
-export const familyHistoryOptions: QuestionOption[] = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" },
-  { value: "not_available", label: "Not Available" }
-];
+// --- Options needed for Medical History Page ---
 
 // Define yes/no options for reuse
 export const yesNoOptions: QuestionOption[] = [
@@ -67,6 +65,90 @@ export const systemicSteroidOptions: QuestionOption[] = [
   { value: "other", label: "Other not listed" }
 ];
 
+// --- Hardcoded Questions for Medical History Page ---
+
+export const MEDICAL_HISTORY_QUESTIONS: QuestionItem[] = [
+  // Note: familyGlaucoma is likely handled by DB now, but kept here for reference if needed
+  // {
+  //   id: "familyGlaucoma",
+  //   question: "Has anyone in your immediate family (i.e. parent, sibling, or child) been diagnosed with glaucoma (i.e. POAG or open angle glaucoma)?",
+  //   type: "select",
+  //   options: familyHistoryOptions, // Requires familyHistoryOptions definition
+  //   required: true,
+  //   tooltip: "Include immediate family members (parents, siblings, children) who have been diagnosed with open-angle glaucoma"
+  // },
+  {
+    id: "ocularSteroid",
+    question: "Are you taking and have you ever taken any ophthalmic topical steroids?",
+    type: "select",
+    options: yesNoOptions,
+    required: true,
+    tooltip: "Include any eye drops or ointments containing steroids that have been prescribed"
+  },
+  {
+    id: "steroidType",
+    question: "Which ophthalmic topical steroid are you taking or have taken?",
+    type: "select",
+    options: steroidTypeOptions,
+    required: true, // Required only if parent is 'yes' - handled by validation logic
+    tooltip: "Select the specific type of ophthalmic steroid medication",
+    conditionalOptions: {
+      parentValue: "ocularSteroid:yes", // Depends on ocularSteroid question
+      options: steroidTypeOptions // Shows these options when condition met
+    }
+  },
+  {
+    id: "intravitreal",
+    question: "Are you Taking and have you ever taken any Intravitreal Steroids?",
+    type: "select",
+    options: yesNoOptions,
+    required: true,
+    tooltip: "Include any steroid injections directly into the eye"
+  },
+  {
+    id: "intravitealType", // Note: ID typo from original constant was 'intravitealType'
+    question: "Which intravitreal steroid are you taking or have taken?",
+    type: "select",
+    options: intravitealSteroidOptions,
+    required: true, // Required only if parent is 'yes'
+    tooltip: "Select the specific type of intravitreal steroid medication",
+    conditionalOptions: {
+      parentValue: "intravitreal:yes", // Depends on intravitreal question
+      options: intravitealSteroidOptions
+    }
+  },
+  {
+    id: "systemicSteroid",
+    question: "Are you taking and have you ever taken any systemic steroids?",
+    type: "select",
+    options: yesNoOptions,
+    required: true,
+    tooltip: "Include any oral or injected steroids taken for any condition"
+  },
+  {
+    id: "systemicSteroidType",
+    question: "Which systemic steroid are you taking or have taken?",
+    type: "select",
+    options: systemicSteroidOptions,
+    required: true, // Required only if parent is 'yes'
+    tooltip: "Select the specific type of systemic steroid medication",
+    conditionalOptions: {
+      parentValue: "systemicSteroid:yes", // Depends on systemicSteroid question
+      options: systemicSteroidOptions
+    }
+  }
+];
+
+// Other option constants (age, race, clinical) might still be needed if DB questions reference them by name
+// Or if they are used elsewhere. Keeping them for now.
+
+// Define yes/no/na options for family history (if needed by DB questions)
+export const familyHistoryOptions: QuestionOption[] = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" },
+  { value: "not_available", label: "Not Available" }
+];
+
 // Define age range options
 export const ageRangeOptions: QuestionOption[] = [
   { value: "0-50", label: "0-50" },
@@ -107,146 +189,21 @@ export const cdRatioOptions: QuestionOption[] = [
   { value: "not_available", label: "Not Available" }
 ];
 
-// Define specific options for clinical measurements
-export const iopOptions: QuestionOption[] = [
-  { value: "22_and_above", label: "22 and above" },
-  { value: "21_and_under", label: "21 and under" },
-  { value: "not_available", label: "Not Available" }
-];
-
-// Group questions by pages
-export const QUESTIONNAIRE_PAGES: QuestionItem[][] = [
-  // Page 1: Basic Patient Information
-  [
-    {
-      id: "firstName",
-      text: "Patient First Name",
-      type: "text",
-      required: true,
-      tooltip: "Enter the patient's legal first name"
-    },
-    {
-      id: "lastName",
-      text: "Patient Last Name",
-      type: "text",
-      required: true,
-      tooltip: "Enter the patient's legal last name"
-    },
-    {
-      id: "age",
-      text: "Age",
-      type: "select",
-      options: ageRangeOptions,
-      required: true,
-      tooltip: "Select the patient's age range"
-    },
-    {
-      id: "race",
-      text: "Race",
-      type: "select",
-      options: raceOptions,
-      required: true,
-      tooltip: "Select the patient's race/ethnicity"
-    }
-  ],
-  
-  // Page 2: Family and Medication History
-  [
-    {
-      id: "familyGlaucoma",
-      text: "Has anyone in your immediate family been diagnosed with open-angle glaucoma?",
-      type: "select",
-      options: familyHistoryOptions,
-      required: true,
-      tooltip: "Include immediate family members (parents, siblings, children) who have been diagnosed with open-angle glaucoma"
-    },
-    {
-      id: "ocularSteroid",
-      text: "Are you taking and have you ever taken any ophthalmic topical steroids?",
-      type: "select",
-      options: yesNoOptions,
-      required: true,
-      tooltip: "Include any eye drops or ointments containing steroids that have been prescribed"
-    },
-    {
-      id: "steroidType",
-      text: "Which ophthalmic topical steroid are you taking or have taken?",
-      type: "select",
-      options: steroidTypeOptions,
-      required: true,
-      tooltip: "Select the specific type of ophthalmic steroid medication",
-      conditionalOptions: {
-        parentValue: "ocularSteroid:yes",
-        options: steroidTypeOptions
-      }
-    },
-    {
-      id: "intravitreal",
-      text: "Are you Taking and have you ever taken any Intravitreal Steroids?",
-      type: "select",
-      options: yesNoOptions,
-      required: true,
-      tooltip: "Include any steroid injections directly into the eye"
-    },
-    {
-      id: "intravitealType",
-      text: "Which intravitreal steroid are you taking or have taken?",
-      type: "select",
-      options: intravitealSteroidOptions,
-      required: true,
-      tooltip: "Select the specific type of intravitreal steroid medication",
-      conditionalOptions: {
-        parentValue: "intravitreal:yes",
-        options: intravitealSteroidOptions
-      }
-    },
-    {
-      id: "systemicSteroid",
-      text: "Are you taking and have you ever taken any systemic steroids?",
-      type: "select",
-      options: yesNoOptions,
-      required: true,
-      tooltip: "Include any oral or injected steroids taken for any condition"
-    },
-    {
-      id: "systemicSteroidType",
-      text: "Which systemic steroid are you taking or have taken?",
-      type: "select",
-      options: systemicSteroidOptions,
-      required: true,
-      tooltip: "Select the specific type of systemic steroid medication",
-      conditionalOptions: {
-        parentValue: "systemicSteroid:yes",
-        options: systemicSteroidOptions
-      }
-    }
-  ],
-  
-  // Page 3: Clinical Measurements
-  [
-    {
-      id: "iopBaseline",
-      text: "IOP Baseline is >22 \\ Handheld Tonometer",
-      type: "select",
-      options: clinicalMeasurementOptions,
-      required: true,
-      tooltip: "Intraocular pressure measurement using a handheld tonometer"
-    },
-    {
-      id: "verticalAsymmetry",
-      text: "Vertical C:D disc asymmetry (>0.2) \\ Fundoscope",
-      type: "select",
-      options: asymmetryOptions,
-      required: true,
-      tooltip: "Difference in vertical cup-to-disc ratio between eyes"
-    },
-    {
-      id: "verticalRatio",
-      text: "Vertical C:D ratio (>0.6)",
-      type: "select",
-      options: cdRatioOptions,
-      required: true,
-      tooltip: "Vertical cup-to-disc ratio measurement"
-    }
-  ]
-];
+// Define question pages structure
+export const QUESTIONNAIRE_PAGES = {
+  MEDICAL_HISTORY: {
+    id: "medical-history",
+    title: "Medical History",
+    questions: MEDICAL_HISTORY_QUESTIONS
+  },
+  CLINICAL: {
+    id: "clinical",
+    title: "Clinical Assessment",
+    questions: []
+  },
+  DEMOGRAPHICS: {
+    id: "demographics",
+    title: "Demographics",
+    questions: []
+  }
+};

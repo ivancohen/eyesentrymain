@@ -78,7 +78,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <div className="ml-2 overflow-hidden group-data-[collapsible=icon]:hidden">
                 <div className="text-sm font-medium truncate">{user.name || user.email}</div>
                 <div className="text-xs text-muted-foreground truncate">
-                  {user.role === 'admin' ? 'Admin' : 'Doctor'}
+                  {user?.is_admin ? 'Admin' : 'Doctor'}
                 </div>
               </div>
             </div>

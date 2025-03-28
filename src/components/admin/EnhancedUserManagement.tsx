@@ -134,7 +134,9 @@ const EnhancedUserManagement = () => {
       const success = await FixedAdminService.updateUser({
         ...userToUpdate,
         is_approved: !currentStatus
-      });
+      ,
+  created_at: editingUser.created_at || new Date().toISOString()
+});
       
       if (success) {
         // Update local state
@@ -207,7 +209,9 @@ const EnhancedUserManagement = () => {
           specialty: editingUser.specialty,
           phone_number: editingUser.phone_number,
           address: editingUser.address
-        });
+        ,
+  created_at: editingUser.created_at || new Date().toISOString()
+});
         
         if (success) {
           toast.success("User updated successfully");

@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash, Award } from "lucide-react";
+import { Plus, Trash, Award, GripVertical } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 interface QuestionFormManagerProps {
   currentItem: Question | null;
@@ -164,6 +165,23 @@ const QuestionFormManager = ({
     setDropdownOptions(updatedOptions);
   };
 
+  // Handle drag end event for reordering dropdown options
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(dropdownOptions);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    // Update display order for each item
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      display_order: index + 1
+    }));
+    
+    setDropdownOptions(updatedItems);
+  };
+
   // Handle form submission
   const handleFormSubmit = async (formData: Record<string, string | number>) => {
     setIsLoading(true);
@@ -185,10 +203,17 @@ const QuestionFormManager = ({
 
       console.log("Saving question data:", questionData);
 
-      const result = await QuestionService.saveQuestion(questionData, userId);
+      // Use createQuestion or updateQuestion based on whether we have an ID
+      const result = questionData.id
+        ? await QuestionService.updateQuestion(questionData.id, questionData)
+        : await QuestionService.createQuestion(questionData);
 
-      if (result.success && result.id) {
-        if (questionType === "dropdown") {
+      // Check if the result is truthy
+      if (result) {
+        // Get the question ID from the result or from the input data
+        const questionId = questionData.id || (typeof result === 'object' && result.id);
+        
+        if (questionType === "dropdown" && questionId) {
           // If editing an existing question with dropdown options
           if (currentItem?.id) {
             // First fetch existing dropdown options to compare
@@ -214,10 +239,13 @@ const QuestionFormManager = ({
           for (const option of dropdownOptions) {
             const optionData: Partial<DropdownOption> = {
               ...option,
-              question_id: result.id
+              question_id: questionId
             };
 
-            const success = await QuestionService.saveDropdownOption(optionData);
+            // Use createDropdownOption or updateDropdownOption based on whether we have an ID
+            const success = option.id
+              ? await QuestionService.updateDropdownOption(option.id, optionData)
+              : await QuestionService.createDropdownOption(optionData);
             if (!success) {
               allOptionsSuccess = false;
             }
@@ -321,31 +349,57 @@ const QuestionFormManager = ({
             </div>
           </div>
 
-          {/* List of added options */}
+          {/* List of added options with drag and drop */}
           {dropdownOptions.length > 0 ? (
             <div className="space-y-2 mt-4">
               <div className="text-sm font-medium flex justify-between">
                 <span>Menu Items:</span>
                 <span>Score</span>
               </div>
-              {dropdownOptions.map((option, index) => (
-                <div key={index} className="flex items-center justify-between py-1 border-b">
-                  <div className="font-medium">{option.option_value}</div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-700">
-                      {option.score}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveOption(index)}
-                      className="text-destructive h-6 w-6 p-0"
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="dropdown-options">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="space-y-2"
                     >
-                      <Trash size={14} />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                      {dropdownOptions.map((option, index) => (
+                        <Draggable key={index.toString()} draggableId={index.toString()} index={index}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="flex items-center justify-between py-1 border-b"
+                            >
+                              <div className="flex items-center">
+                                <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
+                                  <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <div className="font-medium">{option.option_value}</div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="bg-amber-500/10 text-amber-700">
+                                  {option.score}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveOption(index)}
+                                  className="text-destructive h-6 w-6 p-0"
+                                >
+                                  <Trash size={14} />
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </div>
           ) : (
             <div className="text-sm text-muted-foreground mt-4">

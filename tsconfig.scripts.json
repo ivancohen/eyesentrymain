@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-scripts", // Output directory for compiled JS
+    "noEmit": false,           // Enable emitting JS files
+    "isolatedModules": false,  // Allow non-module files if needed for scripts
+    "module": "NodeNext",      // Use Node.js module system for output
+    "moduleResolution": "NodeNext", // Use Node.js module resolution
+    "allowImportingTsExtensions": false // Override inherited setting incompatible with noEmit: false
+    // Keep other relevant settings like target, lib, strict, paths, etc. from base config
+  },
+  "include": [
+    "src/scripts/**/*.ts",     // Include all scripts in the scripts directory
+    "src/services/**/*.ts",    // Include services they depend on
+    "src/lib/**/*.ts",         // Include lib files (like supabase)
+    "src/types/**/*.ts"        // Include types if necessary
+    // Add other necessary paths if scripts depend on them
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-scripts" // Exclude the output directory itself
+  ]
+}

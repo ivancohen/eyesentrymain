@@ -9,8 +9,9 @@ import QuestionnaireProgress from "@/components/questionnaires/QuestionnaireProg
 import QuestionnaireNavigation from "@/components/questionnaires/QuestionnaireNavigation";
 import QuestionnaireResults from "@/components/questionnaires/QuestionnaireResults";
 import { validateQuestionnairePage } from "@/components/questionnaires/QuestionnaireValidation";
-import { submitPatientQuestionnaire, getQuestionsWithTooltips } from "@/services/PatientQuestionnaireService";
-import { QUESTIONNAIRE_PAGES } from "@/constants/questionnaireConstants";
+import { submitPatientQuestionnaire, getQuestionsWithTooltips, PatientQuestionnaireData, DBQuestion } from "@/services/PatientQuestionnaireService"; // Import DBQuestion type
+// REMOVED: No longer using hardcoded questions
+// import { MEDICAL_HISTORY_QUESTIONS, QuestionItem } from "@/constants/questionnaireConstants";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -21,13 +22,8 @@ interface User {
   user_metadata?: Record<string, unknown>;
 }
 
-interface Question {
-  id: string;
-  question: string;
-  tooltip?: string;
-  page_category: string;
-  display_order?: number;
-}
+// REMOVED local DBQuestion interface - Use imported version
+
 
 interface ContributingFactor {
   question: string;
@@ -47,24 +43,72 @@ interface QuestionnaireContainerProps {
 }
 
 // Use specific types for answers
-type AnswerValue = string | number | boolean | null;
+type AnswerValue = string | number | boolean | null | undefined;
+
+// Define the order of page categories - Align with admin categories
+const PAGE_CATEGORIES = ['patient_info', 'family_medication', 'clinical_measurements'];
+
+// Helper function to get default answers based on fetched questions
+const getDefaultAnswers = (questions: DBQuestion[]): Record<string, AnswerValue> => {
+  const defaultAnswers: Record<string, AnswerValue> = {};
+  questions.forEach(question => {
+    // Default all select questions to undefined, text/number to empty string
+    if (question.question_type === 'select') {
+        defaultAnswers[question.id] = undefined;
+    } else {
+        defaultAnswers[question.id] = '';
+    }
+  });
+  return defaultAnswers;
+};
+
 
 const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({}); // Initialize empty first
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [results, setResults] = useState<QuestionnaireResult | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [allDbQuestions, setAllDbQuestions] = useState<DBQuestion[]>([]); // Store all fetched questions
   const [isLoading, setIsLoading] = useState(true);
+  // Use predefined page category order
+  const [pageCategories] = useState<string[]>(PAGE_CATEGORIES);
+
+  // Determine current page category based on ordered list and current index
+  const currentPageCategory = pageCategories[currentPage] || '';
+  const totalPages = pageCategories.length;
+
+  // Determine questions based on page category (DB-Driven Approach)
+  const questionsForCurrentPage: DBQuestion[] = (() => {
+      // Always use DB questions, filter and sort
+      const dbQuestions = allDbQuestions
+          .filter(q => q.page_category === currentPageCategory)
+          .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+      console.log(`Using ${dbQuestions.length} DB questions for ${currentPageCategory} page.`);
+      return dbQuestions;
+  })();
+
 
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const fetchQuestionsAndSetup = async () => {
       try {
-        const questionsData = await getQuestionsWithTooltips();
-        setQuestions(questionsData);
+        setIsLoading(true);
+        console.log("Fetching questions...");
+        const questionsData = await getQuestionsWithTooltips(); // Fetches UUID-validated and trimmed-tooltip questions
+        console.log("Questions fetched successfully:", questionsData);
+
+        const validQuestions = questionsData || [];
+        setAllDbQuestions(validQuestions);
+
+        // Initialize answers AFTER questions are fetched
+        setAnswers(getDefaultAnswers(validQuestions));
+
+        if (validQuestions.length === 0) {
+          console.warn("No questions returned from the database");
+          toast.warning("No active questions found. Please contact the administrator.");
+        }
       } catch (error) {
         console.error("Error fetching questions:", error);
         toast.error("Failed to load questions. Please try again.");
@@ -73,15 +117,25 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
       }
     };
 
-    fetchQuestions();
+    fetchQuestionsAndSetup();
   }, []);
 
+  // Log current page and the questions being rendered
+  console.log(`DB-Driven - Page: ${currentPage}, Category: ${currentPageCategory}, Rendering ${questionsForCurrentPage.length} questions.`);
+  // Add detailed log for medical history page
+  if (currentPageCategory === 'medical_history') {
+      console.log("Filtered questions for medical_history:", questionsForCurrentPage);
+  }
+
+
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
-    setAnswers(prev => ({
-      ...prev,
+    // Create a new object explicitly to ensure React detects the change
+    const newAnswers = {
+      ...answers,
       [questionId]: value
-    }));
-    
+    };
+    setAnswers(newAnswers);
+
     if (validationError) {
       setValidationError(null);
     }
@@ -89,15 +143,21 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
 
   const handlePageChange = (direction: "next" | "prev") => {
     if (direction === "next") {
-      const currentQuestions = QUESTIONNAIRE_PAGES[currentPage] || [];
-      const { isValid, errorMessage } = validateQuestionnairePage(currentQuestions, answers);
-      
+      // Validate using the questions actually rendered on the current page
+      console.log(`Validating page ${currentPage}:`, questionsForCurrentPage);
+
+      // Pass the current page's questions for validation
+      const { isValid, errorMessage } = validateQuestionnairePage(questionsForCurrentPage, answers);
+
       if (!isValid) {
         setValidationError(errorMessage);
         return;
       }
-      
-      setCurrentPage(prev => prev + 1);
+
+      // Prevent going beyond the last page
+      if (currentPage < totalPages - 1) {
+         setCurrentPage(prev => prev + 1);
+      }
     } else {
       setValidationError(null);
       setCurrentPage(prev => Math.max(0, prev - 1));
@@ -105,48 +165,87 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
   };
 
   const handleSubmit = async () => {
-    const currentQuestions = QUESTIONNAIRE_PAGES[currentPage] || [];
-    const { isValid, errorMessage } = validateQuestionnairePage(currentQuestions, answers);
-    
+    // Validate the last page before submitting
+    console.log(`Validating final page ${currentPage}:`, questionsForCurrentPage);
+    const { isValid, errorMessage } = validateQuestionnairePage(questionsForCurrentPage, answers);
+
     if (!isValid) {
       setValidationError(errorMessage);
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      // Convert answer values to strings where needed
-      const questionnaireData = {
-        firstName: String(answers.firstName || ''),
-        lastName: String(answers.lastName || ''),
-        age: String(answers.age || ''),
-        race: String(answers.race || ''),
-        familyGlaucoma: String(answers.familyGlaucoma || ''),
-        ocularSteroid: String(answers.ocularSteroid || ''),
-        steroidType: answers.steroidType ? String(answers.steroidType) : '',
-        intravitreal: String(answers.intravitreal || ''),
-        intravitralType: answers.intravitralType ? String(answers.intravitralType) : '', 
-        systemicSteroid: String(answers.systemicSteroid || ''),
-        systemicSteroidType: answers.systemicSteroidType ? String(answers.systemicSteroidType) : '',
-        iopBaseline: String(answers.iopBaseline || ''),
-        verticalAsymmetry: String(answers.verticalAsymmetry || ''),
-        verticalRatio: String(answers.verticalRatio || '')
+      // --- Mapping from known OLD string IDs to NEW UUIDs ---
+      // Similar to RiskAssessmentService, needed for payload construction
+      const uuidMap: Record<string, string | undefined> = {
+        "firstName": allDbQuestions.find(q => q.question === "Patient First Name")?.id,
+        "lastName": allDbQuestions.find(q => q.question === "Patient Last Name")?.id,
+        "age": allDbQuestions.find(q => q.question === "Age")?.id,
+        "race": allDbQuestions.find(q => q.question === "Race")?.id,
+        "familyGlaucoma": allDbQuestions.find(q => q.question.toLowerCase().includes("has anyone in your immediate family"))?.id, // Case-insensitive
+        "ocularSteroid": allDbQuestions.find(q => q.question.toLowerCase().includes("ophthalmic topical steroids"))?.id, // Case-insensitive
+        "steroidType": allDbQuestions.find(q => q.question === "Which ophthalmic topical steroid are you taking or have taken?")?.id,
+        "intravitreal": allDbQuestions.find(q => q.question.toLowerCase().includes("intravitreal steroids"))?.id, // Case-insensitive
+        "intravitralType": allDbQuestions.find(q => q.question === "Which intravitreal steroid are you taking or have taken?")?.id,
+        "systemicSteroid": allDbQuestions.find(q => q.question.toLowerCase().includes("systemic steroids"))?.id, // Case-insensitive
+        "systemicSteroidType": allDbQuestions.find(q => q.question === "Which systemic steroid are you taking or have taken?")?.id,
+        "iopBaseline": allDbQuestions.find(q => q.question.includes("IOP Baseline"))?.id,
+        "verticalAsymmetry": allDbQuestions.find(q => q.question.includes("ratio asymmetry"))?.id, // Correct text snippet
+        "verticalRatio": allDbQuestions.find(q => q.question.includes("Vertical C:D ratio"))?.id,
       };
-      
-      console.log("Submitting questionnaire data:", questionnaireData);
-      
-      const result = await submitPatientQuestionnaire(questionnaireData);
-      
+      // --- End Mapping ---
+
+      // Construct payload using the mapping
+      const questionnaireData = Object.entries(uuidMap).reduce((acc, [oldId, uuid]) => {
+        if (uuid && answers[uuid] !== undefined) {
+          const payloadKey = oldId as keyof PatientQuestionnaireData; // Map oldId to the payload key
+          let value = answers[uuid];
+
+          // Handle boolean-like conversions
+          if (['familyGlaucoma', 'ocularSteroid', 'intravitreal', 'systemicSteroid'].includes(payloadKey as string)) { // Cast payloadKey to string
+            value = value === 'yes' ? 'yes' : (value === 'no' ? 'no' : 'not_available');
+          } else {
+            value = String(value || ''); // Default to string for others
+          }
+          (acc as any)[payloadKey] = value;
+        }
+        return acc;
+      }, {} as Partial<PatientQuestionnaireData>);
+
+      // Ensure all required fields are present, provide defaults if necessary
+      const finalPayload: PatientQuestionnaireData = {
+          firstName: String(questionnaireData.firstName || ''),
+          lastName: String(questionnaireData.lastName || ''),
+          age: String(questionnaireData.age || ''),
+          race: String(questionnaireData.race || ''),
+          familyGlaucoma: String(questionnaireData.familyGlaucoma || 'no'),
+          ocularSteroid: String(questionnaireData.ocularSteroid || 'no'),
+          steroidType: questionnaireData.steroidType,
+          intravitreal: String(questionnaireData.intravitreal || 'no'),
+          intravitralType: questionnaireData.intravitralType,
+          systemicSteroid: String(questionnaireData.systemicSteroid || 'no'),
+          systemicSteroidType: questionnaireData.systemicSteroidType,
+          iopBaseline: String(questionnaireData.iopBaseline || ''),
+          verticalAsymmetry: String(questionnaireData.verticalAsymmetry || ''),
+          verticalRatio: String(questionnaireData.verticalRatio || '')
+      };
+
+
+      console.log("Submitting questionnaire data (DB-Driven):", finalPayload);
+
+      const result = await submitPatientQuestionnaire(finalPayload); // Reverted: Removed user.id
+
       setResults({
         score: result.score,
         riskLevel: result.riskLevel,
         contributing_factors: result.contributing_factors || [],
         advice: result.advice || ""
       });
-      
+
       toast.success("Questionnaire submitted successfully!");
-      
+
       setIsCompleted(true);
     } catch (error) {
       console.error("Error submitting questionnaire:", error);
@@ -173,11 +272,13 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
               <span className="ml-3 text-lg">Loading questions...</span>
             </div>
           ) : isCompleted && results ? (
-            <QuestionnaireResults 
-              score={results.score} 
+            <QuestionnaireResults
+              score={results.score}
               riskLevel={results.riskLevel}
               contributing_factors={results.contributing_factors}
               advice={results.advice}
+              firstName={String(answers.firstName || '')} // Assuming ID matches key
+              lastName={String(answers.lastName || '')}   // Assuming ID matches key
             />
           ) : (
             <>
@@ -188,22 +289,24 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
                   <AlertDescription>{validationError}</AlertDescription>
                 </Alert>
               )}
-              
-              <QuestionnaireProgress 
+
+              <QuestionnaireProgress
                 currentPage={currentPage}
-                totalPages={QUESTIONNAIRE_PAGES.length}
+                totalPages={totalPages} // Use totalPages based on DB categories
               />
 
-              <QuestionnaireForm 
+              {/* Pass the correctly filtered DB questions for the current page */}
+              <QuestionnaireForm
                 currentPage={currentPage}
                 onAnswerChange={handleAnswerChange}
                 answers={answers}
-                questions={questions}
+                questions={questionsForCurrentPage} // Pass the filtered DB questions
               />
+
 
               <QuestionnaireNavigation
                 currentPage={currentPage}
-                totalPages={QUESTIONNAIRE_PAGES.length}
+                totalPages={totalPages} // Use totalPages based on DB categories
                 onPageChange={handlePageChange}
                 onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}

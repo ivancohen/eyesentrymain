@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getQuestionnaireById, updateQuestionnaire, getQuestionsWithTooltips } from "@/services/PatientQuestionnaireService";
+import { getQuestionnaireById, updateQuestionnaire, getQuestionsWithTooltips, PatientQuestionnaireData } from "@/services/PatientQuestionnaireService";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import { Clipboard, AlertCircle, User, ArrowLeft } from "lucide-react";
@@ -10,17 +10,27 @@ import QuestionnaireProgress from "@/components/questionnaires/QuestionnaireProg
 import QuestionnaireNavigation from "@/components/questionnaires/QuestionnaireNavigation";
 import QuestionnaireResults from "@/components/questionnaires/QuestionnaireResults";
 import { validateQuestionnairePage } from "@/components/questionnaires/QuestionnaireValidation";
-import { QUESTIONNAIRE_PAGES } from "@/constants/questionnaireConstants";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-interface Question {
+// Interface for DB Question data (ensure this matches service response)
+interface DBQuestion {
   id: string;
   question: string;
   tooltip?: string;
   page_category: string;
+  question_type?: string;
+  options?: Array<{
+      option_value: string;
+      option_text: string;
+      score?: number;
+      tooltip?: string;
+  }>;
+  display_order?: number;
+  conditional_parent_id?: string;
+  conditional_required_value?: string;
 }
 
 interface ContributingFactor {
@@ -29,21 +39,26 @@ interface ContributingFactor {
   score: number;
 }
 
-interface QuestionnaireData {
+// Interface for the data structure returned by getQuestionnaireById
+interface FetchedQuestionnaireData extends Record<string, any> {
+  id: string;
   first_name: string;
   last_name: string;
   age: string;
   race: string;
   family_glaucoma: boolean;
   ocular_steroid: boolean;
-  steroid_type: string;
+  steroid_type: string | null;
   intravitreal: boolean;
-  intravitreal_type: string;
+  intravitreal_type: string | null;
   systemic_steroid: boolean;
-  systemic_steroid_type: string;
+  systemic_steroid_type: string | null;
   iop_baseline: boolean;
   vertical_asymmetry: boolean;
   vertical_ratio: boolean;
+  total_score: number;
+  risk_level: string;
+  answers?: Record<string, string>; // This is critical - represents saved answers with question IDs
 }
 
 interface QuestionnaireResult {
@@ -54,7 +69,37 @@ interface QuestionnaireResult {
 }
 
 // Define accepted answer value types
-type AnswerValue = string | number | boolean | null;
+type AnswerValue = string | number | boolean | null | undefined;
+
+// Define the order of page categories - Must match admin categories in questionConstants.ts
+const PAGE_CATEGORIES = ['patient_info', 'family_medication', 'clinical_measurements'];
+
+// Map of known DB fields to their question text patterns for better mapping
+const DB_FIELD_PATTERNS: Record<string, string[]> = {
+  'age': ['age', 'how old'],
+  'race': ['race', 'ethnicity'],
+  'family_glaucoma': ['family', 'glaucoma', 'immediate family'],
+  'ocular_steroid': ['ophthalmic', 'topical', 'steroids'],
+  'steroid_type': ['which ophthalmic', 'which topical', 'steroid type'],
+  'intravitreal': ['intravitreal', 'steroid injections'],
+  'intravitreal_type': ['which intravitreal', 'intravitreal type'],
+  'systemic_steroid': ['systemic', 'oral', 'steroids'],
+  'systemic_steroid_type': ['which systemic', 'systemic type'],
+  'iop_baseline': ['iop', 'intraocular pressure', 'baseline'],
+  'vertical_asymmetry': ['asymmetry', 'cup/disc asymmetry'],
+  'vertical_ratio': ['vertical ratio', 'cup-to-disc', 'c:d ratio']
+};
+
+// Map DB boolean fields to string values
+const BOOLEAN_TO_STRING_MAP: Record<string, { true: string, false: string }> = {
+  'family_glaucoma': { true: 'yes', false: 'no' },
+  'ocular_steroid': { true: 'yes', false: 'no' },
+  'intravitreal': { true: 'yes', false: 'no' },
+  'systemic_steroid': { true: 'yes', false: 'no' },
+  'iop_baseline': { true: '22_and_above', false: '21_and_under' },
+  'vertical_asymmetry': { true: '0.2_and_above', false: 'under_0.2' },
+  'vertical_ratio': { true: '0.6_and_above', false: 'below_0.6' }
+};
 
 const QuestionnaireEdit = () => {
   const navigate = useNavigate();
@@ -69,23 +114,72 @@ const QuestionnaireEdit = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [patientName, setPatientName] = useState({ firstName: "", lastName: "" });
-  const [questions, setQuestions] = useState<Question[]>([]);
+  // Use the correct DBQuestion type for state
+  const [allDbQuestions, setAllDbQuestions] = useState<DBQuestion[]>([]);
+  // Store the original questionnaire data for reference
+  const [originalData, setOriginalData] = useState<FetchedQuestionnaireData | null>(null);
+  // Cache the question ID mapping for better performance
+  const [questionIdMap, setQuestionIdMap] = useState<Record<string, string>>({});
+  // Use predefined page category order
+  const [pageCategories] = useState<string[]>(PAGE_CATEGORIES);
 
-  // Fetch questions with tooltips
+  // Determine current page category and total pages based on predefined order
+  const currentPageCategory = pageCategories[currentPage] || '';
+  const totalPages = pageCategories.length;
+
+  // Filter DB questions for the current page category and sort
+  const questionsForCurrentPage = allDbQuestions
+    .filter(q => q.page_category === currentPageCategory)
+    .sort((a, b) => (a.display_order ?? 999) - (b.display_order ?? 999));
+
+  // Build a question ID map to help with mapping DB fields to question IDs
+  useEffect(() => {
+    if (allDbQuestions.length > 0) {
+      const newMap: Record<string, string> = {};
+      
+      // For each DB field pattern, find matching questions
+      Object.entries(DB_FIELD_PATTERNS).forEach(([dbField, patterns]) => {
+        // Try to find a question that matches any of the patterns
+        const matchingQuestion = allDbQuestions.find(q => {
+          const questionText = q.question.toLowerCase();
+          return patterns.some(pattern => questionText.includes(pattern.toLowerCase()));
+        });
+        
+        if (matchingQuestion) {
+          newMap[dbField] = matchingQuestion.id;
+        }
+      });
+      
+      console.log("Built question ID map:", newMap);
+      setQuestionIdMap(newMap);
+    }
+  }, [allDbQuestions]);
+
+  // Fetch all questions once
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const questionsData = await getQuestionsWithTooltips();
-        setQuestions(questionsData);
+        setAllDbQuestions(questionsData || []);
+        console.log("QuestionnaireEdit: Fetched allDbQuestions:", questionsData);
       } catch (error) {
         console.error("Error fetching questions:", error);
-        toast.error("Failed to load questions. Please try again.");
+        toast.error("Failed to load questions configuration.");
       }
     };
-
     fetchQuestions();
   }, []);
 
+  // Map DB boolean values to string options
+  const mapBooleanToString = (field: string, value: boolean): string => {
+    const mapping = BOOLEAN_TO_STRING_MAP[field];
+    if (mapping) {
+      return value ? mapping.true : mapping.false;
+    }
+    return value ? 'yes' : 'no'; // Default fallback
+  };
+
+  // Fetch existing questionnaire data
   useEffect(() => {
     async function fetchQuestionnaire() {
       if (!id) {
@@ -93,36 +187,59 @@ const QuestionnaireEdit = () => {
         setLoading(false);
         return;
       }
-      
+
       try {
         setLoading(true);
         setLoadError(null);
-        const questionnaireData = await getQuestionnaireById(id as string) as QuestionnaireData;
+        const questionnaireData = await getQuestionnaireById(id) as FetchedQuestionnaireData;
+        console.log("QuestionnaireEdit: Fetched questionnaire data:", questionnaireData);
         
-        // Store patient name separately
+        // Store original data for reference
+        setOriginalData(questionnaireData);
+        
         setPatientName({
-          firstName: questionnaireData.first_name,
-          lastName: questionnaireData.last_name
+          firstName: questionnaireData.first_name || "",
+          lastName: questionnaireData.last_name || ""
         });
-        
-        // Transform database values back to form values, excluding first/last name
-        const formattedAnswers = {
-          age: questionnaireData.age,
-          race: questionnaireData.race,
-          familyGlaucoma: questionnaireData.family_glaucoma ? "yes" : "no",
-          ocularSteroid: questionnaireData.ocular_steroid ? "yes" : "no",
-          steroidType: questionnaireData.steroid_type || "",
-          intravitreal: questionnaireData.intravitreal ? "yes" : "no",
-          intravitralType: questionnaireData.intravitreal_type || "",
-          systemicSteroid: questionnaireData.systemic_steroid ? "yes" : "no",
-          systemicSteroidType: questionnaireData.systemic_steroid_type || "",
-          iopBaseline: questionnaireData.iop_baseline ? "22_and_above" : "21_and_under",
-          verticalAsymmetry: questionnaireData.vertical_asymmetry ? "0.2_and_above" : "under_0.2",
-          verticalRatio: questionnaireData.vertical_ratio ? "0.6_and_above" : "below_0.6"
-        };
-        
-        setAnswers(formattedAnswers);
-        
+
+        // If the questionnaire has an answers JSON field, use it directly
+        if (questionnaireData.answers && Object.keys(questionnaireData.answers).length > 0) {
+          console.log("Using stored answers JSON directly:", questionnaireData.answers);
+          setAnswers(questionnaireData.answers);
+        } else {
+          // Otherwise, map the DB fields to question IDs
+          // We'll do this mapping after questionIdMap is populated
+          if (Object.keys(questionIdMap).length > 0) {
+            const initialAnswers: Record<string, AnswerValue> = {};
+            
+            // Use the questionIdMap to map DB fields to question IDs
+            Object.entries(questionIdMap).forEach(([dbField, questionId]) => {
+              if (questionId && questionnaireData[dbField] !== undefined) {
+                // For boolean fields, map to appropriate string values
+                if (typeof questionnaireData[dbField] === 'boolean') {
+                  initialAnswers[questionId] = mapBooleanToString(dbField, questionnaireData[dbField] as boolean);
+                } else {
+                  // For string fields, use directly
+                  initialAnswers[questionId] = questionnaireData[dbField] ?? '';
+                }
+              }
+            });
+            
+            // Handle special fields like steroid_type that are dependent on their parent question
+            if (questionnaireData.steroid_type && questionIdMap['steroid_type']) {
+              initialAnswers[questionIdMap['steroid_type']] = questionnaireData.steroid_type;
+            }
+            if (questionnaireData.intravitreal_type && questionIdMap['intravitreal_type']) {
+              initialAnswers[questionIdMap['intravitreal_type']] = questionnaireData.intravitreal_type;
+            }
+            if (questionnaireData.systemic_steroid_type && questionIdMap['systemic_steroid_type']) {
+              initialAnswers[questionIdMap['systemic_steroid_type']] = questionnaireData.systemic_steroid_type;
+            }
+            
+            console.log("Mapped answers from DB fields to question IDs:", initialAnswers);
+            setAnswers(initialAnswers);
+          }
+        }
       } catch (error) {
         console.error("Error loading questionnaire:", error);
         setLoadError("Failed to load questionnaire data. Please try again.");
@@ -131,16 +248,19 @@ const QuestionnaireEdit = () => {
         setLoading(false);
       }
     }
-    
-    fetchQuestionnaire();
-  }, [id, navigate]);
+
+    // Only fetch if we have questions loaded and the question ID map is built
+    if (allDbQuestions.length > 0 && Object.keys(questionIdMap).length > 0) {
+      fetchQuestionnaire();
+    }
+  }, [id, questionIdMap, allDbQuestions]);
 
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: value
     }));
-    
+
     if (validationError) {
       setValidationError(null);
     }
@@ -148,84 +268,151 @@ const QuestionnaireEdit = () => {
 
   const handlePageChange = (direction: "next" | "prev") => {
     if (direction === "next") {
-      // Skip validation for patient information page (first page) since we're not editing it
+      // Skip validation for patient information page (first page)
       if (currentPage === 0) {
-        setCurrentPage(prev => prev + 1);
+         if (currentPage < totalPages - 1) {
+            setCurrentPage(prev => prev + 1);
+         }
         return;
       }
-      
-      const currentQuestions = QUESTIONNAIRE_PAGES[currentPage] || [];
-      
-      // Filter out conditional questions that shouldn't be validated
-      const questionsToValidate = currentQuestions.filter(question => {
-        if (!question.conditionalOptions) return true;
-        
-        const [parentId, requiredValue] = question.conditionalOptions.parentValue.split(':');
-        return answers[parentId] === requiredValue;
+
+      // Validate using the questions actually rendered on the current page
+      // Filter out conditional questions that shouldn't be validated based on DB fields
+      const questionsToValidate = questionsForCurrentPage.filter(question => {
+        if (!question.conditional_parent_id || !question.conditional_required_value) {
+            return true; // Not conditional, always validate
+        }
+        // Only validate if the parent condition is met
+        const parentAnswer = answers[question.conditional_parent_id];
+        return String(parentAnswer) === question.conditional_required_value;
       });
-      
+
+      console.log(`Validating Edit page ${currentPage}:`, questionsToValidate);
       const { isValid, errorMessage } = validateQuestionnairePage(questionsToValidate, answers);
-      
+
       if (!isValid) {
         setValidationError(errorMessage);
         return;
       }
-      
-      setCurrentPage(prev => prev + 1);
+
+      // Prevent going beyond the last page
+      if (currentPage < totalPages - 1) {
+         setCurrentPage(prev => prev + 1);
+      }
     } else {
       setValidationError(null);
       setCurrentPage(prev => Math.max(0, prev - 1));
     }
   };
 
+  // Reverse map question IDs to DB field names for submission
+  const getDbFieldForQuestionId = (questionId: string): string | null => {
+    for (const [field, id] of Object.entries(questionIdMap)) {
+      if (id === questionId) return field;
+    }
+    return null;
+  };
+
   const handleSubmit = async () => {
     if (!id) return;
-    
-    // For the last page, validate before submitting
-    if (currentPage === QUESTIONNAIRE_PAGES.length - 1) {
-      const currentQuestions = QUESTIONNAIRE_PAGES[currentPage] || [];
-      const { isValid, errorMessage } = validateQuestionnairePage(currentQuestions, answers);
-      
+
+    // Validate the last page before submitting
+    if (currentPage === totalPages - 1) {
+      // Filter out conditional questions that shouldn't be validated
+       const questionsToValidate = questionsForCurrentPage.filter(question => {
+         if (!question.conditional_parent_id || !question.conditional_required_value) {
+             return true; // Not conditional, always validate
+         }
+         const parentAnswer = answers[question.conditional_parent_id];
+         return String(parentAnswer) === question.conditional_required_value;
+       });
+
+      console.log(`Validating final Edit page ${currentPage}:`, questionsToValidate);
+      const { isValid, errorMessage } = validateQuestionnairePage(questionsToValidate, answers);
+
       if (!isValid) {
         setValidationError(errorMessage);
         return;
       }
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
-      // Include the original patient name in the submission data
-      const questionnaireData = {
+      // Construct the final payload by mapping question IDs back to DB field names 
+      const finalPayload: PatientQuestionnaireData = {
         firstName: patientName.firstName,
         lastName: patientName.lastName,
-        age: answers.age as string,
-        race: answers.race as string,
-        familyGlaucoma: answers.familyGlaucoma as string,
-        ocularSteroid: answers.ocularSteroid as string,
-        steroidType: answers.steroidType as string,
-        intravitreal: answers.intravitreal as string,
-        intravitralType: answers.intravitralType as string,
-        systemicSteroid: answers.systemicSteroid as string,
-        systemicSteroidType: answers.systemicSteroidType as string,
-        iopBaseline: answers.iopBaseline as string,
-        verticalAsymmetry: answers.verticalAsymmetry as string,
-        verticalRatio: answers.verticalRatio as string
+        age: '',
+        race: '',
+        familyGlaucoma: 'no',
+        ocularSteroid: 'no',
+        intravitreal: 'no',
+        systemicSteroid: 'no',
+        iopBaseline: '',
+        verticalAsymmetry: '',
+        verticalRatio: ''
       };
-      
-      console.log("Updating questionnaire data:", questionnaireData);
-      
-      const result = await updateQuestionnaire(id, questionnaireData);
-      
+
+      // Map each answer back to its DB field name
+      Object.entries(answers).forEach(([questionId, value]) => {
+        const dbField = getDbFieldForQuestionId(questionId);
+        if (dbField) {
+          // Handle special mappings based on DB field name
+          switch (dbField) {
+            case 'age':
+              finalPayload.age = String(value || '');
+              break;
+            case 'race':
+              finalPayload.race = String(value || '');
+              break;
+            case 'family_glaucoma':
+              finalPayload.familyGlaucoma = String(value || 'no');
+              break;
+            case 'ocular_steroid':
+              finalPayload.ocularSteroid = String(value || 'no');
+              break;
+            case 'steroid_type':
+              finalPayload.steroidType = value as string | undefined;
+              break;
+            case 'intravitreal':
+              finalPayload.intravitreal = String(value || 'no');
+              break;
+            case 'intravitreal_type':
+              finalPayload.intravitralType = value as string | undefined;
+              break;
+            case 'systemic_steroid':
+              finalPayload.systemicSteroid = String(value || 'no');
+              break;
+            case 'systemic_steroid_type':
+              finalPayload.systemicSteroidType = value as string | undefined;
+              break;
+            case 'iop_baseline':
+              finalPayload.iopBaseline = String(value || '');
+              break;
+            case 'vertical_asymmetry':
+              finalPayload.verticalAsymmetry = String(value || '');
+              break;
+            case 'vertical_ratio':
+              finalPayload.verticalRatio = String(value || '');
+              break;
+          }
+        }
+      });
+
+      console.log("Updating questionnaire data (DB-Driven):", finalPayload);
+
+      const result = await updateQuestionnaire(id, finalPayload);
+
       setResults({
         score: result.score,
         riskLevel: result.riskLevel,
         contributing_factors: result.contributing_factors || [],
         advice: result.advice || ""
       });
-      
+
       toast.success("Questionnaire updated successfully!");
-      
+
       setIsCompleted(true);
     } catch (error) {
       console.error("Error updating questionnaire:", error);
@@ -235,101 +422,87 @@ const QuestionnaireEdit = () => {
     }
   };
 
+  // --- Retry handler updated to use original data ---
   const handleRetry = () => {
-    // Reset loading state and try to fetch the questionnaire again
-    if (!id) return;
+    if (!id || !originalData) return;
     
-    async function refetchQuestionnaire() {
-      try {
-        setLoading(true);
-        setLoadError(null);
-        const data = await getQuestionnaireById(id as string) as QuestionnaireData;
+    try {
+      setLoading(true);
+      // Reset answers state with values from original data
+      if (originalData.answers && Object.keys(originalData.answers).length > 0) {
+        // Use pre-stored answers if available
+        setAnswers(originalData.answers);
+      } else if (Object.keys(questionIdMap).length > 0) {
+        // Otherwise map from DB fields
+        const refreshedAnswers: Record<string, AnswerValue> = {};
         
-        setPatientName({
-          firstName: data.first_name,
-          lastName: data.last_name
+        // Map basic fields using the ID map
+        Object.entries(questionIdMap).forEach(([dbField, questionId]) => {
+          if (questionId && originalData[dbField] !== undefined) {
+            if (typeof originalData[dbField] === 'boolean') {
+              refreshedAnswers[questionId] = mapBooleanToString(dbField, originalData[dbField] as boolean);
+            } else {
+              refreshedAnswers[questionId] = originalData[dbField] ?? '';
+            }
+          }
         });
         
-        const formattedAnswers = {
-          age: data.age,
-          race: data.race,
-          familyGlaucoma: data.family_glaucoma ? "yes" : "no",
-          ocularSteroid: data.ocular_steroid ? "yes" : "no",
-          steroidType: data.steroid_type || "",
-          intravitreal: data.intravitreal ? "yes" : "no",
-          intravitralType: data.intravitreal_type || "",
-          systemicSteroid: data.systemic_steroid ? "yes" : "no",
-          systemicSteroidType: data.systemic_steroid_type || "",
-          iopBaseline: data.iop_baseline ? "22_and_above" : "21_and_under",
-          verticalAsymmetry: data.vertical_asymmetry ? "0.2_and_above" : "under_0.2",
-          verticalRatio: data.vertical_ratio ? "0.6_and_above" : "below_0.6"
-        };
+        // Handle conditional fields
+        if (originalData.steroid_type && questionIdMap['steroid_type']) {
+          refreshedAnswers[questionIdMap['steroid_type']] = originalData.steroid_type;
+        }
+        if (originalData.intravitreal_type && questionIdMap['intravitreal_type']) {
+          refreshedAnswers[questionIdMap['intravitreal_type']] = originalData.intravitreal_type;
+        }
+        if (originalData.systemic_steroid_type && questionIdMap['systemic_steroid_type']) {
+          refreshedAnswers[questionIdMap['systemic_steroid_type']] = originalData.systemic_steroid_type;
+        }
         
-        setAnswers(formattedAnswers);
-        toast.success("Questionnaire data loaded successfully");
-        
-      } catch (error) {
-        console.error("Error retry loading questionnaire:", error);
-        setLoadError("Failed to load questionnaire data. Please try again.");
-        toast.error("Failed to load questionnaire data");
-      } finally {
-        setLoading(false);
+        setAnswers(refreshedAnswers);
       }
+      
+      // Reset validation and completion state
+      setValidationError(null);
+      setIsCompleted(false);
+      setCurrentPage(0);
+      
+      toast.success("Questionnaire reset to original values");
+    } catch (error) {
+      console.error("Error resetting questionnaire:", error);
+      toast.error("Failed to reset questionnaire data");
+    } finally {
+      setLoading(false);
     }
-    
-    refetchQuestionnaire();
   };
 
-  const handleBackToList = () => {
-    navigate("/questionnaires");
-  };
+  const handleBackToList = () => { navigate("/questionnaires"); };
 
+  // --- Loading and Error states ---
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
+      <div className="min-h-screen flex flex-col"> <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <LoadingSpinner />
-          <span className="ml-3 text-lg">Loading questionnaire data...</span>
+          <LoadingSpinner /> <span className="ml-3 text-lg">Loading questionnaire data...</span>
         </div>
-      </div>
-    );
+      </div>);
   }
-
   if (loadError) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
+      <div className="min-h-screen flex flex-col"> <Navbar />
         <main className="flex-1 container px-4 py-4 mb-8">
-          <PageHeader
-            title="Error Loading Questionnaire"
-            icon={<AlertCircle size={20} />}
-            description="We encountered a problem loading the questionnaire data."
-          />
-          
+          <PageHeader title="Error Loading Questionnaire" icon={<AlertCircle size={20} />} description="We encountered a problem loading the questionnaire data." />
           <div className="max-w-2xl mx-auto mt-6">
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{loadError}</AlertDescription>
-            </Alert>
-            
+            <Alert variant="destructive" className="mb-6"> <AlertCircle className="h-4 w-4" /> <AlertTitle>Error</AlertTitle> <AlertDescription>{loadError}</AlertDescription> </Alert>
             <div className="flex gap-4 mt-6">
-              <Button onClick={handleRetry} className="flex items-center gap-2">
-                <ArrowLeft size={16} />
-                Try Again
-              </Button>
-              
-              <Button variant="outline" onClick={handleBackToList}>
-                Back to Questionnaires
-              </Button>
+              <Button onClick={handleRetry} className="flex items-center gap-2"> <ArrowLeft size={16} /> Try Again </Button>
+              <Button variant="outline" onClick={handleBackToList}> Back to Questionnaires </Button>
             </div>
           </div>
         </main>
-      </div>
-    );
+      </div>);
   }
 
+  // --- Update Rendering Logic ---
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -342,11 +515,13 @@ const QuestionnaireEdit = () => {
 
         <div className="max-w-2xl mx-auto mt-6">
           {isCompleted && results ? (
-            <QuestionnaireResults 
-              score={results.score} 
+            <QuestionnaireResults
+              score={results.score}
               riskLevel={results.riskLevel}
               contributing_factors={results.contributing_factors}
               advice={results.advice}
+              firstName={patientName.firstName}
+              lastName={patientName.lastName}
             />
           ) : (
             <>
@@ -357,13 +532,13 @@ const QuestionnaireEdit = () => {
                   <AlertDescription>{validationError}</AlertDescription>
                 </Alert>
               )}
-              
-              <QuestionnaireProgress 
+
+              <QuestionnaireProgress
                 currentPage={currentPage}
-                totalPages={QUESTIONNAIRE_PAGES.length}
+                totalPages={totalPages} // Use totalPages based on DB categories
               />
 
-              {/* Always display patient information in read-only format regardless of page */}
+              {/* Display patient info read-only on first page */}
               {currentPage === 0 && (
                 <Card className="animate-fade-in mb-6">
                   <CardContent className="pt-6">
@@ -373,39 +548,35 @@ const QuestionnaireEdit = () => {
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className="text-base font-medium leading-6 mb-1 block">
-                          Patient Name
-                        </label>
-                        <div className="p-2 bg-gray-50 border rounded-md">
-                          {patientName.firstName} {patientName.lastName}
-                        </div>
+                        <label className="text-base font-medium leading-6 mb-1 block">Patient Name</label>
+                        <div className="p-2 bg-gray-50 border rounded-md">{patientName.firstName} {patientName.lastName}</div>
                       </div>
-                      
-                      {/* Only render the age and race questions from the first page */}
-                      <QuestionnaireForm 
+                      {/* Render form for editable fields on page 0 (age, race) */}
+                      <QuestionnaireForm
                         currentPage={currentPage}
                         onAnswerChange={handleAnswerChange}
                         answers={answers}
-                        skipQuestions={["firstName", "lastName"]}
-                        questions={questions}
+                        skipQuestions={["firstName", "lastName"]} // Assuming these IDs exist if needed
+                        questions={questionsForCurrentPage} // Pass all questions for this page category
                       />
                     </div>
                   </CardContent>
                 </Card>
               )}
 
+              {/* Render form for subsequent pages */}
               {currentPage > 0 && (
-                <QuestionnaireForm 
+                <QuestionnaireForm
                   currentPage={currentPage}
                   onAnswerChange={handleAnswerChange}
                   answers={answers}
-                  questions={questions}
+                  questions={questionsForCurrentPage} // Pass filtered questions for the current page
                 />
               )}
 
               <QuestionnaireNavigation
                 currentPage={currentPage}
-                totalPages={QUESTIONNAIRE_PAGES.length}
+                totalPages={totalPages} // Use totalPages based on DB categories
                 onPageChange={handlePageChange}
                 onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}

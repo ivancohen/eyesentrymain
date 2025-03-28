@@ -161,12 +161,12 @@ const DoctorApprovals = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {doctor.streetAddress || doctor.location ? (
+                          {doctor.street_address || doctor.location ? (
                             <div className="flex items-center gap-1">
                               <MapPin size={14} className="text-gray-500" />
                               <div className="flex flex-col">
                                 <span>
-                                  {doctor.streetAddress || doctor.location}
+                                  {doctor.street_address || doctor.location}
                                 </span>
                                 {(doctor.city || doctor.state) && (
                                   <span className="text-xs text-gray-500">

@@ -114,6 +114,27 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
         }).format(d);
     };
 
+    // Fetch questions to get their display order
+    const [questions, setQuestions] = useState<Record<string, number>>({});
+    
+    useEffect(() => {
+        async function fetchQuestionOrder() {
+            try {
+                const fetchedQuestions = await SpecialistService.getQuestions();
+                // Create a map of question ID to display order
+                const questionOrderMap = fetchedQuestions.reduce((map, q) => {
+                    map[q.id] = q.display_order || 0;
+                    return map;
+                }, {} as Record<string, number>);
+                setQuestions(questionOrderMap);
+            } catch (error) {
+                console.error('Error fetching question order:', error);
+            }
+        }
+        
+        fetchQuestionOrder();
+    }, []);
+    
     // Group responses by date (YYYY-MM-DD)
     const groupedResponses = responses.reduce((groups, response) => {
         const date = new Date(response.created_at).toISOString().split('T')[0];
@@ -123,6 +144,15 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
         groups[date].push(response);
         return groups;
     }, {} as Record<string, SpecialistResponse[]>);
+    
+    // Sort responses within each date group by question display order
+    Object.keys(groupedResponses).forEach(date => {
+        groupedResponses[date].sort((a, b) => {
+            const orderA = questions[a.question_id] || 0;
+            const orderB = questions[b.question_id] || 0;
+            return orderA - orderB;
+        });
+    });
 
     if (loading) {
         return (
@@ -190,7 +220,7 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
             </div>
 
             <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
-                <DialogContent>
+                <DialogContent className="max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Send Access Link</DialogTitle>
                         <DialogDescription>
