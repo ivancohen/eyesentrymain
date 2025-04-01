@@ -99,4 +99,10 @@
   .questionnaire-text {
     color: #1E3A8A !important; /* Darker blue text */
   }
+  
+  /* Custom badge variants */
+  .badge-success {
+    background-color: #10B981 !important;
+    color: white !important;
+  }
 }
