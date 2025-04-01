@@ -1,172 +1,229 @@
-# EyeSentry Deployment Guide
+# Deployment Process
 
-This document provides comprehensive instructions for deploying the EyeSentry application to Cloudflare Pages. It includes implementation details for all the deployment scripts created based on the Master Deployment Plan.
+This package contains scripts to create a restore point, set up transparent logo, update logo references, update GitHub, and deploy to Cloudflare.
 
-## Quick Start
+## Overview
 
-For a streamlined deployment process, use the integrated deployment script:
+The deployment process consists of six main steps:
 
-### Windows
-```
-run-deployment.bat
-```
+1. **Create Restore Point**: Creates a backup of key files before deployment
+2. **Set Up Transparent Logo**: Ensures the transparent logo is available in the assets directory
+3. **Update Logo References**: Updates all logo references in the codebase to use the transparent logo
+4. **Update Specialist Form Logo**: Adds the logo to the specialist assessment form
+5. **Update GitHub**: Commits and pushes changes to your GitHub repository
+6. **Deploy to Cloudflare**: Builds the project and deploys it to your Cloudflare instance
 
-### Unix/Linux/macOS
-```
-chmod +x run-deployment.sh
-./run-deployment.sh
-```
+## Scripts Included
 
-## Deployment Approach Options
+### Main Scripts
 
-The deployment system supports four different approaches, in order of recommendation:
+1. **create-restore-point.js**: Creates a backup of key files in a timestamped directory
+2. **save-transparent-logo.js**: Sets up the transparent logo in the assets directory
+3. **update-all-logos.js**: Updates all logo references to use the transparent logo
+4. **update-specialist-form-logo.js**: Adds logo to the specialist assessment form
+5. **update-github.js**: Commits and pushes changes to your GitHub repository
+6. **deploy-to-cloudflare.js**: Builds the project and deploys it to your Cloudflare instance
+7. **build-update-deploy.js**: Runs all six steps in sequence
 
-1. **Direct Build** (default, recommended): Bypasses TypeScript checking during the build process
-2. **Fix Errors**: Attempts to fix individual TypeScript errors before building
-3. **Lenient Config**: Uses a more lenient TypeScript configuration that ignores errors
-4. **Manual Upload**: Provides instructions for manually uploading files to Cloudflare Pages
+### Convenience Scripts
 
-To specify a particular approach, pass it as an argument to the script:
+1. **build-update-deploy.bat**: Windows batch script to run the full process
+2. **build-update-deploy.sh**: Unix/Linux/Mac shell script to run the full process
+3. **save-transparent-logo.bat/.sh**: Scripts to set up the transparent logo
+4. **update-all-logos.bat/.sh**: Scripts to update all logo references
+5. **update-specialist-form-logo.bat/.sh**: Scripts to update specialist form logo
 
-```
-# Windows
-run-deployment.bat direct-build
+## How to Use
 
-# Unix/Linux/macOS
-./run-deployment.sh fix-errors
-```
+### Full Deployment Process
 
-## Available Scripts
+To run the full deployment process (restore point, logo updates, GitHub update, and Cloudflare deployment):
 
-### Main Deployment Scripts
+```bash
+# For Windows users
+build-update-deploy.bat
 
-| Script | Description |
-|--------|-------------|
-| `run-deployment.js` | Complete deployment process with all approaches |
-| `run-deployment.bat` | Windows wrapper for run-deployment.js |
-| `run-deployment.sh` | Unix/Linux wrapper for run-deployment.js |
+# For Unix/Linux/Mac users
+chmod +x build-update-deploy.sh
+./build-update-deploy.sh
 
-### Individual Component Scripts
-
-| Script | Description |
-|--------|-------------|
-| `direct-build.js` | Implements the Direct Build approach (bypasses TypeScript checking) |
-| `direct-build.bat` | Windows wrapper for direct-build.js |
-| `direct-build.sh` | Unix/Linux wrapper for direct-build.js |
-| `deploy-to-cloudflare.js` | Handles deployment to Cloudflare Pages after successful build |
-| `deploy-to-cloudflare.bat` | Windows wrapper for deploy-to-cloudflare.js |
-| `deploy-to-cloudflare.sh` | Unix/Linux wrapper for deploy-to-cloudflare.js |
-
-## Using the Direct Build Approach
-
-The Direct Build approach modifies configuration files temporarily to bypass TypeScript checking during the build process. It follows these steps:
-
-1. Backs up configuration files
-2. Creates modified TypeScript and Vite configurations
-3. Fixes JavaScript files with TypeScript syntax
-4. Builds with modified configurations
-5. Restores original configurations
-
-To use this approach directly:
-
-```
-# Windows
-direct-build.bat
-
-# Unix/Linux/macOS
-chmod +x direct-build.sh
-./direct-build.sh
+# Or directly with Node.js
+node build-update-deploy.js
 ```
 
-## Deploying to Cloudflare Pages
+### Individual Steps
 
-After a successful build, you can deploy to Cloudflare Pages using the deploy-to-cloudflare script:
+If you prefer to run each step individually:
 
-```
-# Windows
-deploy-to-cloudflare.bat
+#### 1. Create Restore Point
 
-# Unix/Linux/macOS
-chmod +x deploy-to-cloudflare.sh
-./deploy-to-cloudflare.sh
+```bash
+node create-restore-point.js
 ```
 
-### Deployment Options
+This will:
+- Create a timestamped directory in the `restore-points` folder
+- Copy key files to the restore point directory
+- Create a README.md file in the restore point directory with instructions
 
-The deploy-to-cloudflare script supports several options:
+#### 2. Set Up Transparent Logo
 
-| Option | Description |
-|--------|-------------|
-| `--skip-build` | Skip the build step (use if you've already built the application) |
-| `--direct-build` | Use the direct build approach to bypass TypeScript errors |
-| `--manual` | Show instructions for manual upload instead of using Wrangler |
+```bash
+# For Windows users
+save-transparent-logo.bat
 
-Example usage:
+# For Unix/Linux/Mac users
+chmod +x save-transparent-logo.sh
+./save-transparent-logo.sh
 
+# Or directly with Node.js
+node save-transparent-logo.js
 ```
-# Windows
-deploy-to-cloudflare.bat --direct-build
 
-# Unix/Linux/macOS
-./deploy-to-cloudflare.sh --skip-build
+This will:
+- Create the src/assets directory if it doesn't exist
+- Create a placeholder for the transparent logo
+- Provide instructions for saving the transparent logo to src/assets/logo.png
+
+#### 3. Update All Logo References
+
+```bash
+# For Windows users
+update-all-logos.bat
+
+# For Unix/Linux/Mac users
+chmod +x update-all-logos.sh
+./update-all-logos.sh
+
+# Or directly with Node.js
+node update-all-logos.js
 ```
 
-## Manual Deployment Process
+This will:
+- Find all files in the codebase that reference logos
+- Update all logo references to use the transparent logo at src/assets/logo.png
+- Ensure consistency across the entire application
 
-If automated deployment fails, you can manually upload files to Cloudflare Pages:
+#### 4. Update Specialist Form Logo
 
-1. Go to the Cloudflare Dashboard: https://dash.cloudflare.com/
-2. Navigate to "Pages" in the left sidebar
-3. Create a new project or select the existing "eyesentry" project
-4. Click "Deploy site" or "Upload"
-5. Upload the contents of the `dist` directory
-6. Configure any necessary settings
-7. Save and deploy
+```bash
+# For Windows users
+update-specialist-form-logo.bat
+
+# For Unix/Linux/Mac users
+chmod +x update-specialist-form-logo.sh
+./update-specialist-form-logo.sh
+
+# Or directly with Node.js
+node update-specialist-form-logo.js
+```
+
+This will:
+- Add the logo to the specialist assessment form
+- Update the update-logos.js script to include this change
+- Update the DEPLOYMENT_README.md to mention this change
+
+#### 5. Update GitHub
+
+```bash
+node update-github.js
+```
+
+This will:
+- Create a restore point (if not already created)
+- Add all changes to git
+- Commit changes with a descriptive message
+- Push changes to GitHub
+
+#### 6. Deploy to Cloudflare
+
+```bash
+node deploy-to-cloudflare.js
+```
+
+This will:
+- Build the project using `npm run build`
+- Look for an existing Cloudflare deployment script
+- If found, execute the existing script
+- If not found, attempt to deploy using Cloudflare Wrangler
+
+## Restore Points
+
+Restore points are created in the `restore-points` directory with timestamped folder names. Each restore point contains:
+
+- Backup of key files
+- README.md file with instructions on how to restore
+
+The following files are backed up:
+
+- `src/components/questionnaires/QuestionnaireForm.tsx`
+- `src/components/questionnaires/QuestionnaireContainer.tsx`
+- `src/services/RiskAssessmentService.ts`
+- `src/components/admin/RiskAssessmentAdmin.tsx`
+- `src/components/admin/EnhancedQuestionManager.tsx`
+- `src/services/QuestionService.ts`
+- `src/pages/Index.tsx`
+- `package.json`
+
+## Transparent Logo Implementation
+
+The transparent logo implementation ensures that all logos across the application use the same transparent logo file. This provides a consistent look and feel, especially on colored backgrounds.
+
+### Key Features
+
+1. **Transparent Background**: The logo has a transparent background, allowing it to blend seamlessly with any background color
+2. **Consistent Sizing**: The logo is displayed at appropriate sizes throughout the application
+3. **Centralized Asset**: All logo references point to a single file at src/assets/logo.png
+
+### Landing Page Implementation
+
+The landing page has been updated to:
+
+1. Display the eye image in place of the logo on the left side
+2. Show the transparent logo on top of the doctor access box
+3. Ensure proper spacing and sizing for optimal visual appeal
+4. Provide a responsive design that works on all device sizes
 
 ## Troubleshooting
 
-### Build Failures
+### Logo Issues
 
-If the build fails, try the following:
+If you encounter issues with the logo:
 
-1. Use the Direct Build approach: `run-deployment.bat direct-build`
-2. Check TypeScript errors: `node check-typescript-errors.js`
-3. Fix verify-questions.js: `node fix-verify-questions.js`
-4. Try the fix-build-issues script: `node fix-build-issues.js`
-5. Generate a lenient TypeScript configuration: `node generate-lenient-tsconfig.js`
+1. Ensure the transparent logo file is correctly placed at `src/assets/logo.png`
+2. Check that the file has a transparent background (not white)
+3. Run the `update-all-logos.js` script to update all logo references
+4. Verify that the logo appears correctly on colored backgrounds
 
-### Deployment Failures
+### GitHub Update Issues
 
-If deployment to Cloudflare Pages fails:
+If you encounter issues with the GitHub update:
 
-1. Ensure you're logged in to Cloudflare: `npx wrangler login`
-2. Check if the project exists: `npx wrangler pages project list`
-3. Create the project if needed: `npx wrangler pages project create eyesentry`
-4. Try manual upload through the Cloudflare Dashboard
+1. Check if you have git installed and configured
+2. Ensure you have the necessary permissions to push to the repository
+3. Check if there are any merge conflicts
+4. Try running `git push` manually
 
-## Success Criteria
+### Cloudflare Deployment Issues
 
-The deployment is successful when:
+If you encounter issues with the Cloudflare deployment:
 
-1. The application builds without errors
-2. The application is successfully deployed to Cloudflare Pages
-3. Core functionality works as expected
-4. Users can access the application through the Cloudflare URL
+1. Check if you have an existing Cloudflare deployment script
+2. Ensure you have Cloudflare Wrangler installed
+3. Verify that you're logged in to Cloudflare
+4. Check if your project builds successfully with `npm run build`
 
-## Post-Deployment Verification
+## Restoring from a Restore Point
 
-After deployment, verify that:
+If you need to restore from a restore point:
 
-1. The application is accessible through the Cloudflare URL
-2. Core functionality works correctly
-3. There are no JavaScript errors in the browser console
-4. API connections are functioning properly
+1. Navigate to the restore point directory in `restore-points`
+2. Copy the files from the restore point back to their original locations
+3. Rebuild and redeploy the project
 
-## Long-Term Recommendations
+## Notes
 
-After successful deployment, consider:
-
-1. Properly fixing TypeScript errors
-2. Ensuring all files with TypeScript syntax have correct extensions
-3. Cleaning up references to removed components
-4. Implementing proper testing and CI/CD for future deployments
+- The scripts automatically create backups before making any changes
+- The GitHub update includes a descriptive commit message
+- The Cloudflare deployment attempts to use existing deployment scripts before falling back to Wrangler
+- The transparent logo implementation ensures consistency across the entire application

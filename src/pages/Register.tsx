@@ -100,7 +100,7 @@ const Register = () => {
   // Show verification message after successful registration
   if (registrationComplete) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-blue-50">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
           <div className="w-full max-w-md">
@@ -124,9 +124,9 @@ const Register = () => {
                   </AlertDescription>
                 </Alert>
                 
-                <Card className="mb-6 p-4 bg-gray-50">
+                <Card className="mb-6 p-4 bg-white shadow-md">
                   <CardContent className="pt-4 px-2">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">What happens next?</h3>
+                    <h3 className="text-sm font-semibold text-blue-700 mb-2">What happens next?</h3>
                     <ol className="space-y-2 text-sm text-gray-600 list-decimal pl-5">
                       <li>Our administrators have been notified of your registration</li>
                       <li>Once approved, you'll receive a confirmation email</li>
@@ -145,9 +145,9 @@ const Register = () => {
             )}
             
             <div className="mt-6 text-center animate-fade-in">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-blue-700">
                 Ready to start?{" "}
-                <Link to="/login" className="text-primary font-medium hover:underline">
+                <Link to="/login" className="text-blue-500 font-medium hover:underline">
                   Sign in
                 </Link>
               </p>
@@ -159,7 +159,7 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
         <div className="w-full max-w-md">
@@ -169,9 +169,9 @@ const Register = () => {
             isLoading={isLoading || loading}
           />
           <div className="mt-6 text-center animate-fade-in animation-delay-300">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-blue-700">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary font-medium hover:underline">
+              <Link to="/login" className="text-blue-500 font-medium hover:underline">
                 Sign in
               </Link>
             </p>

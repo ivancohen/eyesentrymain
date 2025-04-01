@@ -48,6 +48,18 @@ export const QUESTION_FORM_FIELDS: Field[] = [
     required: true,
     options: PAGE_CATEGORIES,
     helpText: "Select which page this question belongs to in the questionnaire"
+  },
+  {
+    key: "status",
+    label: "Status",
+    type: "select" as const,
+    required: true,
+    options: [
+      { value: "Active", label: "Active" },
+      { value: "Draft", label: "Draft" },
+      { value: "Inactive", label: "Inactive" }
+    ],
+    helpText: "Set the status (Active questions appear in questionnaires)"
   }
 ];
 

@@ -141,15 +141,17 @@ export class QuestionVerifier {
   // Log question event
   async logQuestionEvent(eventType, questionId, details) {
     try {
-      const { error } = await supabase
-        .from('question_events')
-        .insert([{
-          event_type: eventType,
-          question_id: questionId,
-          details: details || {}
-        }]);
-      
-      if (error) throw error;
+      // Commented out as 'question_events' table does not exist in the provided schema
+      // const { error } = await supabase
+      //   .from('question_events')
+      //   .insert([{
+      //     event_type: eventType,
+      //     question_id: questionId,
+      //     details: details || {}
+      //   }]);
+      //
+      // if (error) throw error;
+      console.warn(`Logging to 'question_events' is disabled as the table does not exist. Event: ${eventType}, Question: ${questionId}`);
       
       return true;
     } catch (error) {

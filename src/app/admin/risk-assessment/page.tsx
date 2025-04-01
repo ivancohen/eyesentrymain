@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { QUESTIONNAIRE_PAGES } from '@/constants/questionnaireConstants';
-import { riskAssessmentService, RiskAssessmentConfig, RiskAssessmentAdvice } from '@/services/RiskAssessmentService';
+// Removed RiskAssessmentConfig import as it's no longer used here
+import { riskAssessmentService, RiskAssessmentAdvice } from '@/services/RiskAssessmentService';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function RiskAssessmentAdmin() {
-  const [configurations, setConfigurations] = useState<RiskAssessmentConfig[]>([]);
+  // Removed configurations state
   const [advice, setAdvice] = useState<RiskAssessmentAdvice[]>([]);
   const [newAdvice, setNewAdvice] = useState({ min_score: 0, max_score: 0, advice: '' });
   const { toast } = useToast();
@@ -22,11 +23,8 @@ export default function RiskAssessmentAdmin() {
 
   const loadData = async () => {
     try {
-      const [configs, adviceList] = await Promise.all([
-        riskAssessmentService.getConfigurations(),
-        riskAssessmentService.getAdvice()
-      ]);
-      setConfigurations(configs);
+      // Only fetch advice list now
+      const adviceList = await riskAssessmentService.getAdvice();
       setAdvice(adviceList);
     } catch (error) {
       toast({
@@ -37,22 +35,7 @@ export default function RiskAssessmentAdmin() {
     }
   };
 
-  const handleConfigUpdate = async (config: Partial<RiskAssessmentConfig>) => {
-    try {
-      await riskAssessmentService.updateConfiguration(config);
-      await loadData();
-      toast({
-        title: 'Success',
-        description: 'Risk assessment configuration updated'
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update risk assessment configuration',
-        variant: 'destructive'
-      });
-    }
-  };
+  // REMOVED handleConfigUpdate function as config is no longer managed here
 
   const handleAdviceUpdate = async (advice: RiskAssessmentAdvice) => {
     try {
@@ -93,43 +76,7 @@ export default function RiskAssessmentAdmin() {
     <div className="container mx-auto py-8 space-y-8">
       <h1 className="text-3xl font-bold mb-8">Risk Assessment Configuration</h1>
 
-      {/* Question Scores */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Question Scores</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {QUESTIONNAIRE_PAGES.flat().map(question => (
-              <div key={question.id} className="space-y-2">
-                <h3 className="font-medium">{question.text}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {question.options?.map(option => {
-                    const config = configurations.find(
-                      c => c.question_id === question.id && c.option_value === option.value
-                    );
-                    return (
-                      <div key={option.value} className="flex items-center gap-2">
-                        <Label className="w-32">{option.label}</Label>
-                        <Input
-                          type="number"
-                          value={config?.score || 0}
-                          onChange={e => handleConfigUpdate({
-                            question_id: question.id,
-                            option_value: option.value,
-                            score: parseInt(e.target.value) || 0
-                          })}
-                          className="w-24"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* REMOVED Question Scores Card - Scores are now managed in Question Management */}
 
       {/* Risk Assessment Advice */}
       <Card>

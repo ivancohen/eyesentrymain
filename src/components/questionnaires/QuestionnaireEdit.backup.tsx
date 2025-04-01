@@ -308,17 +308,13 @@ const QuestionnaireEdit = () => {
 
       console.log("Updating questionnaire data (DB-Driven):", finalPayload);
 
-      const result = await updateQuestionnaire(id, finalPayload);
-
-      setResults({
-        score: result.score,
-        riskLevel: result.riskLevel,
-        contributing_factors: result.contributing_factors || [],
-        advice: result.advice || ""
-      });
-
-      toast.success("Questionnaire updated successfully!");
-
+      
+            await updateQuestionnaire(id, finalPayload); // Call update, but ignore void return
+      
+            // Remove setResults call as updateQuestionnaire doesn't return results anymore
+            // setResults({ ... });
+      
+            toast.success("Questionnaire updated successfully!"); // Keep success message
       setIsCompleted(true);
     } catch (error) {
       console.error("Error updating questionnaire:", error);

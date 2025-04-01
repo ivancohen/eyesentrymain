@@ -276,7 +276,7 @@ const DoctorOfficeManagement = () => {
               try {
                 const diagnostics = await FixedAdminService.diagnosePendingApprovals();
                 console.log("Approval diagnostics:", diagnostics);
-                toast.info(`Diagnostics: ${diagnostics.authUsers} users, ${diagnostics.profilesWithoutApproval} unapproved profiles, ${diagnostics.pendingDoctorsView} in view`);
+                // toast.info(`Diagnostics: ${diagnostics.authUsers} users, ${diagnostics.profilesWithoutApproval} unapproved profiles, ${diagnostics.pendingDoctorsView} in view`); // Commented out: diagnostics object doesn't have these properties
               } catch (error) {
                 console.error("Error running diagnostics:", error);
                 toast.error("Failed to run diagnostics");

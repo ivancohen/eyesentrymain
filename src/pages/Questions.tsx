@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Database, Shield } from "lucide-react";
 import { Question, QuestionService } from "@/services/QuestionService";
 import PageHeader from "@/components/PageHeader";
-import QuestionFormManager from "@/components/questions/QuestionFormManager";
+import QuestionFormManager from "../components/questions/QuestionFormManager";
 import QuestionTable from "@/components/questions/QuestionTable";
 import LoadingSpinner from "@/components/LoadingSpinner";
 

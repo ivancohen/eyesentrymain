@@ -1,0 +1,14 @@
+name = "eyesentry"
+compatibility_date = "2024-01-01"
+
+# Directory with built assets to upload
+pages_build_output_dir = "dist"
+
+# Environment variables for Functions
+[vars]
+RESEND_API_KEY = "re_ENYzvups_8H6hiYiw8NbNZAu88XwragZW"
+
+# Routes to direct requests to the SPA
+[[routes]]
+pattern = "/*"
+fallback = "/index.html"

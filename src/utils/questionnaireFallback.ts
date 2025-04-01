@@ -70,14 +70,17 @@ export async function getQuestionsWithFallback(
     // Otherwise, fall back to hardcoded
     console.warn("No questions fetched from database, falling back to hardcoded questions");
     
+    
+    
     // Convert hardcoded questions format to match DB format
-    const fallbackQuestions = QUESTIONNAIRE_PAGES.flatMap((page, pageIndex) => {
-      const category = pageIndex === 0 ? 'patient_info' : 
-                      pageIndex === 1 ? 'medical_history' : 
-                      'clinical_measurements';
+    const fallbackQuestions = Object.values(QUESTIONNAIRE_PAGES).flatMap(page => { // Use Object.values(), removed pageIndex
+      // Determine category based on page id or title if needed, or use page.id directly if it matches DB categories
+      const category = page.id === 'medical-history' ? 'medical_history' :
+                      page.id === 'clinical' ? 'clinical_measurements' :
+                      'patient_info'; // Default or adjust logic
       
-      return page.map(q => ({
-        id: q.id,
+      return page.questions.map(q => ({ // Map over page.questions
+        id: q.id, // Add missing id property
         question: q.text,
         tooltip: q.tooltip || '',
         question_type: q.type,
@@ -96,15 +99,18 @@ export async function getQuestionsWithFallback(
   } catch (error) {
     console.error("Error fetching questions with fallback:", error);
     
+    
+    
     // Return hardcoded as last resort
-    const fallbackQuestions = QUESTIONNAIRE_PAGES.flatMap((page, pageIndex) => {
-      const category = pageIndex === 0 ? 'patient_info' : 
-                      pageIndex === 1 ? 'medical_history' : 
-                      'clinical_measurements';
-      
-      return page.map(q => ({
-        id: q.id,
-        question: q.text,
+    const fallbackQuestions = Object.values(QUESTIONNAIRE_PAGES).flatMap(page => { // Use Object.values(), removed pageIndex
+      // Determine category based on page id or title if needed, or use page.id directly if it matches DB categories
+      const category = page.id === 'medical-history' ? 'medical_history' :
+                      page.id === 'clinical' ? 'clinical_measurements' :
+                      'patient_info'; // Default or adjust logic
+       
+       return page.questions.map(q => ({ // Map over page.questions
+         id: q.id, // Add missing id property
+         question: q.text,
         tooltip: q.tooltip || '',
         question_type: q.type,
         page_category: category,
@@ -180,13 +186,12 @@ export function convertToFormQuestions(
 ): QuestionItem[] {
   return dbQuestions.map(dbQ => ({
     id: dbQ.id,
-    text: dbQ.question,
+    question: dbQ.question, // Use 'question' property for QuestionItem
     type: dbQ.question_type === 'boolean' ? 'select' : (dbQ.question_type as any || 'select'),
-    options: questionDropdownOptions[dbQ.id] || 
+    options: questionDropdownOptions[dbQ.id] ||
              (dbQ.question_type === 'boolean' || dbQ.question_type === 'select' ? yesNoOptions : []),
     required: true,
     tooltip: dbQ.tooltip || ''
-  ,
-    question: dbQ.text // Add missing question property
+    // Removed incorrect 'question: dbQ.text' line
   }));
 }

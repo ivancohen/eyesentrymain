@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import Navbar from "@/components/Navbar";
 import { toast } from "sonner";
 import { 
   SidebarProvider, 
@@ -149,16 +150,15 @@ const NewAdmin = () => {
       case 'users':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">User Management</h2>
             </div>
             <EnhancedUserManagement />
           </>
@@ -166,16 +166,15 @@ const NewAdmin = () => {
       case 'approvals':
         return (
           <>
-            <div className="mb-6 flex items-center">
-              <Button 
-                variant="outline" 
-                className="mr-4"
+            <div className="mb-6 flex items-center justify-center">
+              <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Doctor Approvals</h2>
             </div>
             <DoctorApprovals />
           </>
@@ -183,16 +182,15 @@ const NewAdmin = () => {
       case 'offices':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Doctor Office Management</h2>
             </div>
             <DoctorOfficeManagement />
           </>
@@ -200,16 +198,15 @@ const NewAdmin = () => {
       case 'analytics':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Patient Analytics</h2>
             </div>
             <PatientAnalyticsDashboard />
           </>
@@ -217,16 +214,15 @@ const NewAdmin = () => {
       case 'questions':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Question Management</h2>
             </div>
             <EnhancedQuestionManager />
           </>
@@ -243,16 +239,15 @@ const NewAdmin = () => {
       case 'risk-assessment':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Risk Assessment</h2>
             </div>
             <RiskAssessmentAdmin />
           </>
@@ -260,16 +255,15 @@ const NewAdmin = () => {
       case 'specialist-questions':
         return (
           <>
-            <div className="mb-6 flex items-center">
+            <div className="mb-6 flex items-center justify-center">
               <Button
                 variant="outline"
-                className="mr-4"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
                 onClick={() => changeSection('dashboard')}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Home className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
-              <h2 className="text-2xl font-bold">Specialist Questions</h2>
             </div>
             <SpecialistQuestionManager />
           </>
@@ -277,8 +271,8 @@ const NewAdmin = () => {
       default:
         return (
           <>
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center gap-2">
+            <div className="mb-8 text-center">
+              <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center justify-center gap-2">
                 <Shield className="h-5 w-5" />
                 Admin Control Panel
               </h1>
@@ -290,10 +284,10 @@ const NewAdmin = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <Users className="h-5 w-5 text-blue-500" /> User Management
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Manage user accounts, permissions and roles
                   </CardDescription>
                 </CardHeader>
@@ -309,10 +303,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <UserCheck className="h-5 w-5 text-green-500" /> Doctor Approvals
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Review and approve doctor account requests
                   </CardDescription>
                 </CardHeader>
@@ -328,10 +322,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <Building className="h-5 w-5 text-amber-500" /> Doctor Offices
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Manage doctor office information and details
                   </CardDescription>
                 </CardHeader>
@@ -347,10 +341,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <BarChart3 className="h-5 w-5 text-violet-500" /> Patient Analytics
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Analyze patient data and generate reports
                   </CardDescription>
                 </CardHeader>
@@ -366,10 +360,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <HelpCircle className="h-5 w-5 text-indigo-500" /> Question Management
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Create, edit and manage questionnaire questions
                   </CardDescription>
                 </CardHeader>
@@ -385,11 +379,11 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <BarChart3 className="h-5 w-5 text-amber-500" /> Risk Assessment
                   </CardTitle>
-                  <CardDescription>
-                    Configure risk scores and advice for questionnaire responses
+                  <CardDescription className="text-center">
+                    Configure risk scores and advice for questionnaire's
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
@@ -404,10 +398,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <Stethoscope className="h-5 w-5 text-blue-500" /> Specialist Questions
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Create and manage questions for specialist assessments
                   </CardDescription>
                 </CardHeader>
@@ -423,10 +417,10 @@ const NewAdmin = () => {
 
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center justify-center gap-2">
                     <Bot className="h-5 w-5 text-rose-500" /> AI Assistant
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-center">
                     Get insights and generate reports from questionnaire data
                   </CardDescription>
                 </CardHeader>
@@ -446,156 +440,12 @@ const NewAdmin = () => {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen">
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center justify-between p-2">
-              <div className="flex items-center">
-                <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold select-none">
-                  {user.name?.charAt(0) || user.email?.charAt(0) || "A"}
-                </div>
-                <div className="ml-2 overflow-hidden group-data-[collapsible=icon]:hidden">
-                  <div className="text-sm font-medium truncate">{user.name || user.email}</div>
-                  <div className="text-xs text-muted-foreground truncate">Administrator</div>
-                </div>
-              </div>
-              <AdminNotifications />
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Main</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'dashboard'} 
-                    tooltip="Dashboard" 
-                    onClick={() => changeSection('dashboard')}
-                  >
-                    <Home className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'users'} 
-                    tooltip="Users" 
-                    onClick={() => changeSection('users')}
-                  >
-                    <Users className="h-4 w-4" />
-                    <span>Users</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'approvals'} 
-                    tooltip="Doctor Approvals" 
-                    onClick={() => changeSection('approvals')}
-                  >
-                    <UserCheck className="h-4 w-4" />
-                    <span>Doctor Approvals</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'offices'} 
-                    tooltip="Doctor Offices" 
-                    onClick={() => changeSection('offices')}
-                  >
-                    <Building className="h-4 w-4" />
-                    <span>Doctor Offices</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Data</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'analytics'} 
-                    tooltip="Analytics" 
-                    onClick={() => changeSection('analytics')}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Analytics</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'questions'} 
-                    tooltip="Questions" 
-                    onClick={() => changeSection('questions')}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                    <span>Questions</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'ai'} 
-                    tooltip="AI Assistant" 
-                    onClick={() => changeSection('ai')}
-                  >
-                    <Bot className="h-4 w-4" />
-                    <span>AI Assistant</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'risk-assessment'} 
-                    tooltip="Risk Assessment" 
-                    onClick={() => changeSection('risk-assessment')}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Risk Assessment</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    isActive={currentSection === 'specialist-questions'} 
-                    tooltip="Specialist Questions" 
-                    onClick={() => changeSection('specialist-questions')}
-                  >
-                    <Stethoscope className="h-4 w-4" />
-                    <span>Specialist Questions</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Account</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Profile" onClick={() => navigate("/user-profile")}>
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter>
-            <div className="flex items-center justify-between p-4 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-              <span>EyeSentry</span>
-              <span>v1.0.0</span>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-          <div className="p-6">
-            {renderContent()}
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen flex flex-col bg-blue-50">
+      <Navbar showProfile={true} />
+      <main className="flex-1 container px-6 py-6 mx-auto">
+        {renderContent()}
+      </main>
+    </div>
   );
 };
 

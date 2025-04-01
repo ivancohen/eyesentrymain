@@ -6,6 +6,7 @@ export interface QuestionOption {
   value: string;
   label: string;
   tooltip?: string;
+  order?: number; // Add order property for sorting
 }
 
 export interface QuestionItem {

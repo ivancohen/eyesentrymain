@@ -1,311 +1,272 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card } from '@/components/ui/card';
-import { ArrowLeft, Plus, X, GripVertical } from 'lucide-react';
-import { toast } from 'sonner';
-import { SpecialistQuestion, QuestionType } from '@/types/specialist';
-import { SpecialistService } from '@/services/SpecialistService';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle, 
-    DialogDescription,
-    DialogFooter 
-} from '@/components/ui/dialog';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface SpecialistQuestionFormProps {
-    currentItem: Partial<SpecialistQuestion> | null;
-    onSuccess: () => void;
-    onCancel: () => void;
+  currentItem?: any;
+  onSuccess?: (data: any) => void; // Expect data to be passed back
+  onCancel?: () => void;
 }
 
-export const SpecialistQuestionForm: React.FC<SpecialistQuestionFormProps> = ({
-    currentItem,
-    onSuccess,
-    onCancel
-}) => {
-    const [formData, setFormData] = useState<Partial<SpecialistQuestion>>(
-        currentItem || {
-            question: '',
-            question_type: 'text',
-            display_order: 0,
-            required: false,
-            is_active: true,
-            dropdown_options: []
-        }
-    );
+const SpecialistQuestionForm = ({ 
+  currentItem,
+  onSuccess,
+  onCancel
+}: SpecialistQuestionFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    question: "",
+    question_type: "text",
+    required: true,
+    dropdown_options: [],
+    conditional_parent_id: null, // Or ""
+    conditional_required_value: "",
+    conditional_display_mode: "hide" // Default to hide
+  });
+  const [newOption, setNewOption] = useState('');
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showOptionsDialog, setShowOptionsDialog] = useState(false);
-    const [newOption, setNewOption] = useState('');
-    const [dropdownOptions, setDropdownOptions] = useState<string[]>(formData.dropdown_options || []);
+  // Load current item data for editing
+  useEffect(() => {
+    if (currentItem) {
+      setFormData({
+        ...currentItem,
+        dropdown_options: currentItem.dropdown_options || [],
+        conditional_parent_id: currentItem.conditional_parent_id || null, // Or ""
+        conditional_required_value: currentItem.conditional_required_value || "",
+        conditional_display_mode: currentItem.conditional_display_mode || "hide"
+      });
+    }
+  }, [currentItem]);
 
-    const questionTypes: QuestionType[] = ['text', 'multiline', 'number', 'select'];
+  const handleInputChange = (key: string, value: any) => {
+    setFormData({
+      ...formData,
+      [key]: value,
+      // Reset dropdown options if type is changed from select
+      dropdown_options: key === 'question_type' && value !== 'select' ? [] : formData.dropdown_options
+    });
+  };
 
-    const handleQuestionTypeChange = (value: QuestionType) => {
-        setFormData({
-            ...formData,
-            question_type: value,
-            dropdown_options: value === 'select' ? [] : undefined
-        });
-        if (value === 'select') {
-            setShowOptionsDialog(true);
-        }
-    };
+  const handleAddOption = () => {
+    if (!newOption) {
+      toast.error("Option text is required");
+      return;
+    }
 
-    const handleAddOption = () => {
-        if (!newOption.trim()) {
-            toast.error('Please enter an option');
-            return;
-        }
-        if (dropdownOptions.includes(newOption.trim())) {
-            toast.error('Option already exists');
-            return;
-        }
-        setDropdownOptions([...dropdownOptions, newOption.trim()]);
-        setNewOption('');
-    };
+    setFormData({
+      ...formData,
+      dropdown_options: [...(formData.dropdown_options || []), newOption]
+    });
+    setNewOption('');
+  };
 
-    const handleRemoveOption = (index: number) => {
-        const newOptions = [...dropdownOptions];
-        newOptions.splice(index, 1);
-        setDropdownOptions(newOptions);
-    };
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = [...formData.dropdown_options];
+    updatedOptions.splice(index, 1);
+    setFormData({
+      ...formData,
+      dropdown_options: updatedOptions
+    });
+  };
 
-    const handleSaveOptions = () => {
-        if (dropdownOptions.length < 2) {
-            toast.error('Please add at least two options');
-            return;
-        }
-        setFormData({
-            ...formData,
-            dropdown_options: dropdownOptions
-        });
-        setShowOptionsDialog(false);
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleAddOption();
-        }
-    };
-    
-    // Handle drag end event for reordering dropdown options
-    const handleDragEnd = (result: DropResult) => {
-        if (!result.destination) return;
-        
-        const items = Array.from(dropdownOptions);
-        const [reorderedItem] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, reorderedItem);
-        
-        setDropdownOptions(items);
-    };
+    try {
+      // Validate
+      if (!formData.question) {
+        toast.error("Question text is required");
+        return;
+      }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        if (!formData.question || !formData.question_type) {
-            toast.error('Please fill in all required fields');
-            return;
-        }
+      if (formData.question_type === 'select' && (!formData.dropdown_options || formData.dropdown_options.length < 2)) {
+        toast.error('Please add at least two options for dropdown menu');
+        return;
+      }
 
-        if (formData.question_type === 'select' && (!formData.dropdown_options || formData.dropdown_options.length < 2)) {
-            toast.error('Please add at least two options for dropdown menu');
-            setShowOptionsDialog(true);
-            return;
-        }
+      // Pass the form data back to the parent component for saving
+      console.log("Submitting specialist question:", formData);
+      
+      if (onSuccess) {
+        onSuccess(formData); // Pass form data back to parent component
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error saving specialist question:", error);
+      toast.error("Failed to save question");
+      setIsLoading(false);
+    }
+  };
 
-        setIsSubmitting(true);
-        try {
-            const success = formData.id
-                ? await SpecialistService.updateQuestion(formData.id, formData)
-                : await SpecialistService.createQuestion(formData);
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
-            if (success) {
-                toast.success(formData.id ? 'Question updated' : 'Question created');
-                onSuccess();
-            }
-        } catch (error) {
-            console.error('Error saving specialist question:', error);
-            toast.error('Failed to save question');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>{currentItem ? "Edit Specialist Question" : "Add Specialist Question"}</CardTitle>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="question">Question Text</Label>
+            <Textarea 
+              id="question"
+              value={formData.question}
+              onChange={(e) => handleInputChange('question', e.target.value)}
+              placeholder="Enter the question text"
+              className="min-h-[100px]"
+            />
+          </div>
 
-    return (
-        <>
-            <div className="space-y-4">
-                <div className="flex items-center mb-6">
-                    <Button
-                        variant="outline"
-                        className="mr-4"
-                        onClick={onCancel}
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Questions
-                    </Button>
-                    <h2 className="text-xl font-semibold">
-                        {currentItem?.id ? 'Edit Question' : 'Add New Question'}
-                    </h2>
-                </div>
+          <div className="space-y-2">
+            <Label htmlFor="question_type">Question Type</Label>
+            <Select 
+              value={formData.question_type} 
+              onValueChange={(value) => handleInputChange('question_type', value)}
+            >
+              <SelectTrigger id="question_type">
+                <SelectValue placeholder="Select question type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Text Input</SelectItem>
+                <SelectItem value="textarea">Text Area</SelectItem>
+                <SelectItem value="select">Dropdown Menu</SelectItem>
+                <SelectItem value="radio">Radio Buttons</SelectItem>
+                <SelectItem value="checkbox">Checkbox</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-                <Card className="p-6">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Question Text *
-                            </label>
-                            <Input
-                                value={formData.question || ''}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        question: e.target.value
-                                    })
-                                }
-                                placeholder="Enter question text"
-                            />
-                        </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="required" className="flex-grow">Required</Label>
+            <Select 
+              value={formData.required ? "true" : "false"} 
+              onValueChange={(value) => handleInputChange('required', value === "true")}
+            >
+              <SelectTrigger id="required" className="w-[180px]">
+                <SelectValue placeholder="Is this required?" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="true">Yes</SelectItem>
+                <SelectItem value="false">No</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1">
-                                Question Type *
-                            </label>
-                            <Select
-                                value={formData.question_type}
-                                onValueChange={handleQuestionTypeChange}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select question type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="text">Text Input</SelectItem>
-                                    <SelectItem value="multiline">Multiline Text</SelectItem>
-                                    <SelectItem value="number">Number Input</SelectItem>
-                                    <SelectItem value="select">Dropdown Menu</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {formData.question_type === 'select' && (
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Dropdown Options *
-                                </label>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowOptionsDialog(true)}
-                                >
-                                    Manage Options ({formData.dropdown_options?.length || 0})
-                                </Button>
-                            </div>
-                        )}
-
-                        <div className="pt-4 flex justify-end space-x-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={onCancel}
-                                disabled={isSubmitting}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={isSubmitting}
-                            >
-                                {isSubmitting ? 'Saving...' : (currentItem?.id ? 'Update' : 'Create')}
-                            </Button>
-                        </div>
-                    </form>
-                </Card>
+          {/* Conditional Logic Fields */}
+          <div className="space-y-4 border-t pt-4">
+            <h3 className="text-lg font-medium">Conditional Logic (Optional)</h3>
+            <p className="text-sm text-muted-foreground">
+              Show this question only if another question has a specific answer.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="conditional_parent_id">Parent Question ID</Label>
+              <Input
+                id="conditional_parent_id"
+                value={formData.conditional_parent_id || ""}
+                onChange={(e) => handleInputChange('conditional_parent_id', e.target.value || null)} // Store null if empty
+                placeholder="Enter the UUID of the parent question"
+              />
+              {/* TODO: Replace with a Select populated with questions */}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="conditional_required_value">Required Parent Answer</Label>
+              <Input
+                id="conditional_required_value"
+                value={formData.conditional_required_value}
+                onChange={(e) => handleInputChange('conditional_required_value', e.target.value)}
+                placeholder="Enter the exact answer value from the parent"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="conditional_display_mode">Display Mode</Label>
+              <Select
+                value={formData.conditional_display_mode}
+                onValueChange={(value) => handleInputChange('conditional_display_mode', value)}
+              >
+                <SelectTrigger id="conditional_display_mode">
+                  <SelectValue placeholder="Select display mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="show">Show when condition met</SelectItem>
+                  <SelectItem value="hide">Hide when condition met</SelectItem>
+                  {/* Consider if 'hide' makes sense, usually it's 'show' */}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <Dialog open={showOptionsDialog} onOpenChange={setShowOptionsDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Manage Dropdown Options</DialogTitle>
-                        <DialogDescription>
-                            Add at least two options for the dropdown menu. Press Enter or click the plus button to add an option.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="flex space-x-2">
-                            <Input
-                                value={newOption}
-                                onChange={(e) => setNewOption(e.target.value)}
-                                placeholder="Enter option text"
-                                onKeyPress={handleKeyPress}
-                            />
-                            <Button type="button" onClick={handleAddOption}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                            <Droppable droppableId="dropdown-options">
-                                {(provided) => (
-                                    <div
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                        className="space-y-2 max-h-[200px] overflow-y-auto"
-                                    >
-                                        {dropdownOptions.map((option, index) => (
-                                            <Draggable key={index.toString()} draggableId={index.toString()} index={index}>
-                                                {(provided) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        className="flex items-center justify-between bg-muted p-2 rounded"
-                                                    >
-                                                        <div className="flex items-center">
-                                                            <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
-                                                                <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                                            </div>
-                                                            <span>{option}</span>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleRemoveOption(index)}
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+          {formData.question_type === 'select' && (
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="text-lg font-medium">Dropdown Options</h3>
+              
+              <div className="flex gap-2">
+                <Input
+                  value={newOption}
+                  onChange={(e) => setNewOption(e.target.value)}
+                  placeholder="Add an option"
+                  className="flex-grow"
+                />
+                <Button type="button" onClick={handleAddOption} size="sm">
+                  <Plus size={16} />
+                </Button>
+              </div>
+
+              {formData.dropdown_options?.length > 0 ? (
+                <div className="space-y-2 mt-2">
+                  {formData.dropdown_options.map((option: string, index: number) => (
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between py-2 px-3 border rounded-md"
+                    >
+                      <span>{option}</span>
+                      <Button
+                        type="button" 
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveOption(index)}
+                        className="text-destructive h-8 w-8 p-0"
+                      >
+                        <Trash size={16} />
+                      </Button>
                     </div>
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowOptionsDialog(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="button"
-                            onClick={handleSaveOptions}
-                            disabled={dropdownOptions.length < 2}
-                        >
-                            Save Options
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
-    );
-}; 
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No options added yet. Add at least two options for the dropdown.
+                </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="flex justify-between">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+          <Button type="submit">
+            {currentItem ? "Update Question" : "Create Question"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+};
+
+export default SpecialistQuestionForm;

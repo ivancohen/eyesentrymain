@@ -1,0 +1,9 @@
+{
+  "name": "eyesentry-functions",
+  "version": "1.0.0",
+  "description": "Cloudflare Functions for EyeSentry",
+  "main": "index.js",
+  "dependencies": {
+    "resend": "^3.1.0"
+  }
+}

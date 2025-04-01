@@ -1,0 +1,1829 @@
+[
+  {
+    "id": "532d96a2-8bdd-454f-ba34-7eb4fb70dda7",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Dexamethasone (Decadron, DexPak)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "b39ab48a-c3bd-444c-aa6a-31dface583ea",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "81-90",
+    "option_value": "81-90",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "07b8bcc3-5026-47dd-b1cd-9dba6cabe077",
+    "question_id": "a1936e25-1bfc-4c69-b036-d425761960f1",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T03:08:42.170916+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "4ecf6caf-063a-4772-a9ad-ab226131e7eb",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Loteprednol Etabonate (Lotemax, Inveltys)",
+    "option_value": "loteprednol",
+    "score": 4,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "52e29428-9717-4ea7-b8b8-ae7af4a9fbef",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Dexamethasone (Maxidex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "e2463cb2-128e-48ab-b395-e620411e225d",
+    "question_id": "a1936e25-1bfc-4c69-b036-d425761960f1",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T03:08:42.242649+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "fb654f5f-58d7-47c1-a2ae-8834fbd1bcc9",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "loteprednol",
+    "option_value": "loteprednol",
+    "score": 0,
+    "created_at": "2025-03-23T18:28:12.440077+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "4e258b82-c3ed-4483-823b-b3f3f39cb269",
+    "question_id": "5acd811f-0437-4d12-b25e-694805242936",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T04:01:07.875066+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "7a7abbc1-d186-4acb-b5c6-72793f2a6a61",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "White",
+    "option_value": "White",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:14.48686+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "b8f81574-ac82-414b-bd54-b62f824ec437",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "Asian",
+    "option_value": "Asian",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:14.545455+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "64538667-9212-40b8-b2e9-bbdb8b27427b",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "Hispanic or Latino",
+    "option_value": "Hispanic or Latino",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:14.611904+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "17141ee2-d0eb-4e93-a178-27d6de4d1a65",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Fludrocortisone (Florinef)",
+    "option_value": "fludrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "70bc7ef1-e0fb-4f3f-a270-15795bb62d8d",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "eeb9b369-24bc-4f38-b0d7-5374e207c720",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Rimexolone (Vexol)",
+    "option_value": "rimexolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "f02ab042-4ec6-43c9-95c2-191defdffa46",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Prednisolone Acetate (Pred Forte, Omnipred)",
+    "option_value": "prednisolone",
+    "score": 4,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "f4de394d-09bf-4f63-a438-2ec897b82568",
+    "question_id": "33ea694e-d0e1-4d34-90fe-992d12e1eecc",
+    "option_text": "Fluorometholone (FML, FML Forte)",
+    "option_value": "fluorometholone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.253+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "0cbe340c-1a6e-498b-8888-0c1f2e2056ca",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "Hispanic or Latino",
+    "option_value": "hispanic",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "54152594-0bb7-4bdc-916b-8808ca7b91de",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "American Indian or Alaska Native",
+    "option_value": "american_indian",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "90c883b9-a682-4bab-a0ec-5847ed093324",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "Black or African American",
+    "option_value": "black",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "94691337-41dc-4722-b949-b497c0d7ae89",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "Asian",
+    "option_value": "asian",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "cb6823c9-51b9-4d6f-87af-43812a18b533",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "Native Hawaiian or Pacific Islander",
+    "option_value": "pacific_islander",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "cde1a7de-d15b-4bbd-ab95-788f2af1f906",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "Other",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "d276c1ed-3eab-4485-9b00-586692f9424e",
+    "question_id": "35d7d75b-6480-41c8-9031-1ab8b222889d",
+    "option_text": "White",
+    "option_value": "white",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.796+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "2dcde25b-726c-4cfd-b15a-323e8ebddfa1",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Budesonide (Pulmicort, Symbicort [with formoterol])",
+    "option_value": "budesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "1b778eab-6965-48a9-a1a1-8242208389e7",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Beclomethasone (Qvar)",
+    "option_value": "beclomethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "327ac1fa-0879-41a4-a0da-4962befa7bc8",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Dexamethasone (Decadron, DexPak)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "34bbf6ff-29f3-429b-934b-18eec16950b8",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Prednisone (Deltasone, Sterapred)",
+    "option_value": "prednisone",
+    "score": 4,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "69928a90-bf5d-4da7-ab6a-512ef1118977",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Hydrocortisone (Cortef, Solu-Cortef)",
+    "option_value": "hydrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "88a24546-adbe-4f7c-8f13-c87c7abf929a",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Mometasone (Asmanex, Dulera [with formoterol])",
+    "option_value": "mometasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "9c498b76-d681-411d-92cb-2e133749e1ad",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Ciclesonide (Alvesco)",
+    "option_value": "ciclesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "a77afa2e-f24f-4c61-8683-3cd7c5a80472",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "b15a3a71-be7a-4ccc-a425-1550a7c3f004",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Methylprednisolone (Medrol, Depo-Medrol)",
+    "option_value": "methylprednisolone",
+    "score": 4,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 8
+  },
+  {
+    "id": "c41d3e8b-040e-4eb6-8836-f519eafa26c6",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Fluticasone (Vermamyst, Flonase, Flovent)",
+    "option_value": "fluticasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 9
+  },
+  {
+    "id": "c59588d2-4ad5-4663-97c4-a73f0a0f87e2",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Fludrocortisone (Florinef)",
+    "option_value": "fludrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 10
+  },
+  {
+    "id": "df3d6d6b-6e5c-4ce3-b275-a4482bcf1bd3",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Cortisone (Cortone)",
+    "option_value": "cortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 11
+  },
+  {
+    "id": "e25587cc-0c45-43f4-bc88-091479f89c9f",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Budesonide (Pulmicort, Symbicort [with formoterol])",
+    "option_value": "budesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 12
+  },
+  {
+    "id": "e2e2cb9f-87ec-49d8-a6a9-1478a3bf86a8",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Betamethasone (Betasone, Celestone)",
+    "option_value": "betamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 13
+  },
+  {
+    "id": "e89ab0b2-a437-413f-a9ea-ced03feed1be",
+    "question_id": "4569fbc2-7645-4b98-85d1-74dc1ad5d1c8",
+    "option_text": "Triamcinolone (Kenalog, Aromasin)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.546+00:00",
+    "display_order": 14
+  },
+  {
+    "id": "6b385ae5-690c-4772-bcfa-f24308d9da83",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Betamethasone (Betasone, Celestone)",
+    "option_value": "betamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "92f1f346-92cf-4548-9fc0-c6647569f098",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Beclomethasone (Qvar)",
+    "option_value": "beclomethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "a0d00a73-084e-42a0-9c44-52e8d271e5f3",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Ciclesonide (Alvesco)",
+    "option_value": "ciclesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 8
+  },
+  {
+    "id": "cee21429-0d7c-4303-8051-162f7f9f3baa",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Hydrocortisone (Cortef, Solu-Cortef)",
+    "option_value": "hydrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 9
+  },
+  {
+    "id": "df7fe917-7e39-4463-b56d-8bd22c486a26",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Mometasone (Asmanex, Dulera [with formoterol])",
+    "option_value": "mometasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 10
+  },
+  {
+    "id": "f1dff9c4-f3be-43e3-8126-2eee5cdca1ec",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 11
+  },
+  {
+    "id": "f3891870-390c-45ad-ada3-f711dd56bd6b",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Cortisone (Cortone)",
+    "option_value": "cortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 12
+  },
+  {
+    "id": "e5949bce-29d8-465e-be95-528829906df0",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "prednisone",
+    "option_value": "prednisone",
+    "score": 0,
+    "created_at": "2025-03-23T18:27:10.984805+00:00",
+    "display_order": 13
+  },
+  {
+    "id": "3592fcb8-0268-44ca-8492-c5ef06ae4587",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "methylprednisolone",
+    "option_value": "methylprednisolone",
+    "score": 0,
+    "created_at": "2025-03-23T18:27:11.057552+00:00",
+    "display_order": 14
+  },
+  {
+    "id": "fadb2ed1-6cd3-4bc8-90db-ec5ad70d888d",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.319+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "6ce2dee7-5a40-4c9c-921f-181f77500587",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "prednisolone",
+    "option_value": "prednisolone",
+    "score": 0,
+    "created_at": "2025-03-23T18:28:12.364587+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "465f1b21-fc30-462d-8be6-c62a99c07d76",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Triamcinolone (Kenalog, Aromasin)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "402fd034-e1a9-4042-9ada-709c235f4d01",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "51-60",
+    "option_value": "51-60",
+    "score": 0,
+    "created_at": "2025-03-31T01:06:44.438338+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "333c02df-d4d9-403e-a45f-ebd5a5254512",
+    "question_id": "61f1c22c-d499-495a-adac-4f322aa8b97a",
+    "option_text": "Fluocinolone Acetonide (Iluvien)",
+    "option_value": "fluocinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.542+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "6465b946-bb0c-453f-9491-167f0e4690b5",
+    "question_id": "61f1c22c-d499-495a-adac-4f322aa8b97a",
+    "option_text": "Dexamethasone (Ozurdex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.542+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "478a7622-4268-4d8a-b242-878d706e311f",
+    "question_id": "468969a4-0f2b-4a03-8cc1-b9f80efff559",
+    "option_text": "Fluticasone (Vermamyst, Flonase, Flovent)",
+    "option_value": "fluticasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.754+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "eb4fe9ee-eb7c-4836-9afd-1b2538cf2875",
+    "question_id": "573c8870-e714-471e-8ddd-b41b25e32c90",
+    "option_text": "Enter First Name",
+    "option_value": "enter_first_name",
+    "score": 1,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "4d56300e-8ff0-45fc-8e20-6b0ac4991e4b",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "0-50",
+    "option_value": "0-50",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "3fc5f2d3-372a-4eb8-8165-63c2f71123bb",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "71-80",
+    "option_value": "71-80",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "5497e31b-c986-4a41-97a7-5d5ee0ce9aa5",
+    "question_id": "332970ba-cca1-4681-aed9-9a21320afd5e",
+    "option_text": "Enter First Name",
+    "option_value": "enter_first_name",
+    "score": 0,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "c0147831-739c-4957-89fb-425a1ce7a6da",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "Asian",
+    "option_value": "Asian",
+    "score": 0,
+    "created_at": "2025-03-31T00:58:59.371928+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "51d9ec85-fd34-4064-920f-2f66c65af5a9",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "White",
+    "option_value": "White",
+    "score": 0,
+    "created_at": "2025-03-31T00:23:09.432579+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "9730abcb-7ee4-4c31-9285-ea8d498d109c",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "Black or African American",
+    "option_value": "Black or African American",
+    "score": 2,
+    "created_at": "2025-03-31T00:58:59.506969+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "532256eb-8808-4c39-98e3-e68c6a35df6e",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "Native Hawaiian or Pacific Islander",
+    "option_value": "Native Hawaiian or Pacific Islander",
+    "score": 0,
+    "created_at": "2025-03-31T00:58:59.651782+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "de4d2413-a9e0-4548-aec3-2219510b276a",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 14
+  },
+  {
+    "id": "b0d2b85c-2c1e-468d-88a3-64f6208823ce",
+    "question_id": "a17b97e1-2f77-4a33-babe-8763c7bdd4ca",
+    "option_text": "test 2",
+    "option_value": "test 2",
+    "score": 4,
+    "created_at": "2025-03-26T14:50:42.449346+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "340b77e1-1e0d-49b0-8aef-49d93e22ae70",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "Native Hawaiian or Pacific Islander",
+    "option_value": "Native Hawaiian or Pacific Islander",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:15.001826+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "0548db2e-ea68-4d7b-9a7d-6741afed94e9",
+    "question_id": "c76b1dc7-338a-4282-bb00-18627883d891",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T18:55:13.229412+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "c5ec6480-4755-4368-95a3-d9b564a69ddf",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "Other",
+    "option_value": "Other",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:15.070184+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "c32dc1eb-4bb2-4810-88cf-0c92eb8ae592",
+    "question_id": "f1417a7b-06ec-4f56-a66d-884a24f571ef",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T03:11:56.062105+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "9456f424-d834-47c1-af7c-dd47631f5ddf",
+    "question_id": "e07b2e94-5bc4-4bb0-b561-0bad4403d9cd",
+    "option_text": "Under 0.2",
+    "option_value": "Under 0.2",
+    "score": 0,
+    "created_at": "2025-03-31T17:15:53.257679+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "6dbb866c-38ad-4153-886e-8e6e680af5d5",
+    "question_id": "a43ecfbc-413f-4925-8908-f9fc0d35ea0f",
+    "option_text": "No",
+    "option_value": "no",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.643+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "d28d76b4-420f-462a-ab87-39c199d3c7e3",
+    "question_id": "a43ecfbc-413f-4925-8908-f9fc0d35ea0f",
+    "option_text": "yes",
+    "option_value": "yes",
+    "score": 2,
+    "created_at": "2025-03-23T18:20:12.903415+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "ef7aac86-34f6-4580-9acd-98de3861d2b7",
+    "question_id": "879cd028-1b29-4529-9cdb-7adcaf44d553",
+    "option_text": "No",
+    "option_value": "no",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.217+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "f690e0be-fe26-4c18-a46b-e992a6adce65",
+    "question_id": "879cd028-1b29-4529-9cdb-7adcaf44d553",
+    "option_text": "yes",
+    "option_value": "yes",
+    "score": 2,
+    "created_at": "2025-03-23T18:15:07.232834+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "98575576-0f00-41c2-8b15-ad132f043982",
+    "question_id": "631db108-0f4c-46ff-941e-c37f6856060c",
+    "option_text": "No",
+    "option_value": "no",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.426+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "108a87a6-e630-4b82-91e1-f3704e543f62",
+    "question_id": "631db108-0f4c-46ff-941e-c37f6856060c",
+    "option_text": "yes",
+    "option_value": "yes",
+    "score": 2,
+    "created_at": "2025-03-23T18:18:59.116088+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "c247db56-2e0a-49a1-a557-307f055a660b",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "Black or African American",
+    "option_value": "Black or African American",
+    "score": 2,
+    "created_at": "2025-03-31T01:35:14.749848+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "e3c2721c-f9ca-4e6c-8226-d10c01393470",
+    "question_id": "ab438232-5f80-4862-894a-d9bdb7276fa4",
+    "option_text": "American Indian or Alaska Native",
+    "option_value": "American Indian or Alaska Native",
+    "score": 0,
+    "created_at": "2025-03-31T01:35:14.877248+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "63eda446-f785-41e3-8ace-6981726f80c9",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "91+",
+    "option_value": "91+",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "19e52996-d61e-41e3-85c3-44444a88156c",
+    "question_id": "7dfb32d8-3d8d-450d-89ba-6c144bffbb6a",
+    "option_text": "Enter Last Name",
+    "option_value": "enter_last_name",
+    "score": 0,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "6611a9e0-9e82-46b6-90bf-9078bd41b12a",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Hydrocortisone (Cortef, Solu-Cortef)",
+    "option_value": "hydrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "6f43a579-f587-4f91-8564-d80b86a3b341",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Triamcinolone (Kenalog, Aromasin)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "763ad51c-cf72-4723-af72-889974e66545",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Prednisone (Deltasone, Sterapred)",
+    "option_value": "prednisone",
+    "score": 4,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "888e2102-baaf-4ff1-b2bd-74f3edb91142",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Mometasone (Asmanex, Dulera [with formoterol])",
+    "option_value": "mometasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "8e7772dd-7af8-4886-b640-fd76e4d3f04f",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Beclomethasone (Qvar)",
+    "option_value": "beclomethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "91c9e418-935a-4769-981d-12faf9856cdf",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Cortisone (Cortone)",
+    "option_value": "cortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "99ffc5dc-225c-4c33-b1dd-c73dc1669ff6",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Fludrocortisone (Florinef)",
+    "option_value": "fludrocortisone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 8
+  },
+  {
+    "id": "8c2720bb-3efe-49dc-b19d-c8e111e7b911",
+    "question_id": "b9a4efa7-3996-4d96-9192-0286581d6f42",
+    "option_text": "Enter First Name",
+    "option_value": "enter_first_name",
+    "score": 1,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "3502a7c4-d6a5-449e-8681-5aa251783b8f",
+    "question_id": "a880358d-8386-42e1-bc01-1a10150d498d",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.184+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "4098862b-567b-462e-8487-3dd32ddac21a",
+    "question_id": "a880358d-8386-42e1-bc01-1a10150d498d",
+    "option_text": "Fluocinolone Acetonide (Iluvien)",
+    "option_value": "fluocinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.184+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "6d18fdbd-c97c-4e6b-9e93-f0b0b47a6707",
+    "question_id": "a880358d-8386-42e1-bc01-1a10150d498d",
+    "option_text": "Dexamethasone (Ozurdex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.184+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "8891aca0-1721-4dc3-a9a2-582d31a7d147",
+    "question_id": "a880358d-8386-42e1-bc01-1a10150d498d",
+    "option_text": "Triamcinolone Acetonide (Triesence, Kenalog)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:56.184+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "ed75ceae-730a-4b23-9c29-bd334b26ab12",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "61-70",
+    "option_value": "61-70",
+    "score": 0,
+    "created_at": "2025-03-31T01:06:44.508113+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "49593354-5860-434a-94b5-5d44e229e6b1",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "71-80",
+    "option_value": "71-80",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "a8a7337d-961c-4635-94eb-95cac0fbce10",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "61-70",
+    "option_value": "61-70",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "b5555ae9-e9d2-4b80-8f72-3ddae50bb273",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "81-90",
+    "option_value": "81-90",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "f97bb2f0-77e4-4349-9c9d-d10034ff3122",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "0-50",
+    "option_value": "0-50",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "0e5c6c54-ed3b-4cdd-aa98-6b9cf02dc0f2",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Loteprednol Etabonate (Lotemax, Inveltys)",
+    "option_value": "loteprednol",
+    "score": 4,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "20692640-5202-43bf-9908-e0023e433bf7",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "2cb6c20b-5146-45a2-8c03-1b287141a9c4",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Rimexolone (Vexol)",
+    "option_value": "rimexolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "69a67e78-2890-45ef-b698-e463cb5e64b2",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Prednisolone Acetate (Pred Forte, Omnipred)",
+    "option_value": "prednisolone",
+    "score": 4,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "c7f5827d-0f0e-43fc-8745-445ccc53e391",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Fluorometholone (FML, FML Forte)",
+    "option_value": "fluorometholone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "ffe81e14-590a-4123-a246-9025d3041297",
+    "question_id": "0352e177-4e59-476f-8483-e7d44bb622fa",
+    "option_text": "Dexamethasone (Maxidex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.911+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "08c11ade-7ef0-4240-8b67-a0a0ec011222",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Cortisone (Cortone)",
+    "option_value": "cortisone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "0d285df6-6f7d-447d-8b92-f41cc06cd8b3",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Methylprednisolone (Medrol, Depo-Medrol)",
+    "option_value": "methylprednisolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "82a620fa-db8a-49c7-955c-aa045bab49f8",
+    "question_id": "61f1c22c-d499-495a-adac-4f322aa8b97a",
+    "option_text": "Triamcinolone Acetonide (Triesence, Kenalog)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.542+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "faff8089-b539-46f6-8d26-0831aac60e17",
+    "question_id": "61f1c22c-d499-495a-adac-4f322aa8b97a",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.542+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "ec53be94-5fed-47d8-980f-dcf015548c78",
+    "question_id": "f1417a7b-06ec-4f56-a66d-884a24f571ef",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T03:11:56.118226+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "9f8875c8-be37-4263-be2f-c2ede066c70d",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Methylprednisolone (Medrol, Depo-Medrol)",
+    "option_value": "methylprednisolone",
+    "score": 4,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 9
+  },
+  {
+    "id": "a0cbf8a0-4449-43df-b9ec-16995a4c0c53",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Dexamethasone (Decadron, DexPak)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 10
+  },
+  {
+    "id": "a339f454-0c42-4fa0-9997-960bdac23c82",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Fluticasone (Vermamyst, Flonase, Flovent)",
+    "option_value": "fluticasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 11
+  },
+  {
+    "id": "b5132c79-9231-412c-922e-4e8122ca6ab7",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Betamethasone (Betasone, Celestone)",
+    "option_value": "betamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 12
+  },
+  {
+    "id": "c20cf3ce-e214-4793-ad04-bf7f381cf7fb",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Ciclesonide (Alvesco)",
+    "option_value": "ciclesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 13
+  },
+  {
+    "id": "36903e7a-ebe6-4b4f-996d-67563446a299",
+    "question_id": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.885284+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "7e8de297-7940-429e-b619-a64d832ff594",
+    "question_id": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad",
+    "option_text": "Triamcinolone Acetonide (Triesence, Kenalog)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.885284+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "8035bcb7-a6fb-494c-8ece-7c657a8c9084",
+    "question_id": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad",
+    "option_text": "Fluocinolone Acetonide (Iluvien)",
+    "option_value": "fluocinolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.885284+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "a1158f71-92e1-4ac9-b115-f72ba3a7bcdf",
+    "question_id": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad",
+    "option_text": "Dexamethasone (Ozurdex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.885284+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "03b8ef0d-8187-493c-b400-fa8694c86f97",
+    "question_id": "a17b97e1-2f77-4a33-babe-8763c7bdd4ca",
+    "option_text": "test 1",
+    "option_value": "test 1",
+    "score": 2,
+    "created_at": "2025-03-26T14:50:42.318199+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "4a8837e1-c0ab-43f2-81fb-0a873e293a92",
+    "question_id": "01402346-c507-4236-bca6-b62525311beb",
+    "option_text": "51-60",
+    "option_value": "51-60",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.381+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "f4631627-e61f-4609-b8aa-638b06d1d3e3",
+    "question_id": "761d85fe-d268-44fc-b5a4-d98d0236ff3f",
+    "option_text": "Enter Last Name",
+    "option_value": "enter_last_name",
+    "score": 1,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "8b0f260c-5389-4169-856f-4adc77256e87",
+    "question_id": "5acd811f-0437-4d12-b25e-694805242936",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T04:01:08.029815+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "4312250a-7f7f-4fe2-8c89-96feae235de5",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "Hispanic or Latino",
+    "option_value": "Hispanic or Latino",
+    "score": 0,
+    "created_at": "2025-03-31T00:58:59.43376+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "6b97896c-cc49-4684-8749-6e2eaec235c2",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "American Indian or Alaska Native",
+    "option_value": "American Indian or Alaska Native",
+    "score": 0,
+    "created_at": "2025-03-31T00:58:59.574543+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "0f44438c-adb7-43d3-a156-28f815fa4e56",
+    "question_id": "c4f98c60-9f41-4235-9527-fed017ca747d",
+    "option_text": "Other",
+    "option_value": "Other",
+    "score": 0,
+    "created_at": "2025-03-31T00:58:59.717627+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "e002e7ed-2c5f-46f2-b72f-c4fc81256f5b",
+    "question_id": "3730b551-3095-4dc1-99b2-021d7a57e332",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T17:52:00.555758+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "2c2e4a62-06c5-41d0-8221-61502992eae3",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Hydrocortisone (Cortef, Solu-Cortef)",
+    "option_value": "hydrocortisone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "2fa1befb-a6b3-43bd-99a5-b7387e70176d",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Dexamethasone (Decadron, DexPak)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "444ba68f-f63e-4a6a-af32-c603d0d299ea",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Beclomethasone (Qvar)",
+    "option_value": "beclomethasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "4c13c6cc-7a1b-4349-8ebf-3b109c440807",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Ciclesonide (Alvesco)",
+    "option_value": "ciclesonide",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "5a18ce4a-991e-498e-9962-1ec583735d53",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Fludrocortisone (Florinef)",
+    "option_value": "fludrocortisone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 8
+  },
+  {
+    "id": "bace1bcd-d567-4ffb-a2d9-a0399c628618",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "Hispanic or Latino",
+    "option_value": "hispanic",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "f18d723c-7cf8-4668-90f6-c302dbe2e639",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "Black or African American",
+    "option_value": "black",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "20b37f0b-d2e3-4d3c-ad6d-eccb167f10be",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "Asian",
+    "option_value": "asian",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "35892219-16fb-4d63-ac5b-ef3f2d58a805",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "Other",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "3a581a6b-af78-410b-bd06-f481bb85126c",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "Native Hawaiian or Pacific Islander",
+    "option_value": "pacific_islander",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "4914a0cd-70c6-40ce-b232-6b283581b81f",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "Hispanic or Latino",
+    "option_value": "hispanic",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "6bb86cae-3866-4d55-95a5-26cf1dfdf509",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "Black or African American",
+    "option_value": "black",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "715e1c7f-1fe2-44c3-8156-ffc2a5bb1478",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "White",
+    "option_value": "white",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "cb074e10-10ac-4da5-b424-1f32261d8a70",
+    "question_id": "d54f9181-ff90-4666-ab3c-053e6fb2a3f1",
+    "option_text": "American Indian or Alaska Native",
+    "option_value": "american_indian",
+    "score": 0,
+    "created_at": "2025-03-15T05:27:55.603+00:00",
+    "display_order": 7
+  },
+  {
+    "id": "0cf3f997-48f5-4b73-9cc2-7f0bcbd837ee",
+    "question_id": "d814356d-49d9-4464-9b75-52390797738f",
+    "option_text": "Enter Last Name",
+    "option_value": "enter_last_name",
+    "score": 0,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "1c8bc48b-8da3-434f-9f66-03df00c04b2c",
+    "question_id": "cd450ad8-cddc-4d99-9b82-58209726ea9c",
+    "option_text": "yes",
+    "option_value": "yes",
+    "score": 2,
+    "created_at": "2025-03-31T03:22:19.816805+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "5e330f4f-a147-4752-abb2-10cf7783bb5a",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "Dexamethasone (Maxidex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.319+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "8dd9fcd4-6957-4668-879d-813e439fc03b",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "Rimexolone (Vexol)",
+    "option_value": "rimexolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.319+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "047b56c3-5554-4294-92e0-c5eb800d7119",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "0-50",
+    "option_value": "0-50",
+    "score": 0,
+    "created_at": "2025-03-31T00:24:12.085342+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "e70fc5ca-ac3a-4b85-9b4c-5ddbba9ef574",
+    "question_id": "3730b551-3095-4dc1-99b2-021d7a57e332",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T17:52:00.647002+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "7f6d1cd8-7808-4cef-9ae2-05ef4bebaefa",
+    "question_id": "e07b2e94-5bc4-4bb0-b561-0bad4403d9cd",
+    "option_text": "Not available",
+    "option_value": "Not available",
+    "score": 0,
+    "created_at": "2025-03-31T17:15:53.338835+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "f90042ef-c8a0-4970-93da-5ac3bda00cca",
+    "question_id": "c76b1dc7-338a-4282-bb00-18627883d891",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T18:55:13.30996+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "bc41bd5e-0cca-4610-a17c-0b32c95a55e6",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "71-80",
+    "option_value": "71-80",
+    "score": 0,
+    "created_at": "2025-03-31T01:17:56.169668+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "eaa14c64-7665-4ed9-840f-b0f4f6d008a8",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "91+",
+    "option_value": "91+",
+    "score": 0,
+    "created_at": "2025-03-31T01:17:56.29039+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "7486d647-823f-4843-94ed-c855c246b3a5",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Fluticasone (Vermamyst, Flonase, Flovent)",
+    "option_value": "fluticasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 9
+  },
+  {
+    "id": "abc85b8c-3003-4f22-9535-1a89fe955869",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Betamethasone (Betasone, Celestone)",
+    "option_value": "betamethasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 10
+  },
+  {
+    "id": "b3901974-ebd5-4b92-b3fa-eeefcf75ad40",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 11
+  },
+  {
+    "id": "cc491962-65c9-4b20-a145-93e1b040712c",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "91+",
+    "option_value": "91+",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "d19d85b1-e814-4b51-9882-7fe9f56a3a67",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "51-60",
+    "option_value": "51-60",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "b58c02f3-6703-4078-9d55-52b013879ddc",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Prednisone (Deltasone, Sterapred)",
+    "option_value": "prednisone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 12
+  },
+  {
+    "id": "c7ebf7e2-9a21-4cca-9c50-d8394eb04cab",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Triamcinolone (Kenalog, Aromasin)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 13
+  },
+  {
+    "id": "ef45e9f9-8e86-44ed-a18f-f1056560b2f6",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Mometasone (Asmanex, Dulera [with formoterol])",
+    "option_value": "mometasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 14
+  },
+  {
+    "id": "09194312-6a8c-4bc9-a99b-9e2d2323d04c",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "American Indian or Alaska Native",
+    "option_value": "american_indian",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "1a10f229-2f6f-46ec-8901-d236915ae044",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "Native Hawaiian or Pacific Islander",
+    "option_value": "pacific_islander",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "7b727353-8233-4c0c-a3f3-da0b54e12236",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "White",
+    "option_value": "white",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "9c201bfe-8ab7-4545-99fb-71a40fb0df20",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "Other",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "a5b74e38-932a-418d-9a05-eb97543c14a8",
+    "question_id": "cb26c515-fd3f-4e78-bbfb-440c8496e525",
+    "option_text": "Asian",
+    "option_value": "asian",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.759+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "35b89769-03e6-4947-bdf8-eac6d2a39267",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "71-80",
+    "option_value": "71-80",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "3929e501-04b7-4484-a312-22fccca4fd34",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "81-90",
+    "option_value": "81-90",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "51e442e4-a3fa-4c7a-8130-54f556f31e6c",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "51-60",
+    "option_value": "51-60",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "57f024b9-5bc0-4448-8c37-a75a537fec99",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "91+",
+    "option_value": "91+",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "d26634e0-a7cd-4296-9fa0-5449de78098f",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "0-50",
+    "option_value": "0-50",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "dabb11ed-c70a-4fe8-bb14-ebcbd87bd01f",
+    "question_id": "e3c67a7a-65d1-4986-9a59-f92098858979",
+    "option_text": "61-70",
+    "option_value": "61-70",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:43.682+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "230f7b43-2d3f-4fa2-b4b2-781eec2b6321",
+    "question_id": "e9717c17-976e-4e2e-9fbd-7385d05983a0",
+    "option_text": "Enter First Name",
+    "option_value": "enter_first_name",
+    "score": 0,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "f0e256b7-289d-42c1-97d4-c875650adf39",
+    "question_id": "1085a6e8-a572-49bc-934a-d15aa487828f",
+    "option_text": "61-70",
+    "option_value": "61-70",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:14.574+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "2028c7ae-1454-460d-a2fe-0ded13fe0509",
+    "question_id": "1917fc77-925e-4b68-9375-7b63aea29079",
+    "option_text": "Budesonide (Pulmicort, Symbicort [with formoterol])",
+    "option_value": "budesonide",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:55.13319+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "5845a4d0-7640-4c6f-8d5c-09604615370a",
+    "question_id": "cd450ad8-cddc-4d99-9b82-58209726ea9c",
+    "option_text": "no",
+    "option_value": "no",
+    "score": 0,
+    "created_at": "2025-03-31T03:22:19.877413+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "55cc7503-1b43-4493-95f2-e72184e1c82f",
+    "question_id": "0f7ded61-a99b-4eb2-b116-3c51cfb85d77",
+    "option_text": "81-90",
+    "option_value": "81-90",
+    "score": 0,
+    "created_at": "2025-03-31T01:17:56.232503+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "cc70244d-9d9b-470a-8050-5287f5ec2395",
+    "question_id": "27b24dae-f107-431a-8422-bf49df018e1f",
+    "option_text": "Fluorometholone (FML, FML Forte)",
+    "option_value": "fluorometholone",
+    "score": 0,
+    "created_at": "2025-03-15T05:34:44.319+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "5595e45d-ddfd-439b-9cd5-acc86a7f00df",
+    "question_id": "ab1c10d1-3183-4b27-baac-936c881bda83",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T18:50:19.878809+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "df5e7610-d2c7-48c4-a0fa-217065685fee",
+    "question_id": "3ca68854-3213-4254-a1e2-083ddfb758fb",
+    "option_text": "0.6 and above",
+    "option_value": "0.6 and above",
+    "score": 2,
+    "created_at": "2025-03-31T17:17:15.245933+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "617dab18-dd40-41cc-bad8-154902d21f73",
+    "question_id": "b1cb4d7d-906a-422c-8260-b4bebf90fe3f",
+    "option_text": "Yes",
+    "option_value": "Yes",
+    "score": 2,
+    "created_at": "2025-03-31T03:56:48.427198+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "902751ed-84d0-4911-8bbb-0b001c6620b8",
+    "question_id": "83557a45-a9e2-425a-ab36-bcb32ba68ebf",
+    "option_text": "Budesonide (Pulmicort, Symbicort [with formoterol])",
+    "option_value": "budesonide",
+    "score": 0,
+    "created_at": "2025-03-15T05:24:15.844+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "fa21a47b-440d-42d9-b6fa-f6d03aef041f",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "0-50",
+    "option_value": "0-50",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:10.041019+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "d473c3e7-fd9b-4d91-93f8-268d6d0d83be",
+    "question_id": "2aaed7f2-3777-461d-b45f-932a16c21cb6",
+    "option_text": "22 and above",
+    "option_value": "22 and above",
+    "score": 2,
+    "created_at": "2025-03-31T02:21:33.442742+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "52b89d66-fe9e-4fdf-aaf5-3827ac03f20a",
+    "question_id": "2aaed7f2-3777-461d-b45f-932a16c21cb6",
+    "option_text": "not available",
+    "option_value": "not available",
+    "score": 0,
+    "created_at": "2025-03-31T02:21:33.56304+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "018b5e52-6341-467f-b01b-ee5c1654e230",
+    "question_id": "ab1c10d1-3183-4b27-baac-936c881bda83",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T18:50:20.023147+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "de99f002-23fb-4eb7-9829-de2711ae2029",
+    "question_id": "3ca68854-3213-4254-a1e2-083ddfb758fb",
+    "option_text": "Below 0.6",
+    "option_value": "Below 0.6",
+    "score": 0,
+    "created_at": "2025-03-31T17:17:15.315272+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "40ab7b08-934f-47a9-88e7-1ebe5e3a35cf",
+    "question_id": "b1cb4d7d-906a-422c-8260-b4bebf90fe3f",
+    "option_text": "No",
+    "option_value": "No",
+    "score": 0,
+    "created_at": "2025-03-31T03:56:48.562408+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "f3c8f8cd-5e08-4299-8cda-1dcd52c9d54c",
+    "question_id": "efdc2e9e-fcc3-4214-bec5-505a80f68ebb",
+    "option_text": "Enter Last Name",
+    "option_value": "enter_last_name",
+    "score": 1,
+    "created_at": "2025-03-26T18:38:45.72038+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "12743ee1-5a4d-49cc-825c-87dcc9264b92",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "51-60",
+    "option_value": "51-60",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:50.318548+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "eafd029a-4cf3-4b58-8c1c-631e053b41a5",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "61-70",
+    "option_value": "61-70",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:50.384761+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "eb838600-9920-4348-b0c7-a87869f37f36",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "71-80",
+    "option_value": "71-80",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:50.45243+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "83894243-da53-42e9-bc0f-eec727764f41",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "81-90",
+    "option_value": "81-90",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:50.526946+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "5fb6855e-eab9-4e5e-a413-6cea7f39b885",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Prednisolone Acetate (Pred Forte, Omnipred)",
+    "option_value": "prednisolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "897e168d-0929-4657-9301-95516a8c8e9c",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Fluorometholone (FML, FML Forte)",
+    "option_value": "fluorometholone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "9df8959e-c410-4236-bcc4-a1c667cf9074",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "ba00b036-59ab-4ebc-b6a9-a83c90596b53",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Rimexolone (Vexol)",
+    "option_value": "rimexolone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "c82fda24-08a9-45b5-a5ab-337bbfdac143",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Dexamethasone (Maxidex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 5
+  },
+  {
+    "id": "d9b3d86b-725c-483c-b464-734ff268874e",
+    "question_id": "f9b28223-206a-4cad-a9e6-17596fc2f830",
+    "option_text": "Loteprednol Etabonate (Lotemax, Inveltys)",
+    "option_value": "loteprednol",
+    "score": 0,
+    "created_at": "2025-03-27T04:18:54.570467+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "2cc49358-ddb6-4603-a74c-3026d17d50d4",
+    "question_id": "fed2cc62-a3e6-42cc-a198-680b325828ec",
+    "option_text": "Triamcinolone Acetonide (Triesence, Kenalog)",
+    "option_value": "triamcinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:44.634+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "60f4ee66-1ca4-42d6-8b07-4754dcde6b74",
+    "question_id": "fed2cc62-a3e6-42cc-a198-680b325828ec",
+    "option_text": "Fluocinolone Acetonide (Iluvien)",
+    "option_value": "fluocinolone",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:44.634+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "638d7e33-dba2-48f8-b3ed-d1840a728bcf",
+    "question_id": "fed2cc62-a3e6-42cc-a198-680b325828ec",
+    "option_text": "Other not listed",
+    "option_value": "other",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:44.634+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "bd17c285-885e-471a-8b92-c0d62caae6a2",
+    "question_id": "fed2cc62-a3e6-42cc-a198-680b325828ec",
+    "option_text": "Dexamethasone (Ozurdex)",
+    "option_value": "dexamethasone",
+    "score": 0,
+    "created_at": "2025-03-15T05:15:44.634+00:00",
+    "display_order": 4
+  },
+  {
+    "id": "e9f0250c-61b3-4c65-8d6e-e2786adb4dbd",
+    "question_id": "52761412-7613-46c7-83dc-d85d6a16124e",
+    "option_text": "91+",
+    "option_value": "91+",
+    "score": 0,
+    "created_at": "2025-03-31T01:33:50.603882+00:00",
+    "display_order": 6
+  },
+  {
+    "id": "a6768ad0-9187-4ddd-b1e3-0bcb033e302a",
+    "question_id": "2aaed7f2-3777-461d-b45f-932a16c21cb6",
+    "option_text": "21 and under",
+    "option_value": "21 and under",
+    "score": 0,
+    "created_at": "2025-03-31T02:21:33.504373+00:00",
+    "display_order": 2
+  },
+  {
+    "id": "29668f95-9f21-4ced-8368-2f6ba9993a46",
+    "question_id": "e07b2e94-5bc4-4bb0-b561-0bad4403d9cd",
+    "option_text": "0.2 and above",
+    "option_value": "0.2 and above",
+    "score": 2,
+    "created_at": "2025-03-31T17:15:53.108139+00:00",
+    "display_order": 1
+  },
+  {
+    "id": "3e13dcd5-dd4c-4f12-a626-7226f9eb2f14",
+    "question_id": "ab1c10d1-3183-4b27-baac-936c881bda83",
+    "option_text": "Not available",
+    "option_value": "Not available",
+    "score": 0,
+    "created_at": "2025-03-31T18:50:20.190977+00:00",
+    "display_order": 3
+  },
+  {
+    "id": "118c22ea-12d7-43f6-900c-4be69faf70f0",
+    "question_id": "3ca68854-3213-4254-a1e2-083ddfb758fb",
+    "option_text": "Not available",
+    "option_value": "Not available",
+    "score": 0,
+    "created_at": "2025-03-31T17:17:15.425675+00:00",
+    "display_order": 3
+  }
+]

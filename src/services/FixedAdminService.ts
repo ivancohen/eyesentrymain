@@ -8,7 +8,7 @@ export interface UserProfile {
   name: string;
   is_admin: boolean;
   is_approved?: boolean;
-  created_at: string;
+  created_at?: string; // Make optional
   location?: string;
   state?: string;
   zip_code?: string;
@@ -550,7 +550,7 @@ export const FixedAdminService = {
     return [];
   },
 
-  async updateQuestionScore(questionId: string, score: number) {
+  async updateQuestionScore(questionId: string, optionId: string | undefined, score: number) { // Added optionId parameter
     console.warn("updateQuestionScore is not fully implemented");
     return true;
   },

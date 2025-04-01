@@ -110,22 +110,22 @@ async function runCompatibilityTests() {
       const result = await calculateRiskScore(test.data);
       
       // Check if risk level matches
-      const riskMatches = result.riskLevel === test.expectedRisk;
+      const riskMatches = result.risk_level === test.expectedRisk; // Use risk_level
       // Check if score is within tolerance (1 point difference acceptable for rounding)
-      const scoreMatches = Math.abs(result.totalScore - test.expectedScore) <= 1;
+      const scoreMatches = Math.abs(result.total_score - test.expectedScore) <= 1; // Use total_score
       
       if (riskMatches && scoreMatches) {
         console.log(`✅ Test passed: ${test.name}`);
         console.log(`   Expected: Risk=${test.expectedRisk}, Score=${test.expectedScore}`);
-        console.log(`   Actual: Risk=${result.riskLevel}, Score=${result.totalScore}`);
+        console.log(`   Actual: Risk=${result.risk_level}, Score=${result.total_score}`); // Use risk_level and total_score
         passedTests++;
       } else {
         console.error(`❌ Test failed: ${test.name}`);
         console.error(`   Expected: Risk=${test.expectedRisk}, Score=${test.expectedScore}`);
-        console.error(`   Actual: Risk=${result.riskLevel}, Score=${result.totalScore}`);
-        console.error(`   Difference: ${result.totalScore - test.expectedScore}`);
-        console.error(`   Base factors:`, result.baseFactors);
-        console.error(`   Additional factors:`, result.additionalFactors);
+        console.error(`   Actual: Risk=${result.risk_level}, Score=${result.total_score}`); // Use risk_level and total_score
+        console.error(`   Difference: ${result.total_score - test.expectedScore}`); // Use total_score
+        // console.error(`   Base factors:`, result.baseFactors); // Property doesn't exist
+        // console.error(`   Additional factors:`, result.additionalFactors); // Property doesn't exist
         failedTests++;
       }
     } catch (error) {

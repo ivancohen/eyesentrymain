@@ -14,7 +14,7 @@ export interface DBQuestion {
       option_value: string;
       option_text: string;
       score?: number;
-      // display_order?: number; // Removed - Doesn't exist in DB
+      display_order?: number; // Re-added for ordering support
   }>;
   display_order?: number;
   conditional_parent_id?: string;
@@ -26,7 +26,7 @@ interface DropdownOption {
     option_value: string;
     option_text: string;
     score?: number;
-    // display_order?: number; // Removed - Doesn't exist in DB
+    display_order?: number; // Re-added for ordering support
     question_id: string; // Foreign key
 }
 
@@ -76,42 +76,39 @@ interface PatientQuestionnaire {
   answers?: Record<string, string | undefined>;
 }
 
-// Helper function to convert PatientQuestionnaireData to the format needed by calculateRiskScore
-function formatAnswersForScoring(data: PatientQuestionnaireData): Record<string, string> {
-    const answers: Record<string, string> = {};
-    for (const key in data) {
-        // Exclude non-answer fields like firstName, lastName
-        if (key !== 'firstName' && key !== 'lastName' && data[key] !== undefined) {
-            answers[key] = String(data[key]); // Ensure value is string
-        }
-    }
-    return answers;
-}
+// REMOVED formatAnswersForScoring function - No longer needed as we pass UUID-keyed answers directly
 
 // Helper function to map PatientQuestionnaireData to DB boolean fields
 // This needs careful alignment with question IDs used in PatientQuestionnaireData
+// **NOTE:** This still relies on the string-keyed `data` object.
 function mapDataToDbBooleans(data: PatientQuestionnaireData): Partial<PatientQuestionnaire> {
     return {
-        family_glaucoma: data.familyGlaucoma === "yes",
+        family_glaucoma: data.familyGlaucoma === "yes", // Assumes data.familyGlaucoma is 'yes' or 'no'
         ocular_steroid: data.ocularSteroid === "yes",
         intravitreal: data.intravitreal === "yes",
         systemic_steroid: data.systemicSteroid === "yes",
-        // Assuming these IDs map directly and represent boolean state based on value
-        iop_baseline: data.iopBaseline === "22_and_above",
-        vertical_asymmetry: data.verticalAsymmetry === "0.2_and_above",
-        vertical_ratio: data.verticalRatio === "0.6_and_above",
+        // These might need adjustment if the DB expects boolean but data has different strings
+        iop_baseline: data.iopBaseline === "22 and above", // Match exact string value
+        vertical_asymmetry: data.verticalAsymmetry === "0.2 and above", // Match exact string value
+        vertical_ratio: data.verticalRatio === "0.6 and above", // Match exact string value
     };
 }
 
 
-
-export async function submitPatientQuestionnaire(data: PatientQuestionnaireData) { // Reverted: Removed userId parameter
+// Modified signature to accept UUID-keyed answers object
+export async function submitPatientQuestionnaire(
+    data: PatientQuestionnaireData, // Original string-keyed data for DB insertion fields
+    answersByUuid: Record<string, string> // UUID-keyed answers for scoring and storing in JSON
+) {
   try {
-    console.log("Processing questionnaire data for submission:", data);
-    // Step 1: Calculate score using RiskAssessmentService
-    const answersForScoring = formatAnswersForScoring(data);
-    console.log("Answers formatted for scoring:", answersForScoring);
-    const assessmentResult: RiskAssessmentResult = await riskAssessmentService.calculateRiskScore(answersForScoring);
+    console.log("Processing questionnaire data for submission (string keys):", data);
+    console.log("Processing questionnaire answers for scoring (UUID keys):", answersByUuid);
+    
+    // REMOVED fetching allDbQuestions here
+    // REMOVED call to formatAnswersForScoring
+    
+    // Step 1: Calculate score using RiskAssessmentService, passing UUID-keyed answers
+    const assessmentResult: RiskAssessmentResult = await riskAssessmentService.calculateRiskScore(answersByUuid);
     const totalScore = assessmentResult.total_score;
     const riskLevel = assessmentResult.risk_level; // Get risk level from assessment
     const contributing_factors = assessmentResult.contributing_factors;
@@ -119,24 +116,25 @@ export async function submitPatientQuestionnaire(data: PatientQuestionnaireData)
 
     console.log("Calculated Score:", totalScore, "Risk Level:", riskLevel);
 
-    // Step 2: Prepare data for insertion (map to DB schema)
-    const dbBooleans = mapDataToDbBooleans(data);
+    // Step 2: Prepare data for insertion (map to DB schema using string-keyed `data`)
+    const dbBooleans = mapDataToDbBooleans(data); // Use original `data` for boolean mapping
     const submissionData = {
         first_name: data.firstName,
         last_name: data.lastName,
         age: data.age,
-        race: data.race,
+        race: data.race, // Use string-keyed data for direct fields
         ...dbBooleans, // Spread the calculated boolean fields
         steroid_type: data.steroidType || null,
         intravitreal_type: data.intravitralType || null,
         systemic_steroid_type: data.systemicSteroidType || null,
         total_score: totalScore,
         risk_level: riskLevel,
-        answers: answersForScoring, // Store the raw answers JSON
+        answers: answersByUuid, // Store the UUID-keyed answers JSON in the 'answers' column
         metadata: { // Keep metadata for potential fallback/logging
           firstName: data.firstName,
           lastName: data.lastName,
-          answers: answersForScoring // Include answers in metadata to ensure it's available
+          // Store UUID-keyed answers in metadata as well
+          answers: answersByUuid
         }
     };
 
@@ -152,13 +150,13 @@ export async function submitPatientQuestionnaire(data: PatientQuestionnaireData)
         age: submissionData.age,
         race: submissionData.race,
         family_glaucoma: submissionData.family_glaucoma,
-        ocular_steroid: submissionData.ocular_steroid,
+        ocular_steroid: submissionData.ocular_steroid, // Already boolean from mapDataToDbBooleans
         steroid_type: submissionData.steroid_type,
-        intravitreal: submissionData.intravitreal,
+        intravitreal: submissionData.intravitreal, // Already boolean from mapDataToDbBooleans
         intravitreal_type: submissionData.intravitreal_type,
-        systemic_steroid: submissionData.systemic_steroid,
+        systemic_steroid: submissionData.systemic_steroid, // Already boolean from mapDataToDbBooleans
         systemic_steroid_type: submissionData.systemic_steroid_type,
-        iop_baseline: submissionData.iop_baseline,
+        iop_baseline: submissionData.iop_baseline, // This is text, ensure DB function expects text or adjust mapDataToDbBooleans
         vertical_asymmetry: submissionData.vertical_asymmetry,
         vertical_ratio: submissionData.vertical_ratio,
         total_score: submissionData.total_score,
@@ -173,7 +171,9 @@ export async function submitPatientQuestionnaire(data: PatientQuestionnaireData)
     }
 
     if (!newId) {
-      throw new Error("Failed to create questionnaire. No ID returned from RPC.");
+      // Handle case where RPC succeeded but didn't return an ID
+      console.error("Questionnaire RPC insert succeeded but no ID returned.");
+      throw new Error("Failed to retrieve questionnaire ID after submission via RPC.");
     }
 
     console.log("Questionnaire created successfully with ID:", newId);
@@ -296,40 +296,41 @@ export async function getQuestionsWithTooltips(): Promise<DBQuestion[]> {
       console.error("Error fetching questions:", questionsError);
       throw questionsError;
     }
+    
+    // --- DEBUG LOG: Log raw fetched questions data ---
+    console.log("DEBUG: Raw questions fetched from DB:", questionsData?.map(q => ({id: q.id, question: q.question, status: q.status})) || 'No data');
+    // --- END DEBUG LOG ---
 
     // Filter out questions with non-UUID IDs and ensure basic structure
-    let validQuestions = questionsData?.filter(q => isValidUUID(q.id) && isDBQuestion(q)) || [];
-    console.log(`Fetched ${questionsData?.length || 0} active questions, found ${validQuestions.length} valid.`);
+    console.log("DEBUG: Filtering fetched questions...");
+    let validQuestions = questionsData?.filter(q => {
+        const isUUID = isValidUUID(q.id);
+        const isQuestion = isDBQuestion(q);
+        const passes = isUUID && isQuestion;
+        console.log(`  - Filtering Q ID: ${q.id}, Text: "${q.question?.substring(0,20)}...", isUUID: ${isUUID}, isQuestion: ${isQuestion}, Passes: ${passes}`);
+        return passes;
+    }) || [];
+    // Updated log message for clarity
+    console.log(`Fetched ${questionsData?.length || 0} questions with status='Active' (raw), found ${validQuestions.length} valid after filtering.`);
 
     // Step 2: Fetch all options for the valid questions in a single query
     const questionIds = validQuestions.map(q => q.id);
     let allOptions: DropdownOption[] = [];
     if (questionIds.length > 0) {
         try {
-            // First try question_options (as recommended in our SQL fix)
-            const { data: optionsData, error: optionsError } = await supabase
-                .from('question_options')
-                .select('question_id, option_value, option_text, score')
-                .in('question_id', questionIds);
+            // Use dropdown_options as the standardized table with proper ordering
+            const { data: dropdownData, error: dropdownError } = await supabase
+                .from('dropdown_options')
+                .select('question_id, option_value, option_text, score, display_order')
+                .in('question_id', questionIds)
+                .order('display_order', { ascending: true });
 
-            if (optionsError || !optionsData || optionsData.length === 0) {
-                console.log("Trying dropdown_options as fallback...");
-                // If that fails, try dropdown_options as fallback
-                const { data: dropdownData, error: dropdownError } = await supabase
-                    .from('dropdown_options')
-                    .select('question_id, option_value, option_text, score')
-                    .in('question_id', questionIds);
-
-                if (dropdownError) {
-                    console.error("Error fetching options from either table:", dropdownError);
-                    // Continue without options if both fetches fail
-                } else {
-                    allOptions = dropdownData || [];
-                    console.log(`Found ${allOptions.length} options from dropdown_options table`);
-                }
+            if (dropdownError) {
+                console.error("Error fetching options from dropdown_options table:", dropdownError);
+                // Continue without options if fetch fails
             } else {
-                allOptions = optionsData || [];
-                console.log(`Found ${allOptions.length} options from question_options table`);
+                allOptions = dropdownData || [];
+                console.log(`Found ${allOptions.length} options from dropdown_options table`);
             }
         } catch (error) {
             console.error("Error during options fetching:", error);
@@ -342,12 +343,12 @@ export async function getQuestionsWithTooltips(): Promise<DBQuestion[]> {
         const questionOptions = allOptions
             .filter(opt => opt.question_id === q.id)
             // Map to the structure expected in DBQuestion.options
-            // No sorting needed here as display_order is not available
+            // Now include display_order and maintain the same order
             .map(opt => ({
                 option_value: opt.option_value,
                 option_text: opt.option_text,
                 score: opt.score,
-                // display_order: opt.display_order // Removed
+                display_order: opt.display_order
             }));
 
         return {

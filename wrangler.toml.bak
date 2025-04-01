@@ -1,0 +1,10 @@
+name = "eyesentry"
+compatibility_date = "2024-01-01"
+
+# Directory with built assets to upload
+pages_build_output_dir = "dist"
+
+# Configure routes for the SPA
+[[routes]]
+pattern = "/*"
+script = "dist/index.html"
