@@ -201,7 +201,6 @@ const SpecialistQuestionForm = ({
                 <SelectContent>
                   <SelectItem value="show">Show when condition met</SelectItem>
                   <SelectItem value="hide">Hide when condition met</SelectItem>
-                  {/* Consider if 'hide' makes sense, usually it's 'show' */}
                 </SelectContent>
               </Select>
             </div>
