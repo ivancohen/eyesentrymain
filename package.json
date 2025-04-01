@@ -13,7 +13,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "copy-assets": "node copy-assets.js",
     "deploy": "node deploy-to-cloudflare.js",
-    "deploy:cloudflare": "npm run build && npx wrangler pages deploy dist"
+    "deploy:cloudflare": "npm run build && npm run copy-assets && npx wrangler pages deploy dist"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
