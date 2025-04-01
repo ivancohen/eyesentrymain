@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { SpecialistQuestion, SpecialistSubmission } from '@/types/specialist';
 import { SpecialistService } from '@/services/SpecialistService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import logo from '@/assets/logo.png';
 
 interface SpecialistQuestionnaireFormProps {
     patientId: string;
@@ -170,7 +171,14 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl mx-auto">
             <Card className="p-6">
-                <h1 className="text-2xl font-bold mb-6">Specialist Assessment Form</h1>
+                <div className="flex flex-col items-center mb-8">
+                    <img
+                        src={logo}
+                        alt="EyeSentry Logo"
+                        className="w-full max-w-md h-auto mb-6"
+                    />
+                    <h1 className="text-2xl font-bold text-center">Specialist Assessment Form</h1>
+                </div>
                 
                 <div className="space-y-6">
                     {questions.map((question) => (
