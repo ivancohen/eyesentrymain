@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { FixedAdminService, UserProfile } from "@/services/FixedAdminService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Users, Search, CheckCircle, XCircle, Plus, Pencil, RefreshCw } from "lucide-react";
+import { Shield, Users, Search, CheckCircle, XCircle, Plus, Pencil, RefreshCw, Ban, Undo } from "lucide-react"; // Added Ban, Undo icons
 import { toast } from "sonner";
 import {
   Table,
@@ -64,20 +64,24 @@ const EnhancedUserManagement = () => {
     setIsLoading(true);
     try {
       const fetchedUsers = await FixedAdminService.fetchUsers();
+      // Filter to show only admin users
+      const adminUsers = fetchedUsers.filter(u => u.is_admin);
       
-      // If no users returned but current user exists, at least add current user to list
-      if (fetchedUsers.length === 0 && user) {
-        console.log("No users returned, adding current user to list");
-        setUsers([{
-          id: user.id,
-          email: user.email,
-          name: user.name || '',
-          is_admin: true, // Current user must be admin to view this page
-          created_at: new Date().toISOString()
-        }]);
-      } else {
-        setUsers(fetchedUsers);
+      // Ensure the current admin user is always in the list if not already fetched
+      if (user && !adminUsers.some(u => u.id === user.id)) {
+         console.log("Current admin not in fetched list, adding manually.");
+         adminUsers.push({
+            id: user.id,
+            email: user.email,
+            name: user.name || '',
+            is_admin: true,
+            is_approved: true, // Admins are implicitly approved
+            is_suspended: false, // Assume current admin is not suspended
+            created_at: new Date().toISOString()
+         });
       }
+      
+      setUsers(adminUsers);
     } catch (error) {
       console.error("Error loading users:", error);
       toast.error("Failed to load users. Please try again.");
@@ -256,14 +260,48 @@ const EnhancedUserManagement = () => {
     }
   };
 
+  const handleSuspendUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to suspend user ${userName}? They will lose access.`)) return;
+    setIsLoading(true);
+    try {
+      const success = await FixedAdminService.suspendUser(userId);
+      if (success) {
+        setUsers(users.map(u => u.id === userId ? { ...u, is_suspended: true } : u));
+        toast.success(`User ${userName} suspended successfully.`);
+      }
+    } catch (error) {
+      console.error("Error suspending user:", error);
+      toast.error("Failed to suspend user.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnsuspendUser = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to unsuspend user ${userName}? They will regain access.`)) return;
+    setIsLoading(true);
+    try {
+      const success = await FixedAdminService.unsuspendUser(userId);
+      if (success) {
+        setUsers(users.map(u => u.id === userId ? { ...u, is_suspended: false } : u));
+        toast.success(`User ${userName} unsuspended successfully.`);
+      }
+    } catch (error) {
+      console.error("Error unsuspending user:", error);
+      toast.error("Failed to unsuspend user.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Filter users based on search term
-  const filteredUsers = users.filter(user => {
+  const filteredUsers = users.filter(userProfile => { // Renamed variable for clarity
     const searchLower = searchTerm.toLowerCase();
     return (
-      user.email.toLowerCase().includes(searchLower) ||
-      (user.name && user.name.toLowerCase().includes(searchLower)) ||
-      (user.specialty && user.specialty.toLowerCase().includes(searchLower)) ||
-      (user.location && user.location.toLowerCase().includes(searchLower))
+      userProfile.email.toLowerCase().includes(searchLower) ||
+      (userProfile.name && userProfile.name.toLowerCase().includes(searchLower)) ||
+      (userProfile.specialty && userProfile.specialty.toLowerCase().includes(searchLower)) ||
+      (userProfile.location && userProfile.location.toLowerCase().includes(searchLower))
     );
   });
 
@@ -272,7 +310,7 @@ const EnhancedUserManagement = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Users size={20} />
-          <h2 className="text-xl font-semibold">User Management</h2>
+          <h2 className="text-xl font-semibold">Admin User Management</h2>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative w-64">
@@ -297,9 +335,9 @@ const EnhancedUserManagement = () => {
 
       <Card className="glass-panel mb-6">
         <CardHeader className="pb-3">
-          <CardTitle>User Accounts</CardTitle>
+          <CardTitle>Admin Accounts</CardTitle>
           <CardDescription>
-            Manage user accounts, permissions and approval status
+            Manage administrator accounts and permissions.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -316,7 +354,7 @@ const EnhancedUserManagement = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Location</TableHead>
+                    {/* Location column header removed */}
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -334,14 +372,15 @@ const EnhancedUserManagement = () => {
                                 <span className="text-sm text-primary font-medium">Admin</span>
                               </>
                             ) : (
-                              <span className="text-sm text-muted-foreground">
-                                {userProfile.specialty ? "Doctor" : "Standard User"}
-                              </span>
+                              // This case should not be reached due to filtering, but keep for valid syntax
+                              <span className="text-sm text-muted-foreground">Not Admin</span>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {userProfile.specialty ? (
+                          {userProfile.is_suspended ? (
+                            <Badge variant="destructive">Suspended</Badge>
+                          ) : userProfile.specialty ? ( // Only show Approved/Pending if not suspended and is a doctor
                             userProfile.is_approved ? (
                               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                                 Approved
@@ -352,19 +391,10 @@ const EnhancedUserManagement = () => {
                               </Badge>
                             )
                           ) : (
-                            <span className="text-sm text-muted-foreground">N/A</span>
+                            <Badge variant="secondary">Active</Badge> // Standard user status
                           )}
                         </TableCell>
-                        <TableCell>
-                          {userProfile.location ? (
-                            <span className="text-sm">
-                              {userProfile.location}
-                              {userProfile.state ? `, ${userProfile.state}` : ""}
-                            </span>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
+                        {/* Location table cell removed */}
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Button
@@ -376,27 +406,7 @@ const EnhancedUserManagement = () => {
                               <Pencil size={16} />
                             </Button>
                             
-                            {/* Doctor Approval Button - only show for doctor accounts */}
-                            {userProfile.specialty && user?.email !== userProfile.email && (
-                              <Button
-                                variant={userProfile.is_approved ? "outline" : "default"}
-                                size="sm"
-                                className={userProfile.is_approved ? "hover:bg-destructive/10" : "hover-lift"}
-                                onClick={() => handleApproveUser(userProfile.id, userProfile.is_approved || false)}
-                              >
-                                {userProfile.is_approved ? (
-                                  <>
-                                    <XCircle size={16} className="mr-1" />
-                                    Revoke
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle size={16} className="mr-1" />
-                                    Approve
-                                  </>
-                                )}
-                              </Button>
-                            )}
+                            {/* Doctor Approval Button logic removed */}
                             
                             {/* Admin Toggle Button */}
                             {user?.email !== userProfile.email && (
@@ -419,14 +429,39 @@ const EnhancedUserManagement = () => {
                                 )}
                               </Button>
                             )}
+
+                            {/* Suspend/Unsuspend Buttons */}
+                            {user?.id !== userProfile.id && ( // Can't suspend self
+                              userProfile.is_suspended ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={() => handleUnsuspendUser(userProfile.id, userProfile.name || userProfile.email)}
+                                >
+                                  <Undo size={16} className="mr-1" />
+                                  Unsuspend
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={() => handleSuspendUser(userProfile.id, userProfile.name || userProfile.email)}
+                                >
+                                  <Ban size={16} className="mr-1" />
+                                  Suspend
+                                </Button>
+                              )
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                        {searchTerm ? "No matching users found" : "No users found"}
+                      <TableCell colSpan={5} className="text-center h-24 text-muted-foreground"> {/* Correct colSpan is 5 */}
+                        {searchTerm ? "No matching admin users found" : "No admin users found"}
                       </TableCell>
                     </TableRow>
                   )}

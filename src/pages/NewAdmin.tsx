@@ -20,7 +20,8 @@ import {
   Home,
   Settings,
   LogOut,
-  Stethoscope
+  Stethoscope,
+  BookOpen // Added icon for Clinical Resources
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
@@ -50,8 +51,9 @@ import { SpecialistQuestionManager } from "@/components/admin/SpecialistQuestion
 import { UserProfile } from "@/services/FixedAdminService";
 
 // Admin section types
-type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq';
+type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq' | 'clinical-resources'; // Added new section type for consistency, though not used in switch
 
+const validAdminSections: AdminSection[] = ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq', 'clinical-resources'];
 const NewAdmin = () => {
   const { user, isAdmin, loading, logout } = useAuth();
   const navigate = useNavigate();
@@ -63,7 +65,7 @@ const NewAdmin = () => {
   
   // State to track which admin section is currently being displayed
   const [currentSection, setCurrentSection] = useState<AdminSection>(
-    sectionParam && ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq'].includes(sectionParam)
+    sectionParam && validAdminSections.includes(sectionParam)
       ? sectionParam
       : 'dashboard'
   );
@@ -100,8 +102,8 @@ const NewAdmin = () => {
 
   // Update section based on URL search params
   useEffect(() => {
-    if (sectionParam && sectionParam !== currentSection &&
-        ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq'].includes(sectionParam)) {
+    if (sectionParam && sectionParam !== currentSection && validAdminSections.includes(sectionParam)) {
+        // Note: 'clinical-resources' won't be handled here as it navigates away
       setCurrentSection(sectionParam);
     }
   }, [sectionParam]);
@@ -381,18 +383,18 @@ const NewAdmin = () => {
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
-                    <Building className="h-5 w-5 text-amber-500" /> Doctor Offices
+                    <Stethoscope className="h-5 w-5 text-amber-500" /> Doctor Management {/* Changed Icon & Title */}
                   </CardTitle>
                   <CardDescription className="text-center">
-                    Manage doctor office information and details
+                    Manage doctor accounts, approval, and suspension status {/* Changed Description */}
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
                   <Button
                     className="w-full hover-lift"
-                    onClick={() => changeSection('offices')}
+                    onClick={() => changeSection('offices')} // Keep 'offices' section key for now
                   >
-                    Manage Doctor Offices
+                    Manage Doctors {/* Changed Button Text */}
                   </Button>
                 </CardFooter>
               </Card>
@@ -526,6 +528,26 @@ const NewAdmin = () => {
                     onClick={() => changeSection('chatbot-faq')}
                   >
                     Manage Knowledge Base
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              {/* New Card for Clinical Resources */}
+              <Card className="glass-panel hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <BookOpen className="h-5 w-5 text-teal-500" /> Clinical Resources
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Manage clinical info for the doctor dashboard
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    className="w-full hover-lift"
+                    onClick={() => navigate('/admin/clinical-resources')} // Navigate directly
+                  >
+                    Manage Clinical Resources
                   </Button>
                 </CardFooter>
               </Card>

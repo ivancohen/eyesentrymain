@@ -19,6 +19,8 @@ import PendingApproval from "@/pages/PendingApproval";
 import AIAssistantPage from "@/pages/AIAssistantPage";
 import SpecialistQuestionnaire from "@/pages/SpecialistQuestionnaire";
 import SpecialistThankYou from "@/pages/SpecialistThankYou";
+// Import the new admin page component (assuming it exports default)
+import ClinicalResourcesAdminPage from "@/app/admin/clinical-resources/page";
 import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
 
@@ -50,6 +52,8 @@ function App() {
         <Route path="/doctor" element={<Doctor />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        {/* Add route for the new Clinical Resources admin page */}
+        <Route path="/admin/clinical-resources" element={<ClinicalResourcesAdminPage />} />
 
         {/* Legacy redirects */}
         <Route path="/admin" element={<Navigate to="/new-admin" replace />} />

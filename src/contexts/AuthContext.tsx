@@ -20,6 +20,7 @@ interface User {
   zipCode?: string | null;
   address?: string | null;
   specialty?: string | null;
+  is_suspended?: boolean; // Add suspended flag here too
 }
 
 interface RegisterResult {
@@ -160,14 +161,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         zipCode: sessionUser.user_metadata?.zipCode || null,
         address: sessionUser.user_metadata?.address || null,
         specialty: sessionUser.user_metadata?.specialty || null,
+        // is_suspended is checked during login, not stored directly on the context user object after login
       };
     } catch (error) {
       console.error("Error in updateUserProfile:", error);
+      // Return a minimal user object in case of error
       return {
         id: sessionUser.id,
         email: sessionUser.email || '',
         name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || '',
-        isAdmin: false,
+        isAdmin: false, // Default to false on error
         isDoctor: false,
         isPendingApproval: false,
         avatarUrl: null
@@ -366,6 +369,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (data.user) {
+        // Check suspension status BEFORE setting user state
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_suspended')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile during login:", profileError);
+          // Decide how to handle - maybe let login proceed but log error?
+          // For now, let's throw an error to prevent login if profile fetch fails.
+          await supabase.auth.signOut(); // Sign out just in case
+          throw new Error("Failed to verify account status.");
+        }
+
+        if (profileData?.is_suspended === true) {
+          console.log("Login attempt by suspended user:", email);
+          await supabase.auth.signOut(); // Ensure user is logged out
+          setUser(null); // Clear any potential stale state
+          setSession(null);
+          // Throw specific error for the UI to catch
+          throw new Error("ACCOUNT_SUSPENDED");
+        }
+
+        // If not suspended, proceed with setting user state
         console.log("Login successful, fetching user profile");
         const userProfile = await updateUserProfile(data.user);
         console.log("User profile after login:", userProfile);
@@ -373,6 +401,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(data.session);
         return userProfile;
       }
+      // Should not happen if signInWithPassword succeeded, but handle defensively
       return null;
     } catch (error: unknown) {
       console.error("Login error in context:", error);

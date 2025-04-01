@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import SuspendedAccountDialog from "@/components/SuspendedAccountDialog"; // Import the new dialog
 
 const Login = () => {
   const { login, user, loading: authLoading } = useAuth();
@@ -15,6 +16,8 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const emailVerified = searchParams.get('email_verified');
+  const [isSuspendedDialogOpen, setIsSuspendedDialogOpen] = useState(false);
+  const [suspendedEmail, setSuspendedEmail] = useState('');
 
   useEffect(() => {
     // Show toast for email verification if parameter is present
@@ -102,11 +105,17 @@ const Login = () => {
     } catch (error: unknown) {
       console.error("Login error:", error);
       
-      // Check for email not confirmed error
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
-      if (errorMsg.includes("Email not confirmed")) {
+
+      // Check for specific suspension error
+      if (errorMsg === "ACCOUNT_SUSPENDED") {
+        setSuspendedEmail(data.email); // Store the email for the dialog
+        setIsSuspendedDialogOpen(true); // Open the dialog
+        // Don't show a generic error toast in this case
+      } else if (errorMsg.includes("Email not confirmed")) {
         toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
       } else {
+        // Generic login error
         toast.error(errorMsg || "Login failed. Please check your credentials.");
       }
     } finally {
@@ -143,6 +152,7 @@ const Login = () => {
   }
 
   return (
+    <> {/* Wrap in fragment to allow sibling Dialog */}
     <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
@@ -177,6 +187,14 @@ const Login = () => {
         </div>
       </div>
     </div>
+
+    {/* Render the Suspended Account Dialog */}
+    <SuspendedAccountDialog
+      isOpen={isSuspendedDialogOpen}
+      onClose={() => setIsSuspendedDialogOpen(false)}
+      userEmail={suspendedEmail}
+    />
+  </> // Close the fragment
   );
 };
 

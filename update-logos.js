@@ -115,6 +115,7 @@ async function updateLogos() {
     console.log("=".repeat(80));
     console.log("\nSummary:");
     console.log("1. Updated logo path in Navbar.tsx");
+    console.log("2. Added logo to SpecialistQuestionnaireForm.tsx");
     console.log("2. Added logo to SpecialistQuestionnaire.tsx");
     console.log("3. Checked other logo references");
     

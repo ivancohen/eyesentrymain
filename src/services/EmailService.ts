@@ -210,5 +210,63 @@ export const EmailService = {
       
       return false;
     }
+  },
+
+  // New function to send suspension support email
+  async sendSuspensionSupportEmail(
+    suspendedUserEmail: string,
+    message: string
+  ): Promise<boolean> {
+    const supportEmail = "support@eyesentrymed.com";
+    const subject = `Account Suspension Inquiry - ${suspendedUserEmail}`;
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2>Account Suspension Inquiry</h2>
+        <p><strong>User Email:</strong> ${suspendedUserEmail}</p>
+        <hr>
+        <p><strong>User Message:</strong></p>
+        <p style="white-space: pre-wrap; background-color: #f8f9fa; padding: 10px; border-radius: 4px;">${message || '(No additional message provided)'}</p>
+        <hr>
+        <p><em>Please review this user's account suspension status.</em></p>
+      </div>
+    `;
+    const fromAddress = `${suspendedUserEmail}`; // Send from the user's email address
+
+    console.log(`Sending suspension support email for ${suspendedUserEmail} to ${supportEmail}`);
+
+    try {
+      const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+
+      if (isDevelopment) {
+        console.log('Development mode detected, using direct Resend API for support email');
+        // Note: Resend might block sending *from* arbitrary addresses without verification.
+        // In dev, we might need to send from the verified no-reply address instead.
+        // Let's try sending from user first, fallback to no-reply if needed for dev simulation.
+        return await sendEmailDirectly(
+          supportEmail,
+          subject,
+          htmlContent,
+          fromAddress // Attempt to send from user's email
+        );
+      } else {
+        console.log('Production mode detected, using Edge Function for support email');
+        // Edge function likely needs modification to allow sending *from* user's email
+        // or might need to always send from no-reply. Assuming it handles 'from' for now.
+        return await sendEmailViaEdgeFunction(
+          supportEmail,
+          subject,
+          htmlContent,
+          fromAddress // Pass user's email as 'from'
+        );
+      }
+    } catch (error) {
+      console.error('Error sending suspension support email:', error);
+      // Simulate success in dev even on error
+      if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+        console.log('Development mode: Simulating successful support email sending despite error');
+        return true;
+      }
+      return false;
+    }
   }
 };

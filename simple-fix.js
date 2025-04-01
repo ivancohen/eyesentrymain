@@ -1,4 +1,4 @@
-// Script to create a simple QuestionService.ts file with only essential functionality
+./restore-and-fix.bat// Script to create a simple QuestionService.ts file with only essential functionality
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';

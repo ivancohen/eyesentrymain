@@ -7,6 +7,8 @@ const ChatWidget = lazy(() => import("@/components/chat/ChatWidget"));
 const ChatbotFAQ = lazy(() => import("@/components/chat/ChatbotFAQ"));
 import { QuestionnaireService } from "@/services/QuestionnaireService";
 import { riskAssessmentService } from "@/services/RiskAssessmentService";
+// Import the admin service and the correct interface
+import { FixedAdminService, ClinicalResource as FetchedClinicalResource } from "@/services/FixedAdminService";
 import {
   Card,
   CardContent,
@@ -36,7 +38,9 @@ import {
   GraduationCap,
   Eye,
   MessageCircle,
-  X
+  X,
+  // Add any other icons used by resources if needed
+  BookOpenCheck // Example if needed
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Navbar from "@/components/Navbar";
@@ -68,13 +72,28 @@ interface RecentActivity {
   status: 'completed' | 'pending' | 'high-risk' | 'low-risk' | 'medium-risk';
 }
 
-interface ClinicalResource {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  link: string;
-  category: 'diagnostics' | 'equipment' | 'community';
-}
+// Remove the local interface, we'll use the imported FetchedClinicalResource
+// interface ClinicalResource {
+//   title: string;
+//   description: string;
+//   icon: React.ReactNode;
+//   link: string;
+//   category: 'diagnostics' | 'equipment' | 'community';
+// }
+
+// Helper function to map icon names to Lucide components
+const getIconComponent = (iconName?: string): React.ReactNode => {
+  const iconProps = { className: "h-5 w-5" }; // Consistent styling
+  switch (iconName?.toLowerCase()) {
+    case 'microscope': return <Microscope {...iconProps} />;
+    case 'eye': return <Eye {...iconProps} />;
+    case 'building2': return <Building2 {...iconProps} />;
+    case 'graduationcap': return <GraduationCap {...iconProps} />;
+    case 'bookopen': return <BookOpen {...iconProps} />;
+    // Add more cases as needed for other icons used in the database
+    default: return <BookOpen {...iconProps} />; // Default icon
+  }
+};
 
 const Doctor = () => {
   const { user, isAdmin, loading, logout } = useAuth();
@@ -82,7 +101,7 @@ const Doctor = () => {
   const [dashboardCards, setDashboardCards] = useState<DashboardCard[]>([]);
   const [statistics, setStatistics] = useState<StatisticCard[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [clinicalResources, setClinicalResources] = useState<ClinicalResource[]>([]);
+  const [clinicalResources, setClinicalResources] = useState<FetchedClinicalResource[]>([]); // Use imported interface
   const [isLoading, setIsLoading] = useState(true);
   const [showChatIntro, setShowChatIntro] = useState(false);
   
@@ -234,40 +253,13 @@ const Doctor = () => {
         
         setRecentActivities(initialActivities);
         
-        // Set clinical resources (static data, no need to fetch)
-        const resources: ClinicalResource[] = [
-          {
-            title: "Glaucoma Diagnostic Guidelines",
-            description: "Latest clinical guidelines for glaucoma diagnosis and treatment",
-            icon: <Microscope className="h-5 w-5 text-blue-500" />,
-            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-            category: "diagnostics"
-          },
-          {
-            title: "Tonometry Equipment Guide",
-            description: "Comprehensive guide to tonometry equipment and best practices",
-            icon: <Eye className="h-5 w-5 text-indigo-500" />,
-            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-            category: "equipment"
-          },
-          {
-            title: "Local Ophthalmology Network",
-            description: "Connect with local ophthalmologists and specialists",
-            icon: <Building2 className="h-5 w-5 text-green-500" />,
-            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-            category: "community"
-          },
-          {
-            title: "Continuing Education Resources",
-            description: "Latest courses and certifications in glaucoma management",
-            icon: <GraduationCap className="h-5 w-5 text-amber-500" />,
-            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-            category: "community"
-          }
-        ];
-        
-        setClinicalResources(resources);
-        setIsLoading(false);
+        // Fetch clinical resources from the service
+        const fetchedResources = await FixedAdminService.fetchClinicalResources();
+        // Filter only active resources for display on the dashboard
+        const activeResources = fetchedResources.filter(res => res.is_active);
+        setClinicalResources(activeResources);
+
+        setIsLoading(false); // Set loading false after essential data (including resources) is fetched
         
         // After essential data is loaded, calculate risk scores in the background
         setTimeout(() => {
@@ -519,18 +511,15 @@ const Doctor = () => {
             </h2>
             <div className="grid grid-cols-1 gap-4">
               {dashboardCards.map((card, index) => {
-                // Determine if this is one of the two most important cards
-                const isPrimary = card.title === "New Patient" || card.title === "Patient Questionnaires";
-                
                 return (
                 <Card
                   key={index}
-                  className={`glass-panel hover:shadow-lg transition-shadow ${isPrimary ? 'border-2 border-blue-500' : ''}`}
+                  className="glass-panel hover:shadow-lg transition-shadow" // Removed conditional border
                 >
-                  <CardHeader className={`pb-2 ${isPrimary ? 'bg-blue-50' : ''}`}>
-                    <CardTitle className={`flex items-center gap-2 text-lg ${isPrimary ? 'text-blue-700' : ''}`}>
+                  <CardHeader className="pb-2"> {/* Removed conditional background */}
+                    <CardTitle className="flex items-center gap-2 text-lg"> {/* Removed conditional text color */}
                       {card.icon} {card.title}
-                      {isPrimary && <Badge className="ml-2 bg-blue-600">Important</Badge>}
+                      {/* Removed Important Badge */}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pb-2">
@@ -540,7 +529,7 @@ const Doctor = () => {
                   </CardContent>
                   <CardFooter>
                     <Button
-                      className={`w-full hover-lift ${isPrimary ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                      className="w-full hover-lift" // Removed conditional background
                       onClick={() => navigate(card.route)}
                     >
                       {card.action}
@@ -552,49 +541,21 @@ const Doctor = () => {
             </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Knowledge Base (Moved Here) */}
           <div className="lg:col-span-1">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2 questionnaire-text">
-              <Clock className="h-5 w-5" />
-              Recent Activity
+              <MessageCircle className="h-5 w-5" />
+              Knowledge Base
             </h2>
-            <Card className="glass-panel hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100">
-                      <div className={`p-2 rounded-full
-                        ${activity.status === 'high-risk' ? 'bg-red-100 text-red-500' :
-                          activity.status === 'medium-risk' ? 'bg-amber-100 text-amber-500' :
-                          activity.status === 'low-risk' ? 'bg-green-100 text-green-500' :
-                          'bg-blue-100 text-blue-500'}`}>
-                        {activity.status === 'high-risk' ? <Activity className="h-4 w-4" /> :
-                         activity.status === 'pending' ? <Clock className="h-4 w-4" /> :
-                         <FileText className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{activity.patientName}</p>
-                        <p className="text-sm text-gray-500">{activity.action}</p>
-                        <p className="text-xs text-gray-400">{format(activity.date, 'h:mm a')}</p>
-                      </div>
-                      <Badge variant={
-                        activity.status === 'high-risk' ? 'destructive' :
-                        activity.status === 'medium-risk' ? 'default' :
-                        activity.status === 'low-risk' ? 'success' :
-                        activity.status === 'pending' ? 'outline' : 'secondary'
-                      }>
-                        {activity.status.replace('-', ' ')}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 text-center">
-                  <Button variant="link" onClick={() => navigate("/questionnaires")}>
-                    View All Activity
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {loadChatbotFAQ ? (
+              <Suspense fallback={<div className="p-4 text-center">Loading knowledge base...</div>}>
+                <ChatbotFAQ />
+              </Suspense>
+            ) : (
+              <div className="p-4 border rounded-md text-center">
+                <p className="text-muted-foreground">Knowledge base will load shortly...</p>
+              </div>
+            )}
           </div>
 
           {/* Clinical Information */}
@@ -619,20 +580,28 @@ const Doctor = () => {
                         .map((resource, idx) => (
                           <div key={idx} className="p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
                             <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-full bg-opacity-10 bg-blue-100">
-                                {resource.icon}
+                              <div className={`p-2 rounded-full bg-opacity-10 ${
+                                  resource.category === 'diagnostics' ? 'bg-blue-100 text-blue-500' :
+                                  resource.category === 'equipment' ? 'bg-indigo-100 text-indigo-500' :
+                                  'bg-green-100 text-green-500'
+                                }`}>
+                                {getIconComponent(resource.icon_name)} {/* Use helper function */}
                               </div>
                               <div>
                                 <h3 className="font-medium">{resource.title}</h3>
-                                <p className="text-sm text-gray-500">{resource.description}</p>
-                                <a
-                                  href={resource.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-500 hover:underline mt-1 inline-block"
-                                >
-                                  Learn more →
-                                </a>
+                                <p className="text-sm text-gray-500">{resource.description || 'No description.'}</p>
+                                {resource.link ? (
+                                    <a
+                                      href={resource.link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-500 hover:underline mt-1 inline-block"
+                                    >
+                                      Learn more →
+                                    </a>
+                                ) : (
+                                    <span className="text-sm text-gray-400 italic mt-1 inline-block">No link</span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -643,22 +612,7 @@ const Doctor = () => {
               </CardContent>
             </Card>
 
-            {/* Chatbot FAQ - Lazy loaded */}
-            <div className="mt-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 questionnaire-text">
-                <MessageCircle className="h-5 w-5" />
-                Knowledge Base
-              </h2>
-              {loadChatbotFAQ ? (
-                <Suspense fallback={<div className="p-4 text-center">Loading knowledge base...</div>}>
-                  <ChatbotFAQ />
-                </Suspense>
-              ) : (
-                <div className="p-4 border rounded-md text-center">
-                  <p className="text-muted-foreground">Knowledge base will load shortly...</p>
-                </div>
-              )}
-            </div>
+            {/* Chatbot FAQ removed from here, moved to the second column */}
           </div>
         </div>
       </main>

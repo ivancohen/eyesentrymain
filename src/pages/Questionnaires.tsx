@@ -5,10 +5,10 @@ import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Clipboard, PlusCircle, AlertCircle, FileText, Info, UserCircle, Trash2 } from "lucide-react"; // Removed Edit
+import { Clipboard, PlusCircle, AlertCircle, FileText, Info, UserCircle } from "lucide-react"; // Removed Edit, Trash2
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { getUserQuestionnaires, getQuestionnaireById, deleteQuestionnaireById } from "@/services/PatientQuestionnaireService"; // Added deleteQuestionnaireById
+import { getUserQuestionnaires, getQuestionnaireById } from "@/services/PatientQuestionnaireService"; // Removed deleteQuestionnaireById
 import { SpecialistService } from "@/services/SpecialistService";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -20,17 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog, // Added AlertDialog components
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Corrected import path
+// Removed AlertDialog imports
 import QuestionnaireResults from "@/components/questionnaires/QuestionnaireResults";
 import { supabase } from "@/lib/supabase";
 import { riskAssessmentService } from '@/services/RiskAssessmentService';
@@ -69,9 +59,7 @@ const Questionnaires = () => {
   const [isViewingRisk, setIsViewingRisk] = useState(false);
   const [selectedQuestionnaireForSpecialist, setSelectedQuestionnaireForSpecialist] = useState<string | null>(null);
   const [isViewingSpecialist, setIsViewingSpecialist] = useState(false);
-  // State for delete confirmation dialog
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [questionnaireToDeleteId, setQuestionnaireToDeleteId] = useState<string | null>(null);
+  // Removed state for delete confirmation dialog
 
   useEffect(() => {
     const fetchQuestionnaires = async () => {
@@ -307,30 +295,7 @@ const Questionnaires = () => {
     setIsViewingSpecialist(true);
   };
   
-  // Handler to open the delete confirmation dialog
-  const handleOpenDeleteDialog = (id: string) => {
-    setQuestionnaireToDeleteId(id);
-    setIsDeleteDialogOpen(true);
-  };
-  
-  // Handler to confirm deletion
-  const handleDeleteConfirm = async () => {
-    if (!questionnaireToDeleteId) return;
-  
-    try {
-      await deleteQuestionnaireById(questionnaireToDeleteId);
-      // Update UI state by removing the deleted questionnaire
-      setQuestionnaires(prev => prev.filter(q => q.id !== questionnaireToDeleteId));
-      toast.success("Questionnaire deleted successfully.");
-    } catch (error: unknown) {
-      console.error("Error deleting questionnaire:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to delete questionnaire.");
-    } finally {
-      // Close the dialog and reset the ID
-      setQuestionnaireToDeleteId(null);
-      setIsDeleteDialogOpen(false);
-    }
-  };
+  // Removed delete handlers
   
   
   return (
@@ -414,7 +379,7 @@ const Questionnaires = () => {
                     <p>Score: {questionnaire.total_score}</p>
                   </div>
                 </CardContent>
-                <CardFooter className="px-6 py-3 bg-slate-50 border-t flex justify-between">
+                <CardFooter className="px-6 py-3 bg-slate-50 border-t flex justify-center gap-2"> {/* Ensure buttons are centered */}
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -435,15 +400,7 @@ const Questionnaires = () => {
                       Specialist
                     </Button>
                   </div>
-                  {/* Delete Button */}
-                  <Button
-                    variant="ghost" // Use ghost or destructive variant
-                    size="sm"
-                    className="text-red-600 hover:bg-red-100"
-                    onClick={() => handleOpenDeleteDialog(questionnaire.id)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
+                  {/* Delete Button Removed */}
                 </CardFooter>
               </Card>
             ))}
@@ -462,7 +419,7 @@ const Questionnaires = () => {
             {riskAssessment && <QuestionnaireResults {...riskAssessment} />}
           </DialogContent>
         </Dialog>
-
+        {/* Specialist Dialog */}
         {/* Specialist Dialog */}
         <Dialog open={isViewingSpecialist} onOpenChange={setIsViewingSpecialist}>
           <DialogContent className="max-w-4xl">
@@ -478,24 +435,7 @@ const Questionnaires = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                patient questionnaire data from the database.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setQuestionnaireToDeleteId(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* Delete Confirmation Dialog Removed */}
 
       </main>
     </div>
