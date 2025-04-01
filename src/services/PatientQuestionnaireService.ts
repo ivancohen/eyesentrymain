@@ -284,87 +284,76 @@ function isDBQuestion(obj: any): obj is DBQuestion {
 
 export async function getQuestionsWithTooltips(): Promise<DBQuestion[]> {
   try {
-    // Step 1: Fetch active questions
-    const { data: questionsData, error: questionsError } = await supabase
-      .from('questions')
-      .select('*')
-      .eq('status', 'Active') // Filter for active questions
-      .order('page_category', { ascending: true })
-      .order('display_order', { ascending: true });
+    // Try to fetch from 'questions' table first
+    try {
+      const { data: questionsData, error: questionsError } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('status', 'Active') // Filter for active questions
+        .order('page_category', { ascending: true })
+        .order('display_order', { ascending: true });
 
-    if (questionsError) {
-      console.error("Error fetching questions:", questionsError);
-      throw questionsError;
-    }
-    
-    // --- DEBUG LOG: Log raw fetched questions data ---
-    console.log("DEBUG: Raw questions fetched from DB:", questionsData?.map(q => ({id: q.id, question: q.question, status: q.status})) || 'No data');
-    // --- END DEBUG LOG ---
+      if (!questionsError && questionsData) {
+        // Filter out questions with non-UUID IDs and ensure basic structure
+        let validQuestions = questionsData.filter(q => {
+          const isUUID = isValidUUID(q.id);
+          const isQuestion = isDBQuestion(q);
+          return isUUID && isQuestion;
+        }) || [];
 
-    // Filter out questions with non-UUID IDs and ensure basic structure
-    console.log("DEBUG: Filtering fetched questions...");
-    let validQuestions = questionsData?.filter(q => {
-        const isUUID = isValidUUID(q.id);
-        const isQuestion = isDBQuestion(q);
-        const passes = isUUID && isQuestion;
-        console.log(`  - Filtering Q ID: ${q.id}, Text: "${q.question?.substring(0,20)}...", isUUID: ${isUUID}, isQuestion: ${isQuestion}, Passes: ${passes}`);
-        return passes;
-    }) || [];
-    // Updated log message for clarity
-    console.log(`Fetched ${questionsData?.length || 0} questions with status='Active' (raw), found ${validQuestions.length} valid after filtering.`);
-
-    // Step 2: Fetch all options for the valid questions in a single query
-    const questionIds = validQuestions.map(q => q.id);
-    let allOptions: DropdownOption[] = [];
-    if (questionIds.length > 0) {
-        try {
+        // Step 2: Fetch all options for the valid questions in a single query
+        const questionIds = validQuestions.map(q => q.id);
+        let allOptions: DropdownOption[] = [];
+        if (questionIds.length > 0) {
+          try {
             // Use dropdown_options as the standardized table with proper ordering
             const { data: dropdownData, error: dropdownError } = await supabase
-                .from('dropdown_options')
-                .select('question_id, option_value, option_text, score, display_order')
-                .in('question_id', questionIds)
-                .order('display_order', { ascending: true });
+              .from('dropdown_options')
+              .select('question_id, option_value, option_text, score, display_order')
+              .in('question_id', questionIds)
+              .order('display_order', { ascending: true });
 
-            if (dropdownError) {
-                console.error("Error fetching options from dropdown_options table:", dropdownError);
-                // Continue without options if fetch fails
-            } else {
-                allOptions = dropdownData || [];
-                console.log(`Found ${allOptions.length} options from dropdown_options table`);
+            if (!dropdownError) {
+              allOptions = dropdownData || [];
             }
-        } catch (error) {
-            console.error("Error during options fetching:", error);
+          } catch (error) {
             // Continue without options
+          }
         }
-    }
 
-    // Step 3: Map options to their respective questions and process
-    validQuestions = validQuestions.map(q => {
-        const questionOptions = allOptions
+        // Step 3: Map options to their respective questions and process
+        validQuestions = validQuestions.map(q => {
+          const questionOptions = allOptions
             .filter(opt => opt.question_id === q.id)
             // Map to the structure expected in DBQuestion.options
-            // Now include display_order and maintain the same order
             .map(opt => ({
-                option_value: opt.option_value,
-                option_text: opt.option_text,
-                score: opt.score,
-                display_order: opt.display_order
+              option_value: opt.option_value,
+              option_text: opt.option_text,
+              score: opt.score,
+              display_order: opt.display_order
             }));
 
-        return {
+          return {
             ...q,
             tooltip: (q.tooltip && q.tooltip.trim()) ? q.tooltip.trim() : undefined,
             // Assign options if type is 'select' OR 'dropdown'
             options: (q.question_type === 'select' || q.question_type === 'dropdown') ? questionOptions : undefined,
             conditional_parent_id: q.conditional_parent_id || undefined,
             conditional_required_value: q.conditional_required_value || undefined,
-        };
-    });
+          };
+        });
 
-    return validQuestions;
+        return validQuestions;
+      }
+    } catch (innerError) {
+      // If there's an error with the questions table, continue to fallback
+    }
+
+    // Fallback: Return empty array if no questions found or error occurred
+    return [];
   } catch (error) {
     console.error("Error fetching questions with tooltips:", error);
-    throw error;
+    return []; // Return empty array instead of throwing to prevent cascading errors
   }
 }
 

@@ -55,23 +55,42 @@ const FALLBACK_ADVICE = [
   }
 ];
 
-// DEBUG TOOL - To see all advice values in browser console
-console.log("FORCED FALLBACK ADVICE VALUES ALWAYS AVAILABLE:", FALLBACK_ADVICE);
+// Make fallback advice available for debugging if needed
 window.ADVICE_DEBUG = FALLBACK_ADVICE;
 
-// Local cache for advice
-let cachedAdvice: RiskAssessmentAdvice[] | null = null;
+// Local cache for advice with expiration
+interface CachedData<T> {
+  data: T;
+  timestamp: number;
+  expiresIn: number; // milliseconds
+}
+
+let cachedAdvice: CachedData<RiskAssessmentAdvice[]> | null = null;
+let cachedQuestions: CachedData<DBQuestion[]> | null = null;
+
+// Cache expiration time (10 minutes)
+const CACHE_EXPIRATION = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export class RiskAssessmentService {
-  private allQuestions: DBQuestion[] | null = null; // Cache for questions
-
-  // Helper to fetch and cache questions
+  // Helper to fetch and cache questions with expiration
   private async getAllQuestions(): Promise<DBQuestion[]> {
-    if (this.allQuestions === null) {
-      console.log("RiskAssessmentService: Fetching questions...");
-      this.allQuestions = await getQuestionsWithTooltips();
+    // Check if cache is valid
+    if (cachedQuestions &&
+        (Date.now() - cachedQuestions.timestamp) < cachedQuestions.expiresIn) {
+      return cachedQuestions.data;
     }
-    return this.allQuestions;
+    
+    // Cache expired or not set, fetch fresh data
+    const questions = await getQuestionsWithTooltips();
+    
+    // Update cache
+    cachedQuestions = {
+      data: questions,
+      timestamp: Date.now(),
+      expiresIn: CACHE_EXPIRATION
+    };
+    
+    return questions;
   }
 
   // REMOVED getConfigurations() method
@@ -136,39 +155,21 @@ export class RiskAssessmentService {
   // Get all risk assessment advice using RPC function for consistent access pattern
   async getAdvice(): Promise<RiskAssessmentAdvice[]> {
     try {
-      // ALWAYS clear the cache to force fresh database fetch
-      cachedAdvice = null;
-      console.log("CLEARED ADVICE CACHE TO FORCE FRESH DATABASE FETCH");
-
-      console.log("FETCHING FRESH ADVICE USING RPC FUNCTION");
+      // Check if cache is valid
+      if (cachedAdvice &&
+          (Date.now() - cachedAdvice.timestamp) < cachedAdvice.expiresIn) {
+        return cachedAdvice.data;
+      }
+      
+      // Cache expired or not set, fetch fresh data
 
       // Use direct table access instead of RPC
       const { data, error } = await supabase
         .from('risk_assessment_advice')
         .select('*');
 
-      // Debug what we got from the database - consistent with other services
-      console.log("ADVICE RPC FUNCTION RESULT:", {
-        error: error ? error.message : 'none',
-        dataReceived: !!data,
-        dataCount: data?.length || 0,
-        dataItems: data?.map(a => ({
-          id: a.id,
-          level: a.risk_level,
-          score_range: `${a.min_score}-${a.max_score}`,
-          advice: a.advice?.substring(0, 30) + '...'
-        }))
-      });
-
       if (error) {
-        // Log detailed error information - consistent with other services
-        console.error("Error fetching advice via RPC:", error);
-        console.error("Error code:", error.code);
-        console.error("Error message:", error.message);
-        console.error("Error details:", error.details);
-
         // Use fallback but never cache it
-        console.warn("CRITICAL: Using fallback advice due to RPC function error");
         return [...FALLBACK_ADVICE];
       }
 
@@ -185,16 +186,13 @@ export class RiskAssessmentService {
           advice: item.advice || "No specific advice available."
         }));
 
-        console.log("USING RPC ADVICE:", normalizedData.map(a => ({
-          risk_level: a.risk_level,
-          risk_level_normalized: a.risk_level_normalized,
-          min_score: a.min_score,
-          max_score: a.max_score,
-          advice_preview: a.advice?.substring(0, 30) + '...'
-        })));
 
-        // Cache the normalized advice
-        cachedAdvice = normalizedData;
+        // Cache the normalized advice with expiration
+        cachedAdvice = {
+          data: normalizedData,
+          timestamp: Date.now(),
+          expiresIn: CACHE_EXPIRATION
+        };
         return normalizedData;
       }
 
@@ -314,114 +312,70 @@ export class RiskAssessmentService {
     let allQuestions: DBQuestion[] = [];
 
     try {
-      console.log("CALCULATING RISK SCORE (Dropdown Only Logic, UUID Keys) FOR ANSWERS:", answers);
-
-      // Clear advice cache
-      cachedAdvice = null;
-      console.log("CLEARED CACHE TO FORCE FRESH DATABASE FETCH");
-
-      // Fetch advice and all questions
+      // Fetch advice and all questions using cached data when available
       [adviceList, allQuestions] = await Promise.all([
         this.getAdvice(),
         this.getAllQuestions()
       ]);
+// Process the data
 
-      console.log("DATA RETRIEVED FOR RISK CALCULATION:");
-      console.log("- Advice list:", adviceList.length, "items");
-      console.log("- Questions:", allQuestions.length);
-
-      // --- Scoring Logic ---
-      console.log("DEBUG: Received answers object in calculateRiskScore:", answers);
-      // Iterate through all known questions
+      // Iterate through all known questions to calculate score
       for (const question of allQuestions) {
         const questionUuid = question.id;
         const answerValue = answers[questionUuid]; // Look up answer using UUID
         
-        // --- DEBUG LOG: Check looked-up answer value ---
-        console.log(`  - Lookup for UUID ${questionUuid}: Found answerValue = "${answerValue}" (Type: ${typeof answerValue})`);
-        // --- END DEBUG LOG ---
-
         // Skip if no answer provided for this question
         if (answerValue === undefined || answerValue === null || answerValue === '') {
-          // Add log here too to see if skip happens
-          console.log(`  - Skipping question ${questionUuid} due to empty/null/undefined answerValue.`);
           continue;
         }
 
-        console.log(`Processing answer for Question: "${question.question}" (UUID: ${questionUuid}) = ${answerValue}`);
-
         let score = 0;
-        let scoreSource = "None";
         let scoreApplied = false;
         const questionText = question.question; // Use actual question text
 
-        // --- ONLY Check dropdown options score ---
-        // No need to find question again, we are iterating through them
-        console.log(`  - Checking Question: "${questionText}", Type: ${question.question_type}`);
+        // Check dropdown options score
         if (question.options) { // Check if options exist
-            console.log(`  - Checking ${question.options.length} Dropdown Options:`, question.options.map(o => ({v: o.option_value, s: o.score})));
             // Make comparison case-insensitive
             const answerValueLower = String(answerValue).toLowerCase();
             const selectedOption = question.options.find(opt => opt.option_value.toLowerCase() === answerValueLower);
             if (selectedOption && typeof selectedOption.score === 'number') {
                 score = selectedOption.score;
-                scoreSource = `Dropdown Option (Value: ${selectedOption.option_value})`;
                 scoreApplied = true; // Mark score as applied if found in options
-            } else {
-                console.log(`  - Answer value "${answerValue}" not found or has no score in options.`);
             }
-        } else {
-             console.log(`  - Question has no options array to check for score.`);
         }
 
-        // --- Add score and contributing factor if a score was applied ---
+        // Add score and contributing factor if a score was applied
         if (scoreApplied && score > 0) {
-            console.log(`✅ Score Applied: ${score} from ${scoreSource} for "${questionText}" = ${answerValue}`);
             totalScore += score;
             contributingFactors.push({
                 question: questionText,
                 answer: String(answerValue),
                 score: score
             });
-        } else {
-            // Only log if no score was applied
-            console.log(`No score applied for Question UUID ${questionUuid}=${answerValue}`);
         }
       } // End of allQuestions loop
 
-      console.log(`Total calculated score: ${totalScore}`);
-
       // Determine risk level based on score
       const calculatedRiskLevel = totalScore <= 2 ? "Low" : totalScore <= 5 ? "Moderate" : "High";
-      console.log(`Calculated risk level based on score: ${calculatedRiskLevel}`);
 
-      // Find advice using multiple matching strategies:
-      console.log("MATCHING STRATEGY 1: Score range match");
+      // Find advice using multiple matching strategies
       let matchedAdvice = adviceList.find(a => totalScore >= a.min_score && totalScore <= a.max_score);
-      console.log("Score range match result:", matchedAdvice ? `Found: ${matchedAdvice.risk_level} (${matchedAdvice.min_score}-${matchedAdvice.max_score})` : "No match");
 
       if (!matchedAdvice) {
-        console.log("MATCHING STRATEGY 2: Exact risk level match");
+        // Try exact risk level match
         matchedAdvice = adviceList.find(a => a.risk_level === calculatedRiskLevel);
-        console.log("Exact risk level match result:", matchedAdvice ? `Found: ${matchedAdvice.risk_level}` : "No match");
       }
 
       if (!matchedAdvice) {
-        console.log("MATCHING STRATEGY 3: Case-insensitive risk level match");
+        // Try case-insensitive risk level match
         matchedAdvice = adviceList.find(a =>
           a.risk_level.toLowerCase() === calculatedRiskLevel.toLowerCase()
         );
-        console.log("Case-insensitive match result:", matchedAdvice ? `Found: ${matchedAdvice.risk_level}` : "No match");
       }
 
       // Get the final advice and risk level
       const adviceText = matchedAdvice?.advice || "No specific advice available for this score range.";
       const riskLevel = matchedAdvice?.risk_level || calculatedRiskLevel;
-
-      console.log("FINAL MATCHED RESULT:");
-      console.log(`- Risk level: ${riskLevel}`);
-      console.log(`- Advice: ${adviceText.substring(0, 50)}...`);
-      console.log(`- Matched using: ${matchedAdvice ? "Database entry" : "Fallback"}`);
 
       return {
         total_score: totalScore,

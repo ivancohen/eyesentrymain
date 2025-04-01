@@ -50,7 +50,7 @@ import { SpecialistQuestionManager } from "@/components/admin/SpecialistQuestion
 import { UserProfile } from "@/services/FixedAdminService";
 
 // Admin section types
-type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions';
+type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq';
 
 const NewAdmin = () => {
   const { user, isAdmin, loading, logout } = useAuth();
@@ -63,8 +63,8 @@ const NewAdmin = () => {
   
   // State to track which admin section is currently being displayed
   const [currentSection, setCurrentSection] = useState<AdminSection>(
-    sectionParam && ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions'].includes(sectionParam) 
-      ? sectionParam 
+    sectionParam && ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq'].includes(sectionParam)
+      ? sectionParam
       : 'dashboard'
   );
   
@@ -100,8 +100,8 @@ const NewAdmin = () => {
 
   // Update section based on URL search params
   useEffect(() => {
-    if (sectionParam && sectionParam !== currentSection && 
-        ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions'].includes(sectionParam)) {
+    if (sectionParam && sectionParam !== currentSection &&
+        ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq'].includes(sectionParam)) {
       setCurrentSection(sectionParam);
     }
   }, [sectionParam]);
@@ -147,6 +147,64 @@ const NewAdmin = () => {
   // Render the appropriate content based on current section
   const renderContent = () => {
     switch (currentSection) {
+      case 'faq':
+        return (
+          <>
+            <div className="mb-6 flex items-center justify-center">
+              <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
+                onClick={() => changeSection('dashboard')}
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold">FAQ Management</h2>
+              <p className="text-muted-foreground">
+                Manage frequently asked questions for the doctor chatbot
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <Button
+                className="hover-lift"
+                onClick={() => navigate('/admin/faq')}
+              >
+                Open FAQ Management
+              </Button>
+            </div>
+          </>
+        );
+      case 'chatbot-faq':
+        return (
+          <>
+            <div className="mb-6 flex items-center justify-center">
+              <Button
+                variant="outline"
+                className="border-blue-500 text-blue-500 hover:bg-blue-50"
+                onClick={() => changeSection('dashboard')}
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </div>
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-bold">Chatbot Knowledge Base</h2>
+              <p className="text-muted-foreground">
+                Manage the knowledge base for the doctor chatbot assistant
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <Button
+                className="hover-lift"
+                onClick={() => navigate('/admin/chatbot-faq')}
+              >
+                Open Knowledge Base Management
+              </Button>
+            </div>
+          </>
+        );
       case 'users':
         return (
           <>
@@ -430,6 +488,44 @@ const NewAdmin = () => {
                     onClick={() => navigate('/ai-assistant')}
                   >
                     Open AI Assistant
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="glass-panel hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <FileQuestion className="h-5 w-5 text-cyan-500" /> Website FAQs
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Manage frequently asked questions for the website
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    className="w-full hover-lift"
+                    onClick={() => changeSection('faq')}
+                  >
+                    Manage Website FAQs
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="glass-panel hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <Bot className="h-5 w-5 text-emerald-500" /> Chatbot Knowledge Base
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Manage the knowledge base for the doctor chatbot assistant
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                  <Button
+                    className="w-full hover-lift"
+                    onClick={() => changeSection('chatbot-faq')}
+                  >
+                    Manage Knowledge Base
                   </Button>
                 </CardFooter>
               </Card>

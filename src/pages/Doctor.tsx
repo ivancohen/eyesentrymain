@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+// Lazy load heavy components
+const ChatWidget = lazy(() => import("@/components/chat/ChatWidget"));
+// Lazy load heavy components
+const ChatbotFAQ = lazy(() => import("@/components/chat/ChatbotFAQ"));
+import { QuestionnaireService } from "@/services/QuestionnaireService";
+import { riskAssessmentService } from "@/services/RiskAssessmentService";
 import {
   Card,
   CardContent,
@@ -28,7 +34,9 @@ import {
   Microscope,
   Building2,
   GraduationCap,
-  Eye
+  Eye,
+  MessageCircle,
+  X
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Navbar from "@/components/Navbar";
@@ -76,7 +84,42 @@ const Doctor = () => {
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [clinicalResources, setClinicalResources] = useState<ClinicalResource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const currentDate = new Date();
+  const [showChatIntro, setShowChatIntro] = useState(false);
+  
+  // Add state variables for lazy loading sections
+  const [loadChatWidget, setLoadChatWidget] = useState(false);
+  const [loadChatbotFAQ, setLoadChatbotFAQ] = useState(false);
+  const [loadClinicalResources, setLoadClinicalResources] = useState(false);
+  
+  // Check localStorage for chat intro preference when component mounts
+  useEffect(() => {
+    const hasSeenChatIntro = localStorage.getItem('hasSeenChatIntro') === 'true';
+    setShowChatIntro(!hasSeenChatIntro);
+  }, []);
+  
+  // Function to dismiss chat intro and save preference
+  const dismissChatIntro = () => {
+    setShowChatIntro(false);
+    localStorage.setItem('hasSeenChatIntro', 'true');
+  };
+  // Use useRef for the date to avoid re-renders
+  const currentDateRef = useRef(new Date());
+  const currentDate = currentDateRef.current;
+  
+  // Function to convert questionnaire to answers format
+  const mapQuestionnaireToAnswers = (questionnaire: any): Record<string, string> => {
+    return {
+      'ab1c10d1-3183-4b27-baac-936c881bda83': questionnaire.family_glaucoma ? 'yes' : 'no',
+      '879cd028-1b29-4529-9cdb-7adcaf44d553': questionnaire.ocular_steroid ? 'yes' : 'no',
+      '631db108-0f4c-46ff-941e-c37f6856060c': questionnaire.intravitreal_steroids ? 'yes' : 'no',
+      'a43ecfbc-413f-4925-8908-f9fc0d35ea0f': questionnaire.systemic_steroid ? 'yes' : 'no',
+      '2aaed7f2-3777-461d-b45f-932a16c21cb6': questionnaire.iop_baseline_elevated ? 'yes' : 'no',
+      'e07b2e94-5bc4-4bb0-b561-0bad4403d9cd': questionnaire.vertical_disc_asymmetry ? 'yes' : 'no',
+      '3ca68854-3213-4254-a1e2-083ddfb758fb': questionnaire.vertical_cd_ratio_elevated ? 'yes' : 'no',
+      '52761412-7613-46c7-83dc-d85d6a16124e': questionnaire.age.toString(),
+      'ab438232-5f80-4862-894a-d9bdb7276fa4': questionnaire.race
+    };
+  };
 
   useEffect(() => {
     // Only allow authenticated users who are not admins
@@ -90,150 +133,270 @@ const Doctor = () => {
       return;
     }
 
-    // Load dashboard data
+    // Load essential dashboard data first
     setIsLoading(true);
     
-    // Simulated dashboard data
-    const cards: DashboardCard[] = [
-      {
-        title: "New Patient",
-        description: "Register a new patient and complete questionnaire",
-        icon: <Users className="h-5 w-5 text-blue-500" />,
-        count: 0,
-        action: "Add New Patient",
-        route: "/questionnaire"
-      },
-      {
-        title: "Patient Questionnaires",
-        description: "View and manage patient questionnaire responses",
-        icon: <FileText className="h-5 w-5 text-indigo-500" />,
-        count: 24,
-        action: "View Questionnaires",
-        route: "/questionnaires"
-      },
-      {
-        title: "Profile",
-        description: "Update your profile information and settings",
-        icon: <User className="h-5 w-5 text-green-500" />,
-        count: 0,
-        action: "Edit Profile",
-        route: "/user-profile"
+    const loadEssentialData = async () => {
+      try {
+        if (!user?.id) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // Only fetch basic questionnaire data initially (count and basic info)
+        const questionnaires = await QuestionnaireService.fetchQuestionnaires(user.id);
+        const totalPatients = questionnaires.length;
+        
+        // Create dashboard cards with basic data
+        const cards: DashboardCard[] = [
+          {
+            title: "New Patient",
+            description: "Register a new patient and complete questionnaire",
+            icon: <Users className="h-5 w-5 text-blue-500" />,
+            count: 0,
+            action: "Add New Patient",
+            route: "/questionnaire"
+          },
+          {
+            title: "Patient Questionnaires",
+            description: "View and manage patient questionnaire responses",
+            icon: <FileText className="h-5 w-5 text-indigo-500" />,
+            count: totalPatients,
+            action: "View Questionnaires",
+            route: "/questionnaires"
+          },
+          {
+            title: "Profile",
+            description: "Update your profile information and settings",
+            icon: <User className="h-5 w-5 text-green-500" />,
+            count: 0,
+            action: "Edit Profile",
+            route: "/user-profile"
+          }
+        ];
+        
+        setDashboardCards(cards);
+        
+        // Set initial statistics with basic data
+        const initialStats: StatisticCard[] = [
+          {
+            title: "Total Patients",
+            value: totalPatients,
+            icon: <Users className="h-5 w-5" />,
+            change: "Based on real data",
+            trend: "neutral",
+            color: "text-blue-500"
+          },
+          {
+            title: "Questionnaires",
+            value: totalPatients,
+            icon: <FileText className="h-5 w-5" />,
+            change: "Based on real data",
+            trend: "neutral",
+            color: "text-indigo-500"
+          },
+          {
+            title: "High Risk Patients",
+            value: "Loading...",
+            icon: <Activity className="h-5 w-5" />,
+            change: "Calculating...",
+            trend: "neutral",
+            color: "text-red-500"
+          },
+          {
+            title: "Avg. Risk Score",
+            value: "Loading...",
+            icon: <BarChart3 className="h-5 w-5" />,
+            change: "Calculating...",
+            trend: "neutral",
+            color: "text-amber-500"
+          }
+        ];
+        
+        setStatistics(initialStats);
+        
+        // Set initial activities with loading state
+        const initialActivities: RecentActivity[] = [];
+        if (questionnaires.length > 0) {
+          // Take up to 5 recent questionnaires but don't calculate risk yet
+          const recentQuestionnaires = questionnaires.slice(0, 5);
+          for (let i = 0; i < recentQuestionnaires.length; i++) {
+            const q = recentQuestionnaires[i];
+            initialActivities.push({
+              id: q.id || `act-${i}`,
+              patientName: `${q.patient_first_name} ${q.patient_last_name}`,
+              action: "Completed questionnaire",
+              date: q.created_at ? new Date(q.created_at) : new Date(currentDate.getTime() - 1000 * 60 * (30 * (i + 1))),
+              status: 'pending'
+            });
+          }
+        }
+        
+        setRecentActivities(initialActivities);
+        
+        // Set clinical resources (static data, no need to fetch)
+        const resources: ClinicalResource[] = [
+          {
+            title: "Glaucoma Diagnostic Guidelines",
+            description: "Latest clinical guidelines for glaucoma diagnosis and treatment",
+            icon: <Microscope className="h-5 w-5 text-blue-500" />,
+            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
+            category: "diagnostics"
+          },
+          {
+            title: "Tonometry Equipment Guide",
+            description: "Comprehensive guide to tonometry equipment and best practices",
+            icon: <Eye className="h-5 w-5 text-indigo-500" />,
+            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
+            category: "equipment"
+          },
+          {
+            title: "Local Ophthalmology Network",
+            description: "Connect with local ophthalmologists and specialists",
+            icon: <Building2 className="h-5 w-5 text-green-500" />,
+            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
+            category: "community"
+          },
+          {
+            title: "Continuing Education Resources",
+            description: "Latest courses and certifications in glaucoma management",
+            icon: <GraduationCap className="h-5 w-5 text-amber-500" />,
+            link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
+            category: "community"
+          }
+        ];
+        
+        setClinicalResources(resources);
+        setIsLoading(false);
+        
+        // After essential data is loaded, calculate risk scores in the background
+        setTimeout(() => {
+          calculateRiskScores(questionnaires);
+        }, 100);
+        
+      } catch (error) {
+        console.error("Error loading essential dashboard data:", error);
+        setIsLoading(false);
       }
-    ];
+    };
     
-    setDashboardCards(cards);
-    
-    // Simulated statistics data
-    const stats: StatisticCard[] = [
-      {
-        title: "Total Patients",
-        value: 128,
-        icon: <Users className="h-5 w-5" />,
-        change: "+12% from last month",
-        trend: "up",
-        color: "text-blue-500"
-      },
-      {
-        title: "Questionnaires",
-        value: 87,
-        icon: <FileText className="h-5 w-5" />,
-        change: "+5% from last month",
-        trend: "up",
-        color: "text-indigo-500"
-      },
-      {
-        title: "High Risk Patients",
-        value: 24,
-        icon: <Activity className="h-5 w-5" />,
-        change: "-3% from last month",
-        trend: "down",
-        color: "text-red-500"
-      },
-      {
-        title: "Avg. Risk Score",
-        value: "42.8",
-        icon: <BarChart3 className="h-5 w-5" />,
-        change: "Stable",
-        trend: "neutral",
-        color: "text-amber-500"
+    // Function to calculate risk scores in the background
+    const calculateRiskScores = async (questionnaires: any[]) => {
+      try {
+        if (questionnaires.length === 0) return;
+        
+        // Prepare all questionnaires for batch processing
+        const questionnaireAnswers = questionnaires.map(q => ({
+          id: q.id,
+          answers: mapQuestionnaireToAnswers(q),
+          firstName: q.patient_first_name,
+          lastName: q.patient_last_name,
+          createdAt: q.created_at
+        }));
+        
+        // Calculate risk scores for all questionnaires (up to 10 at a time to avoid overloading)
+        const batchSize = 10;
+        const results: Record<string, any> = {};
+        
+        for (let i = 0; i < questionnaireAnswers.length; i += batchSize) {
+          const batch = questionnaireAnswers.slice(i, i + batchSize);
+          
+          // Process batch in parallel
+          const batchResults = await Promise.all(
+            batch.map(async (item) => {
+              const riskResult = await riskAssessmentService.calculateRiskScore(item.answers);
+              return {
+                id: item.id,
+                result: riskResult,
+                firstName: item.firstName,
+                lastName: item.lastName,
+                createdAt: item.createdAt
+              };
+            })
+          );
+          
+          // Store results
+          batchResults.forEach(item => {
+            results[item.id] = item;
+          });
+        }
+        
+        // Calculate statistics
+        let highRiskCount = 0;
+        let totalScore = 0;
+        
+        Object.values(results).forEach((item: any) => {
+          totalScore += item.result.total_score;
+          if (item.result.risk_level === 'High') {
+            highRiskCount++;
+          }
+        });
+        
+        // Calculate average risk score
+        const avgRiskScore = questionnaires.length > 0 ? (totalScore / questionnaires.length).toFixed(1) : "0.0";
+        
+        // Update statistics with calculated data
+        setStatistics(prev => {
+          const updated = [...prev];
+          // Update High Risk Patients
+          updated[2] = {
+            ...updated[2],
+            value: highRiskCount,
+            change: "Based on calculated data"
+          };
+          // Update Avg. Risk Score
+          updated[3] = {
+            ...updated[3],
+            value: avgRiskScore,
+            change: "Based on calculated data"
+          };
+          return updated;
+        });
+        
+        // Update recent activities with risk levels
+        setRecentActivities(prev => {
+          return prev.map(activity => {
+            const resultData = results[activity.id];
+            if (resultData) {
+              return {
+                ...activity,
+                status: resultData.result.risk_level.toLowerCase() === 'high' ? 'high-risk' :
+                        resultData.result.risk_level.toLowerCase() === 'moderate' ? 'medium-risk' : 'low-risk'
+              };
+            }
+            return activity;
+          });
+        });
+        
+      } catch (error) {
+        console.error("Error calculating risk scores:", error);
       }
-    ];
+    };
     
-    // Simulated recent activities
-    const activities: RecentActivity[] = [
-      {
-        id: "act-1",
-        patientName: "John Smith",
-        action: "Completed questionnaire",
-        date: new Date(currentDate.getTime() - 1000 * 60 * 30), // 30 minutes ago
-        status: "high-risk"
-      },
-      {
-        id: "act-2",
-        patientName: "Maria Garcia",
-        action: "Completed questionnaire",
-        date: new Date(currentDate.getTime() - 1000 * 60 * 120), // 2 hours ago
-        status: "low-risk"
-      },
-      {
-        id: "act-3",
-        patientName: "Robert Johnson",
-        action: "Started questionnaire",
-        date: new Date(currentDate.getTime() - 1000 * 60 * 180), // 3 hours ago
-        status: "pending"
-      },
-      {
-        id: "act-4",
-        patientName: "Sarah Williams",
-        action: "Completed questionnaire",
-        date: new Date(currentDate.getTime() - 1000 * 60 * 240), // 4 hours ago
-        status: "medium-risk"
-      },
-      {
-        id: "act-5",
-        patientName: "David Brown",
-        action: "Completed questionnaire",
-        date: new Date(currentDate.getTime() - 1000 * 60 * 300), // 5 hours ago
-        status: "low-risk"
-      }
-    ];
+    // Load essential data first
+    loadEssentialData();
     
-    // Simulated clinical resources
-    const resources: ClinicalResource[] = [
-      {
-        title: "Glaucoma Diagnostic Guidelines",
-        description: "Latest clinical guidelines for glaucoma diagnosis and treatment",
-        icon: <Microscope className="h-5 w-5 text-blue-500" />,
-        link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-        category: "diagnostics"
-      },
-      {
-        title: "Tonometry Equipment Guide",
-        description: "Comprehensive guide to tonometry equipment and best practices",
-        icon: <Eye className="h-5 w-5 text-indigo-500" />,
-        link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-        category: "equipment"
-      },
-      {
-        title: "Local Ophthalmology Network",
-        description: "Connect with local ophthalmologists and specialists",
-        icon: <Building2 className="h-5 w-5 text-green-500" />,
-        link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-        category: "community"
-      },
-      {
-        title: "Continuing Education Resources",
-        description: "Latest courses and certifications in glaucoma management",
-        icon: <GraduationCap className="h-5 w-5 text-amber-500" />,
-        link: "https://www.aao.org/eye-health/diseases/glaucoma-diagnosis",
-        category: "community"
-      }
-    ];
+    // After 2 seconds, enable loading of ChatWidget
+    const chatWidgetTimer = setTimeout(() => {
+      setLoadChatWidget(true);
+    }, 2000);
     
-    setStatistics(stats);
-    setRecentActivities(activities);
-    setClinicalResources(resources);
-    setIsLoading(false);
+    // After 3 seconds, enable loading of clinical resources
+    const resourcesTimer = setTimeout(() => {
+      setLoadClinicalResources(true);
+    }, 3000);
+    
+    // After 4 seconds, enable loading of ChatbotFAQ
+    const faqTimer = setTimeout(() => {
+      setLoadChatbotFAQ(true);
+    }, 4000);
+    
+    // Clean up timers
+    return () => {
+      clearTimeout(chatWidgetTimer);
+      clearTimeout(resourcesTimer);
+      clearTimeout(faqTimer);
+    };
   }, [user, isAdmin, loading, navigate, currentDate]);
 
   const handleLogout = async () => {
@@ -257,7 +420,7 @@ const Doctor = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col questionnaire-bg">
+    <div className="min-h-screen flex flex-col questionnaire-bg relative">
       <Navbar showProfile={true} />
       <main className="flex-1 container px-6 py-6 mx-auto">
         {/* Welcome Banner with Medical Illustration */}
@@ -479,9 +642,77 @@ const Doctor = () => {
                 </Tabs>
               </CardContent>
             </Card>
+
+            {/* Chatbot FAQ - Lazy loaded */}
+            <div className="mt-6">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 questionnaire-text">
+                <MessageCircle className="h-5 w-5" />
+                Knowledge Base
+              </h2>
+              {loadChatbotFAQ ? (
+                <Suspense fallback={<div className="p-4 text-center">Loading knowledge base...</div>}>
+                  <ChatbotFAQ />
+                </Suspense>
+              ) : (
+                <div className="p-4 border rounded-md text-center">
+                  <p className="text-muted-foreground">Knowledge base will load shortly...</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
+      
+      {/* Chat Introduction Notification */}
+      {showChatIntro && (
+        <div className="fixed top-20 right-4 bg-white rounded-lg shadow-xl p-4 max-w-md z-50 border border-blue-200 animate-fade-in">
+          <div className="flex items-start">
+            <div className="bg-blue-100 rounded-full p-2 mr-3">
+              <MessageCircle className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-1">New: AI Assistant Available!</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Have questions about the questionnaire, measurements, or interpreting results?
+                Our AI assistant is here to help! Look for the chat button in the bottom right corner.
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={dismissChatIntro}
+                >
+                  Dismiss
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-blue-600"
+                  onClick={() => {
+                    dismissChatIntro();
+                    // This would ideally trigger the chat to open, but we'll need to refactor the ChatWidget component to accept a prop for this
+                  }}
+                >
+                  Try it now
+                </Button>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 -mt-1 -mr-1"
+              onClick={dismissChatIntro}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+      {/* Lazy load ChatWidget */}
+      {loadChatWidget && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
     </div>
   );
 };

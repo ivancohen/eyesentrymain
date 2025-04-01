@@ -9,6 +9,9 @@ import Questionnaires from "@/pages/Questionnaires";
 import NotFound from "@/pages/NotFound";
 import NewAdmin from "@/pages/NewAdmin";
 import Doctor from "@/pages/Doctor";
+import FaqAdmin from "@/pages/admin/FaqAdmin";
+import ChatbotFaqAdmin from "@/pages/admin/ChatbotFaqAdmin";
+import ConditionalChatWidget from "@/components/chat/ConditionalChatWidget";
 import UserProfile from "@/pages/UserProfile";
 import PasswordReset from "@/pages/PasswordReset";
 import ResetConfirmation from "@/pages/ResetConfirmation";
@@ -20,6 +23,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
 
 function App() {
+  
   return (
     <AuthProvider>
       <Routes>
@@ -41,6 +45,8 @@ function App() {
         <Route path="/questionnaire" element={<PatientQuestionnaire />} />
         <Route path="/questionnaires" element={<Questionnaires />} />
         <Route path="/new-admin" element={<NewAdmin />} />
+        <Route path="/admin/faq" element={<FaqAdmin />} />
+        <Route path="/admin/chatbot-faq" element={<ChatbotFaqAdmin />} />
         <Route path="/doctor" element={<Doctor />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
@@ -53,6 +59,9 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster richColors />
+      
+      {/* Global Chat Widget - conditionally rendered based on auth status and route */}
+      <ConditionalChatWidget />
     </AuthProvider>
   );
 }
