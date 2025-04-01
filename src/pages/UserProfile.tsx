@@ -111,11 +111,14 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col questionnaire-bg">
       <Navbar />
-      <main className="flex-1 container px-4 py-4 mb-8 animate-fade-in">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2 animate-slide-up">User Profile</h1>
+      <main className="flex-1 container px-6 py-6 mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center justify-center gap-2">
+            <UserCircle size={20} />
+            User Profile
+          </h1>
           <p className="text-muted-foreground animate-slide-up animation-delay-100">
             View and manage your account information
           </p>
@@ -132,7 +135,8 @@ const UserProfile = () => {
             <CardContent>
               {isLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-blue-300 border-t-blue-500 rounded-full animate-spin"></div>
+                  <span className="ml-3 text-blue-700">Loading profile...</span>
                 </div>
               ) : (
                 <form onSubmit={handleUpdateProfile} className="space-y-4">

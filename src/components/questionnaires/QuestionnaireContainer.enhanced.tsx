@@ -4,14 +4,12 @@ import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import { Clipboard, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import QuestionnaireForm from "@/components/questionnaires/QuestionnaireForm";
+import QuestionnaireForm from "@/components/questionnaires/QuestionnaireForm.enhanced";
 import QuestionnaireProgress from "@/components/questionnaires/QuestionnaireProgress";
 import QuestionnaireNavigation from "@/components/questionnaires/QuestionnaireNavigation";
 import QuestionnaireResults from "@/components/questionnaires/QuestionnaireResults";
 import { validateQuestionnairePage } from "@/components/questionnaires/QuestionnaireValidation";
-import { submitPatientQuestionnaire, getQuestionsWithTooltips, PatientQuestionnaireData, DBQuestion } from "@/services/PatientQuestionnaireService"; // Import DBQuestion type
-// REMOVED: No longer using hardcoded questions
-// import { MEDICAL_HISTORY_QUESTIONS, QuestionItem } from "@/constants/questionnaireConstants";
+import { submitPatientQuestionnaire, getQuestionsWithTooltips, PatientQuestionnaireData, DBQuestion } from "@/services/PatientQuestionnaireService";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -21,9 +19,6 @@ interface User {
   email?: string;
   user_metadata?: Record<string, unknown>;
 }
-
-// REMOVED local DBQuestion interface - Use imported version
-
 
 interface ContributingFactor {
   question: string;
@@ -47,13 +42,6 @@ type AnswerValue = string | number | boolean | null | undefined;
 
 // Define the order of page categories - Align with admin categories
 const PAGE_CATEGORIES = ['patient_info', 'family_medication', 'clinical_measurements'];
-
-// Mapping of parent question IDs to child question IDs for steroid questions
-const parentToChildMap = {
-  "879cd028-1b29-4529-9cdb-7adcaf44d553": "27b24dae-f107-431a-8422-bf49df018e1f", // ophthalmic -> which ophthalmic
-  "631db108-0f4c-46ff-941e-c37f6856060c": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad", // intravitreal -> which intravitreal
-  "a43ecfbc-413f-4925-8908-f9fc0d35ea0f": "468969a4-0f2b-4a03-8cc1-b9f80efff559"  // systemic -> which systemic
-};
 
 // Helper function to get default answers based on fetched questions
 const getDefaultAnswers = (questions: DBQuestion[]): Record<string, AnswerValue> => {
@@ -136,24 +124,12 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
 
 
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
-    console.log(`DEBUG: handleAnswerChange - questionId: ${questionId}, value: ${value}`);
-    
+    console.log(`DEBUG: handleAnswerChange - questionId: ${questionId}, value: ${value}`); // Add log
     // Create a new object explicitly to ensure React detects the change
     const newAnswers = {
       ...answers,
       [questionId]: value
     };
-    
-    // Check if this is a steroid parent question
-    const isParentQuestion = Object.keys(parentToChildMap).includes(questionId);
-    
-    // If it's a parent question and the value is not "yes", clear the child question answer
-    if (isParentQuestion && String(value).toLowerCase() !== "yes") {
-      const childId = parentToChildMap[questionId];
-      newAnswers[childId] = ""; // Clear the child question answer
-      console.log(`DEBUG: Clearing child question ${childId} because parent ${questionId} is not "yes"`);
-    }
-    
     setAnswers(newAnswers);
 
     if (validationError) {
@@ -303,7 +279,7 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
   return (
     <div className="min-h-screen flex flex-col questionnaire-bg">
       <Navbar />
-      <main className="flex-1 container px-6 py-6 mx-auto" style={{ backgroundColor: "#EBF5FF" }}>
+      <main className="flex-1 container px-6 py-6 mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center justify-center gap-2" style={{ color: "#1E40AF" }}>
             <Clipboard size={20} />

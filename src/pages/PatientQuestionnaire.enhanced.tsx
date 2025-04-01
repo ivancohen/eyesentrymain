@@ -1,9 +1,8 @@
-
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import QuestionnaireContainer from "@/components/questionnaires/QuestionnaireContainer";
+import QuestionnaireContainer from "@/components/questionnaires/QuestionnaireContainer.enhanced";
 
 const PatientQuestionnaire = () => {
   const { user, loading: authLoading } = useAuth();

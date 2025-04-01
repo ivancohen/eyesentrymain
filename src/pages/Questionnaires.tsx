@@ -98,7 +98,7 @@ const Questionnaires = () => {
   // If still checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-blue-50">
+      <div className="min-h-screen flex flex-col questionnaire-bg">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
@@ -334,7 +334,7 @@ const Questionnaires = () => {
   
   
   return (
-    <div className="min-h-screen flex flex-col bg-blue-50">
+    <div className="min-h-screen flex flex-col questionnaire-bg">
       <Navbar />
       <main className="flex-1 container px-6 py-6 mx-auto">
         <div className="mb-8 text-center">
@@ -377,7 +377,7 @@ const Questionnaires = () => {
         {loading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner />
-            <span className="ml-3 text-blue-700">Loading questionnaires...</span>
+            <span className="ml-3 questionnaire-text">Loading questionnaires...</span>
           </div>
         ) : questionnaires.length === 0 && !error ? (
           <Card className="glass-panel">

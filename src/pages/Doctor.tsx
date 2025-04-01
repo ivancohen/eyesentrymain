@@ -94,9 +94,9 @@ const Doctor = () => {
 
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-blue-50">
+      <div className="flex items-center justify-center min-h-screen questionnaire-bg">
         <LoadingSpinner />
-        <span className="ml-3 text-blue-700">Loading dashboard...</span>
+        <span className="ml-3 questionnaire-text">Loading dashboard...</span>
       </div>
     );
   }
@@ -104,7 +104,7 @@ const Doctor = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-blue-50">
+    <div className="min-h-screen flex flex-col questionnaire-bg">
       <Navbar showProfile={true} />
       <main className="flex-1 container px-6 py-6 mx-auto">
         <div className="mb-8 text-center">

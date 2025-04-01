@@ -23,7 +23,7 @@ const QuestionnaireNavigation = ({
         variant="outline"
         onClick={() => onPageChange("prev")}
         disabled={currentPage === 0 || isSubmitting}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 hover-lift border-blue-500 text-blue-500 hover:bg-blue-50"
       >
         <ArrowLeft size={16} /> Previous
       </Button>
@@ -32,7 +32,7 @@ const QuestionnaireNavigation = ({
         <Button
           onClick={() => onPageChange("next")}
           disabled={isSubmitting}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover-lift"
         >
           Next <ArrowRight size={16} />
         </Button>
@@ -40,7 +40,7 @@ const QuestionnaireNavigation = ({
         <Button
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover-lift"
         >
           {isSubmitting ? (
             <>

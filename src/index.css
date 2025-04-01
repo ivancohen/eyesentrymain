@@ -89,4 +89,14 @@
   .page-transition-enter {
     @apply animate-fade-in animate-slide-up;
   }
+
+  .questionnaire-bg {
+    background-color: #EBF5FF !important;
+    min-height: 100vh;
+    width: 100%;
+  }
+  
+  .questionnaire-text {
+    color: #1E3A8A !important; /* Darker blue text */
+  }
 }

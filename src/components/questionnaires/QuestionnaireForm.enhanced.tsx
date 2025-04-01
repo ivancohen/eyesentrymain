@@ -12,63 +12,67 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Info } from "lucide-react";
-// Import QuestionItem for hybrid approach
-import { QuestionItem, QuestionOption } from "@/constants/questionnaireConstants"; // Also import QuestionOption
-import { DBQuestion } from "@/services/PatientQuestionnaireService"; // Import DBQuestion type
+import { QuestionItem, QuestionOption } from "@/constants/questionnaireConstants";
+import { DBQuestion } from "@/services/PatientQuestionnaireService";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 
 // Define accepted answer value types
 type AnswerValue = string | number | boolean | null | undefined;
 
-// REMOVED local DBQuestion interface - Use imported version
-
 interface QuestionnaireFormProps {
   answers: Record<string, AnswerValue>;
-  currentPage: number; // Still needed for warnings, maybe refactor later
+  currentPage: number;
   onAnswerChange?: (questionId: string, value: AnswerValue) => void;
   setAnswers?: (answers: Record<string, AnswerValue>) => void;
   skipQuestions?: string[];
-  // Prop type now accepts DBQuestion OR QuestionItem array
   questions: (DBQuestion | QuestionItem)[];
 }
 
 // Type guard to check if a question is a DBQuestion
 function isDBQuestion(question: DBQuestion | QuestionItem): question is DBQuestion {
-    return 'page_category' in question; // page_category only exists on DBQuestion
+  return 'page_category' in question;
 }
 
 // Type guard to check if an option is from DBQuestion
 function isDBOption(option: any): option is { option_value: string; option_text: string; score?: number; display_order?: number } {
-    return 'option_value' in option;
+  return 'option_value' in option;
 }
 
 // Type guard to check if an option is from QuestionItem
 function isHardcodedOption(option: any): option is QuestionOption {
-    return 'value' in option;
+  return 'value' in option;
 }
-
 
 const QuestionnaireForm = ({
   answers,
-  currentPage, // Keep for warnings for now
+  currentPage,
   onAnswerChange,
   setAnswers,
   skipQuestions = [],
-  questions // This is now (DBQuestion | QuestionItem)[]
+  questions
 }: QuestionnaireFormProps) => {
-
   // Use the received questions directly
   const questionsToRender = questions;
+  
+  // Track questions with "not available" selected
+  const [notAvailableSelections, setNotAvailableSelections] = useState<string[]>([]);
+  
+  // Update notAvailableSelections whenever answers change
+  useEffect(() => {
+    const newNotAvailableSelections = Object.entries(answers)
+      .filter(([_, value]) => String(value).toLowerCase() === 'not_available' || String(value).toLowerCase() === 'not available')
+      .map(([questionId]) => questionId);
+    
+    setNotAvailableSelections(newNotAvailableSelections);
+  }, [answers]);
 
   console.log(`DB-Driven/Hybrid - Page ${currentPage}, Rendering ${questionsToRender.length} questions.`);
-
-
-  // --- Update handlers and rendering logic to use DBQuestion properties ---
 
   const handleValueChange = (questionId: string, value: AnswerValue) => {
     if (onAnswerChange) {
@@ -126,7 +130,7 @@ const QuestionnaireForm = ({
     }
 
     const parentAnswer = answers[parentId];
-    const isDisabled = String(parentAnswer).toLowerCase() !== requiredValue.toLowerCase();
+    const isDisabled = String(parentAnswer) !== requiredValue;
 
     return isDisabled;
   };
@@ -184,6 +188,14 @@ const QuestionnaireForm = ({
      return text || requiredValue;
   };
 
+  // Get question text by ID
+  const getQuestionTextById = (questionId: string): string => {
+    const question = questionsToRender.find(q => q.id === questionId);
+    return question?.question || questionId;
+  };
+
+  // Show warning for "not available" selections
+  const showNotAvailableWarning = notAvailableSelections.length > 0;
 
   return (
     <Card className="w-full max-w-2xl mx-auto glass-panel hover:shadow-lg transition-shadow" style={{ backgroundColor: "white", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
@@ -201,7 +213,24 @@ const QuestionnaireForm = ({
            </div>
         </div>
 
-        {/* Warnings */}
+        {/* Warning for "Not Available" selections */}
+        {showNotAvailableWarning && (
+          <Alert className="mb-6" variant="default">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="text-amber-700 bg-amber-50">
+              <p className="font-medium mb-1">Warning: "Not Available" options selected</p>
+              <p>Please note that selecting "Not Available" for the following questions may lead to a significantly reduced risk score:</p>
+              <ul className="list-disc pl-5 mt-1">
+                {notAvailableSelections.map(questionId => (
+                  <li key={questionId}>{getQuestionTextById(questionId)}</li>
+                ))}
+              </ul>
+              <p className="mt-2">If possible, please provide actual values for more accurate results.</p>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Existing warnings */}
         {showFamilyGlaucomaWarning && (
           <Alert className="mb-6" variant="default">
              <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -271,13 +300,20 @@ const QuestionnaireForm = ({
                   // Get options array (common property name)
                   const options = question.options;
 
+                  // Highlight if "not available" is selected
+                  const isNotAvailable = String(answers[question.id]).toLowerCase() === 'not_available' || 
+                                        String(answers[question.id]).toLowerCase() === 'not available';
+
                   const selectContent = (
                     <Select
                       value={String(answers[question.id] || "")}
                       onValueChange={(value) => handleValueChange(question.id, value)}
                       disabled={isDisabled} // Apply disabled state
                     >
-                      <SelectTrigger id={question.id} className={`w-full input-animation ${isDisabled ? 'opacity-70 cursor-not-allowed bg-muted' : ''}`}>
+                      <SelectTrigger 
+                        id={question.id} 
+                        className={`w-full input-animation ${isDisabled ? 'opacity-70 cursor-not-allowed bg-muted' : ''} ${isNotAvailable ? 'border-amber-500 bg-amber-50' : ''}`}
+                      >
                         <SelectValue placeholder="Select an option" />
                       </SelectTrigger>
                       <SelectContent>
@@ -299,11 +335,16 @@ const QuestionnaireForm = ({
                               const text = isDBOption(option) ? option.option_text : (isHardcodedOption(option) ? option.label : '');
                               // Tooltip only exists on hardcoded QuestionOption
                               const tooltip = isHardcodedOption(option) ? option.tooltip : undefined;
+                              
+                              // Check if this is a "not available" option
+                              const isNotAvailableOption = value.toLowerCase() === 'not_available' || 
+                                                          value.toLowerCase() === 'not available';
 
                               return (
                                 <SelectItem
                                   key={value} // Use determined value
                                   value={value} // Use determined value
+                                  className={isNotAvailableOption ? 'text-amber-700 bg-amber-50' : ''}
                                 >
                                   {text} {/* Use determined text */}
                                   {/* Render option tooltip only if it exists (only for hardcoded) */}
@@ -315,6 +356,20 @@ const QuestionnaireForm = ({
                                          </TooltipTrigger>
                                          <TooltipContent className="max-w-[300px] p-4">
                                            <p className="text-sm">{tooltip.trim()}</p>
+                                         </TooltipContent>
+                                       </Tooltip>
+                                     </TooltipProvider>
+                                   )}
+                                   
+                                   {/* Add warning icon for "not available" options */}
+                                   {isNotAvailableOption && (
+                                     <TooltipProvider>
+                                       <Tooltip>
+                                         <TooltipTrigger asChild>
+                                           <AlertTriangle className="h-3 w-3 inline-block ml-1 text-amber-500" />
+                                         </TooltipTrigger>
+                                         <TooltipContent className="max-w-[300px] p-4">
+                                           <p className="text-sm">Selecting "Not Available" may lead to a significantly reduced risk score.</p>
                                          </TooltipContent>
                                        </Tooltip>
                                      </TooltipProvider>
@@ -381,8 +436,13 @@ const QuestionnaireForm = ({
                                           const value = isDBOption(option) ? option.option_value : (isHardcodedOption(option) ? option.value : '');
                                           const text = isDBOption(option) ? option.option_text : (isHardcodedOption(option) ? option.label : '');
                                           const tooltip = isHardcodedOption(option) ? option.tooltip : undefined;
+                                          
+                                          // Check if this is a "not available" option
+                                          const isNotAvailableOption = value.toLowerCase() === 'not_available' || 
+                                                                      value.toLowerCase() === 'not available';
+                                          
                                           return (
-                                            <li key={value} className="text-muted-foreground">
+                                            <li key={value} className={`text-muted-foreground ${isNotAvailableOption ? 'text-amber-700' : ''}`}>
                                               • {text}
                                               {tooltip && tooltip.trim() && (
                                                 <TooltipProvider>
@@ -392,6 +452,20 @@ const QuestionnaireForm = ({
                                                     </TooltipTrigger>
                                                     <TooltipContent className="max-w-[300px] p-4">
                                                       <p className="text-sm">{tooltip.trim()}</p>
+                                                    </TooltipContent>
+                                                  </Tooltip>
+                                                </TooltipProvider>
+                                              )}
+                                              
+                                              {/* Add warning icon for "not available" options */}
+                                              {isNotAvailableOption && (
+                                                <TooltipProvider>
+                                                  <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                      <AlertTriangle className="h-3 w-3 inline-block ml-1 text-amber-500" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="max-w-[300px] p-4">
+                                                      <p className="text-sm">Selecting "Not Available" may lead to a significantly reduced risk score.</p>
                                                     </TooltipContent>
                                                   </Tooltip>
                                                 </TooltipProvider>
