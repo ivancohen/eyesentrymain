@@ -98,11 +98,11 @@ const Questionnaires = () => {
   // If still checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-blue-50">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
-          <span className="ml-3 text-lg">Checking authentication status...</span>
+          <span className="ml-3 text-lg text-blue-700">Checking authentication status...</span>
         </div>
       </div>
     );
@@ -168,7 +168,7 @@ const Questionnaires = () => {
       console.log("ADVICE LIST FROM RPC:", adviceList.map(a => ({
         id: a.id,
         level: a.risk_level,
-        level_normalized: a.risk_level_normalized,
+        // level_normalized: a.risk_level_normalized, // Property doesn't exist
         range: `${a.min_score}-${a.max_score}`,
         preview: a.advice?.substring(0, 30) + '...'
       })));
@@ -334,19 +334,23 @@ const Questionnaires = () => {
   
   
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
-      <main className="flex-1 container px-4 py-4 mb-8 animate-fade-in">
-        <PageHeader
-          title="Patient Questionnaires"
-          icon={<Clipboard size={20} />}
-          description="View and manage patient questionnaire submissions."
-        />
+      <main className="flex-1 container px-6 py-6 mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center justify-center gap-2">
+            <Clipboard size={20} />
+            Patient Questionnaires
+          </h1>
+          <p className="text-muted-foreground animate-slide-up animation-delay-100">
+            View and manage patient questionnaire submissions.
+          </p>
+        </div>
 
-        <div className="flex justify-end mb-6">
-          <Button 
+        <div className="flex justify-center mb-6">
+          <Button
             onClick={() => navigate("/questionnaire")}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover-lift"
           >
             <PlusCircle size={16} />
             New Questionnaire
@@ -373,15 +377,15 @@ const Questionnaires = () => {
         {loading ? (
           <div className="flex justify-center py-12">
             <LoadingSpinner />
-            <span className="ml-3">Loading questionnaires...</span>
+            <span className="ml-3 text-blue-700">Loading questionnaires...</span>
           </div>
         ) : questionnaires.length === 0 && !error ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
+          <Card className="glass-panel">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">No questionnaires submitted yet.</p>
-              <Button 
+              <Button
                 onClick={() => navigate("/questionnaire")}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover-lift"
               >
                 <PlusCircle size={16} />
                 Create Your First Questionnaire
@@ -389,9 +393,9 @@ const Questionnaires = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {questionnaires.map((questionnaire) => (
-              <Card key={questionnaire.id} className="hover:shadow-md transition-shadow">
+              <Card key={questionnaire.id} className="glass-panel hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
