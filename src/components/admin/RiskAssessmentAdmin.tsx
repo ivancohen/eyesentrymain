@@ -20,6 +20,7 @@ export default function RiskAssessmentAdmin() {
   const [adviceList, setAdviceList] = useState<RiskAssessmentAdvice[]>([]);
   const [formValues, setFormValues] = useState<Record<string, RiskAssessmentAdvice>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadAdvice();
@@ -27,7 +28,11 @@ export default function RiskAssessmentAdmin() {
 
   const loadAdvice = async () => {
     try {
+      setIsLoading(true);
+      console.log("Loading advice...");
+      
       const advice = await riskAssessmentService.getAdvice();
+      console.log("Loaded advice:", advice);
       setAdviceList(advice);
       
       // Initialize form values with current advice
@@ -35,10 +40,16 @@ export default function RiskAssessmentAdmin() {
       
       // Initialize form values for all risk levels
       RISK_LEVELS.forEach(level => {
-        const existingAdvice = advice.find(a => a.risk_level === level.id);
+        // Case-insensitive matching for risk levels
+        const existingAdvice = advice.find(a =>
+          (a.risk_level?.toLowerCase() === level.id.toLowerCase())
+        );
+        
+        console.log(`Risk level ${level.id}: ${existingAdvice ? 'Found' : 'Not found'}`, existingAdvice);
+        
         initialFormValues[level.id] = existingAdvice || {
-          min_score: 0,
-          max_score: 0,
+          min_score: level.id === 'low' ? 0 : level.id === 'moderate' ? 3 : 6,
+          max_score: level.id === 'low' ? 2 : level.id === 'moderate' ? 5 : 100,
           advice: "",
           risk_level: level.id,
           created_at: new Date().toISOString(),
@@ -46,14 +57,32 @@ export default function RiskAssessmentAdmin() {
         };
       });
       
+      console.log("Setting form values:", initialFormValues);
       setFormValues(initialFormValues);
     } catch (error) {
       console.error("Error loading advice:", error);
       toast.error("Failed to load risk assessment advice");
+      
+      // Set default values even on error
+      const defaultValues: Record<string, RiskAssessmentAdvice> = {};
+      RISK_LEVELS.forEach(level => {
+        defaultValues[level.id] = {
+          min_score: level.id === 'low' ? 0 : level.id === 'moderate' ? 3 : 6,
+          max_score: level.id === 'low' ? 2 : level.id === 'moderate' ? 5 : 100,
+          advice: "",
+          risk_level: level.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+      });
+      setFormValues(defaultValues);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleInputChange = (levelId: string, field: keyof RiskAssessmentAdvice, value: string | number) => {
+    console.log(`Changing ${field} for ${levelId} to ${value}`);
     setFormValues(prev => ({
       ...prev,
       [levelId]: {
@@ -70,16 +99,21 @@ export default function RiskAssessmentAdmin() {
       
       // Convert form values to advice objects
       const adviceEntries = Object.entries(formValues).map(([level, values]) => ({
+        id: values.id, // Include ID if it exists
         min_score: Number(values.min_score) || 0,
         max_score: Number(values.max_score) || 0,
         advice: values.advice || "",
         risk_level: level
       }));
+      
+      console.log("Saving advice entries:", adviceEntries);
 
       // Save each advice entry
-      await Promise.all(adviceEntries.map(advice => 
+      const results = await Promise.all(adviceEntries.map(advice => 
         riskAssessmentService.updateAdvice(advice)
       ));
+      
+      console.log("Save results:", results);
 
       toast.success('Risk assessment advice updated successfully');
       await loadAdvice(); // Reload the advice to show updated values
@@ -90,6 +124,24 @@ export default function RiskAssessmentAdmin() {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Risk Assessment Configuration</CardTitle>
+            <CardDescription>
+              Loading risk assessment configuration...
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -103,8 +155,8 @@ export default function RiskAssessmentAdmin() {
         <CardContent className="space-y-6">
           {RISK_LEVELS.map((level) => {
             const advice = formValues[level.id] || {
-              min_score: 0,
-              max_score: 0,
+              min_score: level.id === 'low' ? 0 : level.id === 'moderate' ? 3 : 6,
+              max_score: level.id === 'low' ? 2 : level.id === 'moderate' ? 5 : 100,
               advice: "",
               risk_level: level.id,
               created_at: new Date().toISOString(),
@@ -140,7 +192,7 @@ export default function RiskAssessmentAdmin() {
                           value={advice.max_score}
                           onChange={(e) => handleInputChange(level.id, 'max_score', e.target.value)}
                           min={0}
-                          max={10}
+                          max={100}
                         />
                       </div>
                     </div>
@@ -148,7 +200,7 @@ export default function RiskAssessmentAdmin() {
                     <div className="space-y-2">
                       <Label>Recommendations</Label>
                       <Textarea
-                        value={advice.advice}
+                        value={advice.advice || ""}
                         onChange={(e) => handleInputChange(level.id, 'advice', e.target.value)}
                         placeholder={`Enter recommendations for ${level.label.toLowerCase()} risk level`}
                         className="min-h-[100px]"
@@ -230,4 +282,4 @@ export default function RiskAssessmentAdmin() {
       </Card>
     </div>
   );
-} 
+}

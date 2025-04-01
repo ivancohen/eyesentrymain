@@ -48,6 +48,13 @@ type AnswerValue = string | number | boolean | null | undefined;
 // Define the order of page categories - Align with admin categories
 const PAGE_CATEGORIES = ['patient_info', 'family_medication', 'clinical_measurements'];
 
+// Mapping of parent question IDs to child question IDs for steroid questions
+const parentToChildMap = {
+  "879cd028-1b29-4529-9cdb-7adcaf44d553": "27b24dae-f107-431a-8422-bf49df018e1f", // ophthalmic -> which ophthalmic
+  "631db108-0f4c-46ff-941e-c37f6856060c": "986f807c-bc31-4241-9ce3-6c6d3bbf09ad", // intravitreal -> which intravitreal
+  "a43ecfbc-413f-4925-8908-f9fc0d35ea0f": "468969a4-0f2b-4a03-8cc1-b9f80efff559"  // systemic -> which systemic
+};
+
 // Helper function to get default answers based on fetched questions
 const getDefaultAnswers = (questions: DBQuestion[]): Record<string, AnswerValue> => {
   const defaultAnswers: Record<string, AnswerValue> = {};
@@ -129,11 +136,24 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
 
 
   const handleAnswerChange = (questionId: string, value: AnswerValue) => {
+    console.log(`DEBUG: handleAnswerChange - questionId: ${questionId}, value: ${value}`);
+    
     // Create a new object explicitly to ensure React detects the change
     const newAnswers = {
       ...answers,
       [questionId]: value
     };
+    
+    // Check if this is a steroid parent question
+    const isParentQuestion = Object.keys(parentToChildMap).includes(questionId);
+    
+    // If it's a parent question and the value is not "yes", clear the child question answer
+    if (isParentQuestion && String(value).toLowerCase() !== "yes") {
+      const childId = parentToChildMap[questionId];
+      newAnswers[childId] = ""; // Clear the child question answer
+      console.log(`DEBUG: Clearing child question ${childId} because parent ${questionId} is not "yes"`);
+    }
+    
     setAnswers(newAnswers);
 
     if (validationError) {
@@ -183,7 +203,7 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
         "firstName": allDbQuestions.find(q => q.question === "Patient First Name")?.id,
         "lastName": allDbQuestions.find(q => q.question === "Patient Last Name")?.id,
         "age": allDbQuestions.find(q => q.question === "Age")?.id,
-        "race": allDbQuestions.find(q => q.question === "Race")?.id,
+        "race": allDbQuestions.find(q => q.question.toLowerCase().includes("race"))?.id, // Use includes for Race
         "familyGlaucoma": allDbQuestions.find(q => q.question.toLowerCase().includes("has anyone in your immediate family"))?.id, // Case-insensitive
         "ocularSteroid": allDbQuestions.find(q => q.question.toLowerCase().includes("ophthalmic topical steroids"))?.id, // Case-insensitive
         "steroidType": allDbQuestions.find(q => q.question === "Which ophthalmic topical steroid are you taking or have taken?")?.id,
@@ -203,39 +223,64 @@ const QuestionnaireContainer = ({ user }: QuestionnaireContainerProps) => {
           const payloadKey = oldId as keyof PatientQuestionnaireData; // Map oldId to the payload key
           let value = answers[uuid];
 
-          // Handle boolean-like conversions
-          if (['familyGlaucoma', 'ocularSteroid', 'intravitreal', 'systemicSteroid'].includes(payloadKey as string)) { // Cast payloadKey to string
-            value = value === 'yes' ? 'yes' : (value === 'no' ? 'no' : 'not_available');
+          // Handle specific conversions more carefully
+          if (payloadKey === 'familyGlaucoma') {
+              // Make check case-insensitive for 'yes'
+              value = String(value).toLowerCase() === 'yes' ? 'yes' : 'no'; // Defaulting to 'no' if not 'yes'
+          } else if (['ocularSteroid', 'intravitreal', 'systemicSteroid'].includes(payloadKey as string)) {
+              // Make check case-insensitive for steroids as well
+              value = String(value).toLowerCase() === 'yes' ? 'yes' : String(value).toLowerCase() === 'no' ? 'no' : 'not_available';
           } else {
-            value = String(value || ''); // Default to string for others
+              // For other fields like race, pass the string value directly if it exists, otherwise empty string
+              value = String(value ?? ''); // Use nullish coalescing
           }
           (acc as any)[payloadKey] = value;
+        } else if (uuid) {
+            // Handle cases where the answer might be intentionally empty or undefined but the key exists
+            // Ensure required fields have a default in finalPayload if needed
+            console.log(`UUID found for ${oldId} but no answer value present.`);
         }
         return acc;
       }, {} as Partial<PatientQuestionnaireData>);
 
-      // Ensure all required fields are present, provide defaults if necessary
-      const finalPayload: PatientQuestionnaireData = {
-          firstName: String(questionnaireData.firstName || ''),
-          lastName: String(questionnaireData.lastName || ''),
-          age: String(questionnaireData.age || ''),
-          race: String(questionnaireData.race || ''),
-          familyGlaucoma: String(questionnaireData.familyGlaucoma || 'no'),
-          ocularSteroid: String(questionnaireData.ocularSteroid || 'no'),
-          steroidType: questionnaireData.steroidType,
-          intravitreal: String(questionnaireData.intravitreal || 'no'),
-          intravitralType: questionnaireData.intravitralType,
-          systemicSteroid: String(questionnaireData.systemicSteroid || 'no'),
-          systemicSteroidType: questionnaireData.systemicSteroidType,
-          iopBaseline: String(questionnaireData.iopBaseline || ''),
-          verticalAsymmetry: String(questionnaireData.verticalAsymmetry || ''),
-          verticalRatio: String(questionnaireData.verticalRatio || '')
-      };
-
-
-      console.log("Submitting questionnaire data (DB-Driven):", finalPayload);
-
-      const result = await submitPatientQuestionnaire(finalPayload); // Reverted: Removed user.id
+      
+            // --- DEBUG LOGGING ---
+            console.log("DEBUG: Raw answers state (UUID keys):", answers);
+            console.log("DEBUG: Mapped UUIDs (for reference):", uuidMap);
+            // console.log("DEBUG: Intermediate questionnaireData before final defaults:", questionnaireData); // No longer creating this
+            // --- END DEBUG LOGGING ---
+      
+            // Prepare the string-keyed data needed ONLY for direct DB column mapping (like booleans)
+            const dataForDbMapping: PatientQuestionnaireData = {
+                firstName: String(answers[uuidMap.firstName || ''] ?? ''),
+                lastName: String(answers[uuidMap.lastName || ''] ?? ''),
+                age: String(answers[uuidMap.age || ''] ?? ''),
+                race: String(answers[uuidMap.race || ''] ?? ''),
+                // Use case-insensitive check for boolean mapping
+                familyGlaucoma: String(answers[uuidMap.familyGlaucoma || ''] ?? 'no').toLowerCase() === 'yes' ? 'yes' : 'no',
+                ocularSteroid: String(answers[uuidMap.ocularSteroid || ''] ?? 'no').toLowerCase() === 'yes' ? 'yes' : 'no',
+                steroidType: String(answers[uuidMap.steroidType || ''] ?? ''),
+                intravitreal: String(answers[uuidMap.intravitreal || ''] ?? 'no').toLowerCase() === 'yes' ? 'yes' : 'no',
+                intravitralType: String(answers[uuidMap.intravitralType || ''] ?? ''),
+                systemicSteroid: String(answers[uuidMap.systemicSteroid || ''] ?? 'no').toLowerCase() === 'yes' ? 'yes' : 'no',
+                systemicSteroidType: String(answers[uuidMap.systemicSteroidType || ''] ?? ''),
+                iopBaseline: String(answers[uuidMap.iopBaseline || ''] ?? ''),
+                verticalAsymmetry: String(answers[uuidMap.verticalAsymmetry || ''] ?? ''),
+                verticalRatio: String(answers[uuidMap.verticalRatio || ''] ?? '')
+                // Add any other direct fields needed by PatientQuestionnaireData interface
+            };
+            
+            console.log("Submitting data for DB mapping:", dataForDbMapping);
+            console.log("Submitting answers for scoring/JSON (UUID keys):", answers);
+      
+            // Convert answers to string values for the API
+            const stringAnswers: Record<string, string> = {};
+            Object.entries(answers).forEach(([key, value]) => {
+                stringAnswers[key] = String(value ?? '');
+            });
+            
+            // Pass the string-keyed data for DB mapping and the UUID-keyed answers for scoring/JSON storage
+            const result = await submitPatientQuestionnaire(dataForDbMapping, stringAnswers);
 
       setResults({
         score: result.score,
