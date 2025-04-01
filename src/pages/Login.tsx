@@ -10,7 +10,7 @@ import { InfoIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const Login = () => {
-  const { login, loginWithGoogle, user, loading: authLoading } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const [formLoading, setFormLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -114,26 +114,14 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    if (formLoading) return; // Prevent multiple submissions
-    
-    try {
-      await loginWithGoogle();
-      // No need for success toast here as redirect happens automatically
-    } catch (error: unknown) {
-      console.error("Google login error:", error);
-      toast.error(error instanceof Error ? error.message : "Google login failed");
-    }
-  };
-
   // Show loading spinner while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-blue-50">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
-          <span className="ml-3">Checking authentication status...</span>
+          <span className="ml-3 text-blue-700">Checking authentication status...</span>
         </div>
       </div>
     );
@@ -142,11 +130,11 @@ const Login = () => {
   // If user is already logged in, useEffect will handle redirect
   if (user) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-blue-50">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner />
-          <span className="ml-3">
+          <span className="ml-3 text-blue-700">
             Redirecting to {user.isAdmin ? "admin panel" : "dashboard"}...
           </span>
         </div>
@@ -155,7 +143,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-blue-50">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-12">
         <div className="w-full max-w-md">
@@ -171,18 +159,17 @@ const Login = () => {
           <AuthForm
             type="login"
             onSubmit={handleLogin}
-            onGoogleLogin={handleGoogleLogin}
             isLoading={formLoading}
           />
           <div className="mt-6 text-center animate-fade-in animation-delay-300">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-blue-700">
               Don't have an account?{" "}
-              <Link to="/register" className="text-primary font-medium hover:underline">
+              <Link to="/register" className="text-blue-500 font-medium hover:underline">
                 Register
               </Link>
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              <Link to="/reset-password" className="text-primary font-medium hover:underline">
+            <p className="text-sm text-blue-700 mt-2">
+              <Link to="/reset-password" className="text-blue-500 font-medium hover:underline">
                 Forgot your password?
               </Link>
             </p>

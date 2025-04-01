@@ -9,10 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, EyeOffIcon, Mail, Lock, User, Globe, Phone, MapPin, Home, Building, Hash, Stethoscope } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { US_STATES } from "@/utils/states";
+import logoImage from "@/assets/logo.png";
 
 interface FormData {
   email: string;
@@ -30,11 +30,10 @@ interface FormData {
 interface AuthFormProps {
   type: "login" | "register";
   onSubmit: (data: FormData) => void;
-  onGoogleLogin?: () => void;
   isLoading: boolean;
 }
 
-const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) => {
+const AuthForm = ({ type, onSubmit, isLoading }: AuthFormProps) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -64,9 +63,16 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
   };
 
   return (
-    <Card className="w-full max-w-md glass-panel animate-fade-in">
+    <Card className="w-full max-w-md bg-white shadow-lg border border-gray-100 animate-fade-in">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
+        <div className="flex justify-center mb-4">
+          <img
+            src={logoImage}
+            alt="EyeSentry Logo"
+            className="h-24"
+          />
+        </div>
+        <CardTitle className="text-2xl font-bold text-center text-blue-800">
           {type === "login" ? "Sign in" : "Create a Practice Account"}
         </CardTitle>
         <CardDescription className="text-center">
@@ -80,7 +86,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
           {type === "register" && (
             <>
               <div className="space-y-2 animate-slide-up animation-delay-100">
-                <Label htmlFor="name" className="flex items-center gap-2">
+                <Label htmlFor="name" className="flex items-center gap-2 text-blue-700">
                   <User size={16} />
                   Practice Name
                 </Label>
@@ -91,13 +97,13 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input-animation"
+                  className="input-animation border-blue-200 focus:border-blue-400"
                   disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2 animate-slide-up animation-delay-150">
-                <Label htmlFor="doctorName" className="flex items-center gap-2">
+                <Label htmlFor="doctorName" className="flex items-center gap-2 text-blue-700">
                   <Stethoscope size={16} />
                   Doctor's Name
                 </Label>
@@ -108,13 +114,13 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.doctorName}
                   onChange={handleChange}
                   required
-                  className="input-animation"
+                  className="input-animation border-blue-200 focus:border-blue-400"
                   disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2 animate-slide-up animation-delay-200">
-                <Label htmlFor="specialty" className="flex items-center gap-2">
+                <Label htmlFor="specialty" className="flex items-center gap-2 text-blue-700">
                   <Stethoscope size={16} />
                   Specialty
                 </Label>
@@ -122,7 +128,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.specialty}
                   onValueChange={(value) => handleSelectChange('specialty', value)}
                 >
-                  <SelectTrigger id="specialty" className="input-animation" disabled={isLoading}>
+                  <SelectTrigger id="specialty" className="input-animation border-blue-200 focus:border-blue-400" disabled={isLoading}>
                     <SelectValue placeholder="Select your specialty" />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,7 +148,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
               </div>
               
               <div className="space-y-2 animate-slide-up animation-delay-250">
-                <Label htmlFor="phoneNumber" className="flex items-center gap-2">
+                <Label htmlFor="phoneNumber" className="flex items-center gap-2 text-blue-700">
                   <Phone size={16} />
                   Office Phone Number
                 </Label>
@@ -153,13 +159,13 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.phoneNumber}
                   onChange={handleChange}
                   required
-                  className="input-animation"
+                  className="input-animation border-blue-200 focus:border-blue-400"
                   disabled={isLoading}
                 />
               </div>
               
               <div className="space-y-2 animate-slide-up animation-delay-300">
-                <Label htmlFor="streetAddress" className="flex items-center gap-2">
+                <Label htmlFor="streetAddress" className="flex items-center gap-2 text-blue-700">
                   <Home size={16} />
                   Street Address
                 </Label>
@@ -170,14 +176,14 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.streetAddress}
                   onChange={handleChange}
                   required
-                  className="input-animation"
+                  className="input-animation border-blue-200 focus:border-blue-400"
                   disabled={isLoading}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4 animate-slide-up animation-delay-325">
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="flex items-center gap-2">
+                  <Label htmlFor="city" className="flex items-center gap-2 text-blue-700">
                     <Building size={16} />
                     City
                   </Label>
@@ -188,13 +194,13 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                     value={formData.city}
                     onChange={handleChange}
                     required
-                    className="input-animation"
+                    className="input-animation border-blue-200 focus:border-blue-400"
                     disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="state" className="flex items-center gap-2">
+                  <Label htmlFor="state" className="flex items-center gap-2 text-blue-700">
                     <MapPin size={16} />
                     State
                   </Label>
@@ -203,7 +209,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                     onValueChange={(value) => handleSelectChange("state", value)}
                     disabled={isLoading}
                   >
-                    <SelectTrigger id="state" className="input-animation">
+                    <SelectTrigger id="state" className="input-animation border-blue-200 focus:border-blue-400">
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
                     <SelectContent>
@@ -218,7 +224,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
               </div>
 
               <div className="space-y-2 animate-slide-up animation-delay-350">
-                <Label htmlFor="zipCode" className="flex items-center gap-2">
+                <Label htmlFor="zipCode" className="flex items-center gap-2 text-blue-700">
                   <Hash size={16} />
                   ZIP Code
                 </Label>
@@ -229,7 +235,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                   value={formData.zipCode}
                   onChange={handleChange}
                   required
-                  className="input-animation w-1/2"
+                  className="input-animation w-1/2 border-blue-200 focus:border-blue-400"
                   disabled={isLoading}
                 />
               </div>
@@ -237,7 +243,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
           )}
           
           <div className="space-y-2 animate-slide-up animation-delay-350">
-            <Label htmlFor="email" className="flex items-center gap-2">
+            <Label htmlFor="email" className="flex items-center gap-2 text-blue-700">
               <Mail size={16} />
               Email
             </Label>
@@ -249,13 +255,13 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
               value={formData.email}
               onChange={handleChange}
               required
-              className="input-animation"
+              className="input-animation border-blue-200 focus:border-blue-400"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2 animate-slide-up animation-delay-400">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="flex items-center gap-2">
+              <Label htmlFor="password" className="flex items-center gap-2 text-blue-700">
                 <Lock size={16} />
                 Password
               </Label>
@@ -269,7 +275,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="pr-10 input-animation"
+                className="pr-10 input-animation border-blue-200 focus:border-blue-400"
                 disabled={isLoading}
               />
               <button
@@ -284,7 +290,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
           </div>
           <Button
             type="submit"
-            className="w-full mt-6 hover-lift"
+            className="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -302,28 +308,7 @@ const AuthForm = ({ type, onSubmit, onGoogleLogin, isLoading }: AuthFormProps) =
           </Button>
         </form>
 
-        {type === "login" && onGoogleLogin && (
-          <>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border/40"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-card px-2 text-muted-foreground">or continue with</span>
-              </div>
-            </div>
-
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-center gap-2" 
-              onClick={onGoogleLogin}
-              disabled={isLoading}
-            >
-              <Globe size={16} />
-              <span>Google</span>
-            </Button>
-          </>
-        )}
+        {/* Google login removed */}
       </CardContent>
     </Card>
   );

@@ -57,7 +57,6 @@ interface AuthContextType {
     requestRole?: string;
   }) => Promise<RegisterResult | undefined>;
   login: (email: string, password: string) => Promise<User | null>;
-  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
   error?: string;
@@ -383,29 +382,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithGoogle = async () => {
-    try {
-      // For Google OAuth, we don't know if the user is admin before login
-      // So we'll redirect to a helper page that checks and redirects
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          // We use the same redirect for all users since we don't know if they're admin yet
-          // The actual redirection to admin/dashboard will happen after auth state change
-          redirectTo: `${currentOrigin}/dashboard`,
-        },
-      });
-      
-      if (error) throw error;
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'message' in error) {
-        toast.error((error as AuthErrorResponse).message || 'Google login failed');
-      } else {
-        toast.error('Google login failed');
-      }
-      throw error;
-    }
-  };
+  // Google login removed
 
   // Helper to redirect based on role and approval status
   const redirectBasedOnRole = () => {
@@ -542,9 +519,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading, 
         register, 
-        login, 
-        loginWithGoogle,
-        logout, 
+        login,
+        logout,
         isAdmin: user?.isAdmin || false,
         error: authError || undefined
       }}
