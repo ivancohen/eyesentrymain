@@ -1,20 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-} from "@/components/ui/sidebar";
-import { 
+import {
   Card,
   CardContent,
   CardDescription,
@@ -29,8 +16,10 @@ import {
   User,
   Home,
   LogOut,
+  Stethoscope
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import Navbar from "@/components/Navbar";
 
 interface DashboardCard {
   title: string;
@@ -67,7 +56,7 @@ const Doctor = () => {
       {
         title: "New Patient",
         description: "Register a new patient and complete questionnaire",
-        icon: <Users className="h-5 w-5 text-purple-500" />,
+        icon: <Users className="h-5 w-5 text-blue-500" />,
         count: 0,
         action: "Add New Patient",
         route: "/questionnaire"
@@ -75,7 +64,7 @@ const Doctor = () => {
       {
         title: "Patient Questionnaires",
         description: "View and manage patient questionnaire responses",
-        icon: <FileText className="h-5 w-5 text-blue-500" />,
+        icon: <FileText className="h-5 w-5 text-indigo-500" />,
         count: 24,
         action: "View Questionnaires",
         route: "/questionnaires"
@@ -105,9 +94,9 @@ const Doctor = () => {
 
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-blue-50">
         <LoadingSpinner />
-        <span className="ml-3">Loading dashboard...</span>
+        <span className="ml-3 text-blue-700">Loading dashboard...</span>
       </div>
     );
   }
@@ -115,109 +104,43 @@ const Doctor = () => {
   if (!user) return null;
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen">
-        <Sidebar>
-          <SidebarHeader>
-            <div className="flex items-center p-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold select-none">
-                {user.name?.charAt(0) || user.email?.charAt(0) || "D"}
-              </div>
-              <div className="ml-2 overflow-hidden group-data-[collapsible=icon]:hidden">
-                <div className="text-sm font-medium truncate">{user.name || user.email}</div>
-                <div className="text-xs text-muted-foreground truncate">Doctor</div>
-              </div>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="New Patient" onClick={() => navigate("/questionnaire")}>
-                    <Users className="h-4 w-4" />
-                    <span>New Patient</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton isActive tooltip="Dashboard" onClick={() => navigate("/doctor")}>
-                    <Home className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Questionnaires" onClick={() => navigate("/questionnaires")}>
-                    <FileText className="h-4 w-4" />
-                    <span>Questionnaires</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>Account</SidebarGroupLabel>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Profile" onClick={() => navigate("/user-profile")}>
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter>
-            <div className="flex items-center justify-between p-4 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-              <span>EyeSentry</span>
-              <span>v1.0.0</span>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-          <div className="p-6">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold mb-2 animate-slide-up">Doctor Dashboard</h1>
-              <p className="text-muted-foreground animate-slide-up animation-delay-100">
-                Welcome back, {user.name || "Doctor"}
-              </p>
-            </div>
+    <div className="min-h-screen flex flex-col bg-blue-50">
+      <Navbar showProfile={true} />
+      <main className="flex-1 container px-6 py-6 mx-auto">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold mb-2 animate-slide-up flex items-center justify-center gap-2">
+            <Stethoscope className="h-5 w-5" />
+            Doctor Dashboard
+          </h1>
+          <p className="text-muted-foreground animate-slide-up animation-delay-100">
+            Welcome back, {user.name || "Doctor"}. You have access to patient management and questionnaire functions.
+          </p>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {dashboardCards.map((card, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow glass-panel">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <div className="p-2 rounded-lg bg-secondary/20">{card.icon}</div>
-                      {card.count > 0 && (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                          {card.count}
-                        </span>
-                      )}
-                    </div>
-                    <CardTitle className="mt-3">{card.title}</CardTitle>
-                    <CardDescription>{card.description}</CardDescription>
-                  </CardHeader>
-                  <CardFooter>
-                    <Button 
-                      variant="outline" 
-                      className="w-full hover-lift"
-                      onClick={() => navigate(card.route)}
-                    >
-                      {card.action}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {dashboardCards.map((card, index) => (
+            <Card key={index} className="glass-panel hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2">
+                  {card.icon} {card.title}
+                </CardTitle>
+                <CardDescription className="text-center">
+                  {card.description}
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Button
+                  className="w-full hover-lift"
+                  onClick={() => navigate(card.route)}
+                >
+                  {card.action}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </main>
+    </div>
   );
 };
 
