@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build:dev": "vite build --mode development",
+    "copy-assets-to-public": "node copy-assets-to-public.js",
+    "build": "npm run copy-assets-to-public && tsc && vite build",
+    "build:dev": "npm run copy-assets-to-public && vite build --mode development",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "copy-assets": "node copy-assets.js",
     "deploy": "node deploy-to-cloudflare.js",
-    "deploy:cloudflare": "npm run build && node copy-assets.js && npx wrangler pages deploy dist"
+    "deploy:cloudflare": "npm run build && npx wrangler pages deploy dist"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

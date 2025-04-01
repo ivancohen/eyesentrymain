@@ -9,7 +9,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { SpecialistQuestion, SpecialistSubmission } from '@/types/specialist';
 import { SpecialistService } from '@/services/SpecialistService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import logo from '@/assets/logo.png';
 
 interface SpecialistQuestionnaireFormProps {
     patientId: string;
@@ -173,7 +172,7 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
             <Card className="p-6">
                 <div className="flex flex-col items-center mb-8">
                     <img
-                        src={logo}
+                        src="/logo.png"
                         alt="EyeSentry Logo"
                         className="w-full max-w-md h-auto mb-6"
                     />
