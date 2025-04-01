@@ -13,7 +13,7 @@ interface FAQ {
   id: string;
   question: string;
   answer: string;
-  category: string;
+  category_id: string;
 }
 
 const CATEGORIES = [
@@ -32,13 +32,13 @@ const ChatbotFAQAdmin: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   
   // Form state
   const [formData, setFormData] = useState<Omit<FAQ, 'id'>>({
     question: '',
     answer: '',
-    category: 'General'
+    category_id: 'General'
   });
 
   // Fetch FAQs from the database
@@ -48,13 +48,12 @@ const ChatbotFAQAdmin: React.FC = () => {
       let query = supabase
         .from('chatbot_faqs')
         .select('*');
-      
-      if (filterCategory) {
-        query = query.eq('category', filterCategory);
+      if (filterCategory && filterCategory !== 'all') {
+        query = query.eq('category_id', filterCategory);
       }
       
-      const { data, error } = await query.order('category', { ascending: true });
-      
+      // Use category_id for ordering
+      const { data, error } = await query.order('category_id', { ascending: true });
       if (error) {
         console.error("Error fetching FAQs:", error);
         toast.error("Failed to load FAQ data");
@@ -78,7 +77,7 @@ const ChatbotFAQAdmin: React.FC = () => {
     setFormData({
       question: '',
       answer: '',
-      category: 'General'
+      category_id: 'General'
     });
     setEditingId(null);
     setIsAdding(false);
@@ -90,7 +89,7 @@ const ChatbotFAQAdmin: React.FC = () => {
   };
 
   const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, category: value }));
+    setFormData(prev => ({ ...prev, category_id: value }));
   };
 
   const handleAdd = () => {
@@ -102,7 +101,7 @@ const ChatbotFAQAdmin: React.FC = () => {
     setFormData({
       question: faq.question,
       answer: faq.answer,
-      category: faq.category
+      category_id: faq.category_id
     });
     setEditingId(faq.id);
     setIsAdding(false);
@@ -215,7 +214,7 @@ const ChatbotFAQAdmin: React.FC = () => {
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {CATEGORIES.map(category => (
                     <SelectItem key={category} value={category}>
                       {category}
@@ -240,7 +239,7 @@ const ChatbotFAQAdmin: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium mb-1">Category</label>
                     <Select
-                      value={formData.category}
+                      value={formData.category_id}
                       onValueChange={handleSelectChange}
                     >
                       <SelectTrigger>
@@ -306,7 +305,7 @@ const ChatbotFAQAdmin: React.FC = () => {
                 <TableBody>
                   {filteredFaqs.map((faq) => (
                     <TableRow key={faq.id}>
-                      <TableCell className="font-medium">{faq.category}</TableCell>
+                      <TableCell className="font-medium">{faq.category_id}</TableCell>
                       <TableCell>{faq.question}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

@@ -22,7 +22,7 @@ interface FAQ {
   id: string;
   question: string;
   answer: string;
-  category: string;
+  category_id: string;
 }
 
 const CATEGORIES = [
@@ -121,7 +121,7 @@ const ChatbotFAQ: React.FC = () => {
     
     // Filter by category
     if (activeCategory !== 'All') {
-      filtered = filtered.filter(faq => faq.category === activeCategory);
+      filtered = filtered.filter(faq => faq.category_id === activeCategory);
     }
     
     // Filter by search term
@@ -235,7 +235,7 @@ const ChatbotFAQ: React.FC = () => {
     for (const keyword of keywords) {
       if (keyword.terms.some(term => lowerUserMessage.includes(term))) {
         // Find FAQs in this category
-        const categoryFaqs = faqs.filter(faq => faq.category === keyword.category);
+        const categoryFaqs = faqs.filter(faq => faq.category_id === keyword.category);
         if (categoryFaqs.length > 0) {
           // Return a random FAQ from this category
           const randomFaq = categoryFaqs[Math.floor(Math.random() * categoryFaqs.length)];
@@ -358,7 +358,7 @@ const ChatbotFAQ: React.FC = () => {
                         )}
                       </div>
                       <Badge variant="outline" className="mt-2">
-                        {faq.category}
+                        {faq.category_id}
                       </Badge>
                     </div>
                   ))

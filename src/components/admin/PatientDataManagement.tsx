@@ -101,9 +101,15 @@ const PatientDataManagement = () => {
   const handleFilterChange = (key: keyof LocationFilter, value: string | undefined) => {
     const newFilters = { ...locationFilter };
     
-    if (value) {
+    // Check if the value is one of the "All" options
+    if (value && ['all_doctors', 'all_states', 'all_cities', 'all_zip_codes'].includes(value)) {
+      // If it's an "All" option, remove the filter
+      delete newFilters[key];
+    } else if (value) {
+      // Otherwise, set the filter
       newFilters[key] = value;
     } else {
+      // If no value, remove the filter
       delete newFilters[key];
     }
     
@@ -198,7 +204,7 @@ const PatientDataManagement = () => {
                       <SelectValue placeholder="Select a doctor" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Doctors</SelectItem>
+                      <SelectItem value="all_doctors">All Doctors</SelectItem>
                       {doctors.map((doctor) => (
                         <SelectItem key={doctor.id} value={doctor.id}>
                           {doctor.name}
@@ -218,7 +224,7 @@ const PatientDataManagement = () => {
                       <SelectValue placeholder="Select a state" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All States</SelectItem>
+                      <SelectItem value="all_states">All States</SelectItem>
                       {locations.states.map((state) => (
                         <SelectItem key={state} value={state}>
                           {state}
@@ -238,7 +244,7 @@ const PatientDataManagement = () => {
                       <SelectValue placeholder="Select a city" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Cities</SelectItem>
+                      <SelectItem value="all_cities">All Cities</SelectItem>
                       {locations.locations.map((location) => (
                         <SelectItem key={location} value={location}>
                           {location}
@@ -258,7 +264,7 @@ const PatientDataManagement = () => {
                       <SelectValue placeholder="Select a ZIP code" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All ZIP Codes</SelectItem>
+                      <SelectItem value="all_zip_codes">All ZIP Codes</SelectItem>
                       {locations.zipCodes.map((zipCode) => (
                         <SelectItem key={zipCode} value={zipCode}>
                           {zipCode}

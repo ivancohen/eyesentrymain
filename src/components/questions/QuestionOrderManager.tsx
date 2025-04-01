@@ -231,7 +231,7 @@ const QuestionOrderManager = ({ onClose }: QuestionOrderManagerProps) => {
                       <MoveVertical size={16} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="" disabled>
+                      <SelectItem value="move_to_category" disabled>
                         Move to category
                       </SelectItem>
                       {categories
