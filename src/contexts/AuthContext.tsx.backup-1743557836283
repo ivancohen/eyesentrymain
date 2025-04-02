@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Session, User as SupabaseUser, AuthError } from '@supabase/supabase-js';
 import { refreshAuthSession, safeSignOut, handleAuthError } from '@/utils/authUtils';
 import { safeQueryWithFallback, createProfileFallback } from '@/utils/supabaseErrorHandler';
-// Removed duplicate import;
+import { safeQueryWithFallback, createProfileFallback } from '@/utils/supabaseErrorHandler';
 // Removed duplicate import;
 // Removed duplicate import;
 // Removed duplicate import;

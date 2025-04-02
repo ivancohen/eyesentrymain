@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { safeQueryWithFallback } from "@/utils/supabaseErrorHandler";
 
 // Interfaces for the different data types
 export interface UserProfile {
@@ -86,187 +87,163 @@ export const FixedAdminService = {
   // USER MANAGEMENT
 
   async fetchUsers(): Promise<UserProfile[]> {
-    try {
-      console.log("Fetching users from Supabase...");
-      const { data, error } = await supabase
+    console.log("Fetching users from Supabase...");
+    
+    // Use safeQueryWithFallback to handle potential 500 errors
+    const data = await safeQueryWithFallback(
+      () => supabase
         .from('profiles')
         .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching profiles:", error);
-        throw error;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userProfiles: UserProfile[] = (data || []).map((profile: any) => ({
-        id: profile.id,
-        email: profile.email,
-        name: profile.name || '',
-        is_admin: profile.is_admin || false,
-        is_approved: profile.is_approved || false,
-        created_at: profile.created_at,
-        location: profile.location || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
-        specialty: profile.specialty || '',
-        phone_number: profile.phone_number || '',
-        address: profile.address || '',
-        street_address: profile.street_address || '',
-        city: profile.city || '',
-        is_suspended: profile.is_suspended || false // Include suspended flag
-      }));
-
-      console.log("Users fetched successfully:", userProfiles.length, "results");
-      return userProfiles;
-    } catch (error: unknown) {
-      console.error("Error fetching users:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Error fetching users: ${errorMessage}`);
-      return [];
-    }
+        .order('created_at', { ascending: false }),
+      [], // Empty array as fallback
+      2  // 2 retries
+    );
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userProfiles: UserProfile[] = (data || []).map((profile: any) => ({
+      id: profile.id,
+      email: profile.email,
+      name: profile.name || '',
+      is_admin: profile.is_admin || false,
+      is_approved: profile.is_approved || false,
+      created_at: profile.created_at,
+      location: profile.location || '',
+      state: profile.state || '',
+      zip_code: profile.zip_code || '',
+      specialty: profile.specialty || '',
+      phone_number: profile.phone_number || '',
+      address: profile.address || '',
+      street_address: profile.street_address || '',
+      city: profile.city || '',
+      is_suspended: profile.is_suspended || false // Include suspended flag
+    }));
+    
+    console.log("Users fetched successfully:", userProfiles.length, "results");
+    return userProfiles;
   },
 
   async fetchDoctorOffices(): Promise<DoctorOffice[]> {
-    try {
-      console.log("Fetching doctor offices...");
-      const { data, error } = await supabase
+    console.log("Fetching doctor offices...");
+    
+    // Use safeQueryWithFallback to handle potential 500 errors
+    const data = await safeQueryWithFallback(
+      () => supabase
         .from('profiles')
         .select('*')
         .eq('is_admin', false)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching doctor offices:", error);
-        throw error;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const doctorOffices = (data || []).map((profile: any) => ({
-        id: profile.id,
-        email: profile.email || '',
-        name: profile.name || '',
-        is_admin: profile.is_admin || false,
-        is_approved: profile.is_approved || false,
-        created_at: profile.created_at,
-        specialty: profile.specialty || '',
-        phone_number: profile.phone_number || '',
-        address: profile.address || '',
-        location: profile.location || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
-        street_address: profile.street_address || '',
-        city: profile.city || '',
-        is_suspended: profile.is_suspended || false, // Include suspended flag
-        // DoctorOffice specific fields
-        office_name: profile.name ? `Dr. ${profile.name.split(' ').pop() || ''} Medical Office` : 'Medical Office',
-        office_hours: "Monday-Friday: 9:00 AM - 5:00 PM",
-        fax_number: "",
-        website: "",
-        accepting_new_patients: true,
-        insurance_accepted: "Major insurance plans accepted",
-        additional_notes: ""
-      }));
-
-      console.log("Doctor offices fetched successfully:", doctorOffices.length, "results");
-      return doctorOffices;
-    } catch (error: unknown) {
-      console.error("Error fetching doctor offices:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Error fetching doctor offices: ${errorMessage}`);
-      return [];
-    }
+        .order('created_at', { ascending: false }),
+      [], // Empty array as fallback
+      2  // 2 retries
+    );
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const doctorOffices = (data || []).map((profile: any) => ({
+      id: profile.id,
+      email: profile.email || '',
+      name: profile.name || '',
+      is_admin: profile.is_admin || false,
+      is_approved: profile.is_approved || false,
+      created_at: profile.created_at,
+      specialty: profile.specialty || '',
+      phone_number: profile.phone_number || '',
+      address: profile.address || '',
+      location: profile.location || '',
+      state: profile.state || '',
+      zip_code: profile.zip_code || '',
+      street_address: profile.street_address || '',
+      city: profile.city || '',
+      is_suspended: profile.is_suspended || false, // Include suspended flag
+      // DoctorOffice specific fields
+      office_name: profile.name ? `Dr. ${profile.name.split(' ').pop() || ''} Medical Office` : 'Medical Office',
+      office_hours: "Monday-Friday: 9:00 AM - 5:00 PM",
+      fax_number: "",
+      website: "",
+      accepting_new_patients: true,
+      insurance_accepted: "Major insurance plans accepted",
+      additional_notes: ""
+    }));
+    
+    console.log("Doctor offices fetched successfully:", doctorOffices.length, "results");
+    return doctorOffices;
   },
 
   async fetchApprovedDoctors(): Promise<UserProfile[]> {
-    try {
-      console.log("Fetching approved doctors...");
-      const { data, error } = await supabase
+    console.log("Fetching approved doctors...");
+    
+    // Use safeQueryWithFallback to handle potential 500 errors
+    const data = await safeQueryWithFallback(
+      () => supabase
         .from('profiles')
         .select('*')
         .eq('is_admin', false)
         .eq('is_approved', true)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching approved doctors:", error);
-        throw error;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const approvedDoctors = (data || []).map((profile: any) => ({
-        id: profile.id,
-        email: profile.email || '',
-        name: profile.name || '',
-        is_admin: profile.is_admin || false,
-        is_approved: profile.is_approved || false,
-        created_at: profile.created_at,
-        location: profile.location || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
-        specialty: profile.specialty || '',
-        phone_number: profile.phone_number || '',
-        address: profile.address || '',
-        street_address: profile.street_address || '',
-        city: profile.city || '',
-        is_suspended: profile.is_suspended || false // Include suspended flag
-      }));
-
-      console.log("Approved doctors fetched successfully:", approvedDoctors.length, "results");
-      return approvedDoctors;
-    } catch (error: unknown) {
-      console.error("Error fetching approved doctors:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Error fetching approved doctors: ${errorMessage}`);
-      return [];
-    }
+        .order('created_at', { ascending: false }),
+      [], // Empty array as fallback
+      2  // 2 retries
+    );
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const approvedDoctors = (data || []).map((profile: any) => ({
+      id: profile.id,
+      email: profile.email || '',
+      name: profile.name || '',
+      is_admin: profile.is_admin || false,
+      is_approved: profile.is_approved || false,
+      created_at: profile.created_at,
+      location: profile.location || '',
+      state: profile.state || '',
+      zip_code: profile.zip_code || '',
+      specialty: profile.specialty || '',
+      phone_number: profile.phone_number || '',
+      address: profile.address || '',
+      street_address: profile.street_address || '',
+      city: profile.city || '',
+      is_suspended: profile.is_suspended || false // Include suspended flag
+    }));
+    
+    console.log("Approved doctors fetched successfully:", approvedDoctors.length, "results");
+    return approvedDoctors;
   },
 
   // DOCTOR APPROVAL MANAGEMENT
 
   async fetchPendingDoctorApprovals(): Promise<DoctorApproval[]> {
-    try {
-      console.log("Fetching pending doctor approvals...");
-      const { data, error } = await supabase
+    console.log("Fetching pending doctor approvals...");
+    
+    // Use safeQueryWithFallback to handle potential 500 errors
+    const data = await safeQueryWithFallback(
+      () => supabase
         .from('profiles')
         .select('*')
         .eq('is_admin', false)
         .eq('is_approved', false)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching pending approvals:", error);
-        throw error;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pendingApprovals: DoctorApproval[] = (data || []).map((profile: any) => ({
-        id: profile.id,
-        email: profile.email,
-        name: profile.name || '',
-        is_admin: false,
-        is_approved: false,
-        created_at: profile.created_at,
-        location: profile.location || '',
-        state: profile.state || '',
-        zip_code: profile.zip_code || '',
-        specialty: profile.specialty || '',
-        phone_number: profile.phone_number || '',
-        address: profile.address || '',
-        street_address: profile.street_address || '',
-        city: profile.city || '',
-        is_suspended: profile.is_suspended || false, // Include suspended flag
-        contact: profile.phone_number || profile.email || ''
-      }));
-
-      console.log("Pending approvals fetched successfully:", pendingApprovals.length, "results");
-      return pendingApprovals;
-    } catch (error: unknown) {
-      console.error("Error fetching pending approvals:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      toast.error(`Error fetching pending approvals: ${errorMessage}`);
-      return [];
-    }
+        .order('created_at', { ascending: false }),
+      [], // Empty array as fallback
+      2  // 2 retries
+    );
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pendingApprovals: DoctorApproval[] = (data || []).map((profile: any) => ({
+      id: profile.id,
+      email: profile.email,
+      name: profile.name || '',
+      is_admin: false,
+      is_approved: false,
+      created_at: profile.created_at,
+      location: profile.location || '',
+      state: profile.state || '',
+      zip_code: profile.zip_code || '',
+      specialty: profile.specialty || '',
+      phone_number: profile.phone_number || '',
+      address: profile.address || '',
+      street_address: profile.street_address || '',
+      city: profile.city || '',
+      is_suspended: profile.is_suspended || false, // Include suspended flag
+      contact: profile.phone_number || profile.email || ''
+    }));
+    
+    console.log("Pending approvals fetched successfully:", pendingApprovals.length, "results");
+    return pendingApprovals;
   },
 
   async approveDoctor(doctorId: string): Promise<boolean> {

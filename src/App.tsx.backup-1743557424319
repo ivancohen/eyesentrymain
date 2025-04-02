@@ -21,7 +21,7 @@ import SpecialistQuestionnaire from "@/pages/SpecialistQuestionnaire";
 import SpecialistThankYou from "@/pages/SpecialistThankYou";
 // Import the new admin page component (assuming it exports default)
 import ClinicalResourcesAdminPage from "@/app/admin/clinical-resources/page";
-import { AuthProvider } from "@/contexts/index";;
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./App.css";
 
 function App() {

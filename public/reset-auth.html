@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Authentication Tokens</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .success {
+            background-color: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 10px 15px;
+            margin: 15px 0;
+            display: none;
+        }
+        .error {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 10px 15px;
+            margin: 15px 0;
+            display: none;
+        }
+        code {
+            background-color: #e5e7eb;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .steps {
+            margin-top: 20px;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reset Authentication Tokens</h1>
+    
+    <div class="card">
+        <h2>Fix Authentication Issues</h2>
+        <p>If you're experiencing login problems or seeing errors like <code>"Invalid Refresh Token"</code> or <code>"Failed to verify account status"</code>, 
+        this utility will help reset your authentication state.</p>
+        
+        <button id="resetButton">Reset Authentication Tokens</button>
+        
+        <div id="successMessage" class="success">
+            <strong>Success!</strong> Authentication tokens have been cleared. You can now close this page and try logging in again.
+        </div>
+        
+        <div id="errorMessage" class="error">
+            <strong>Error!</strong> Failed to clear authentication tokens. Please try the manual steps below.
+        </div>
+    </div>
+    
+    <div class="card steps">
+        <h2>Manual Steps</h2>
+        <p>If the button above doesn't work, you can manually clear your authentication data:</p>
+        
+        <ol>
+            <li>Open your browser's developer tools (F12 or right-click and select "Inspect")</li>
+            <li>Go to the "Application" tab (Chrome) or "Storage" tab (Firefox)</li>
+            <li>In the left sidebar, expand "Local Storage" and select your site's domain</li>
+            <li>Look for items that start with <code>sb-</code> and delete them</li>
+            <li>Also check "Session Storage" and "Cookies" and remove any similar items</li>
+            <li>Refresh the page and try logging in again</li>
+        </ol>
+    </div>
+
+    <script>
+        document.getElementById('resetButton').addEventListener('click', function() {
+            try {
+                // Clear all localStorage items related to Supabase
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                // Clear all sessionStorage items related to Supabase
+                Object.keys(sessionStorage).forEach(key => {
+                    if (key.startsWith('sb-')) {
+                        sessionStorage.removeItem(key);
+                    }
+                });
+                
+                // Clear cookies related to Supabase
+                document.cookie.split(';').forEach(cookie => {
+                    const [name] = cookie.trim().split('=');
+                    if (name.startsWith('sb-')) {
+                        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                    }
+                });
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                console.log('Authentication tokens cleared successfully');
+            } catch (error) {
+                // Show error message
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+                
+                console.error('Error clearing authentication tokens:', error);
+            }
+        });
+    </script>
+</body>
+</html>

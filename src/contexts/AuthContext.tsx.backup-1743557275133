@@ -5,11 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { Session, User as SupabaseUser, AuthError } from '@supabase/supabase-js';
 import { refreshAuthSession, safeSignOut, handleAuthError } from '@/utils/authUtils';
 import { safeQueryWithFallback, createProfileFallback } from '@/utils/supabaseErrorHandler';
-// Removed duplicate import;
-// Removed duplicate import;
-// Removed duplicate import;
-// Removed duplicate import;
-// Removed duplicate import;
+import { safeQueryWithFallback, createProfileFallback } from '@/utils/supabaseErrorHandler';
+import { safeQueryWithFallback, createProfileFallback } from '@/utils/supabaseErrorHandler';
 
 interface User {
   id: string;
@@ -412,22 +409,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Proceed with setting user state
         console.log("Login successful, fetching user profile");
-        let userProfile;
-        try {
-          userProfile = await updateUserProfile(data.user);
-        } catch (profileUpdateError) {
-          console.error("Error updating user profile:", profileUpdateError);
-          // Create a minimal profile to allow login to proceed
-          userProfile = {
-            id: data.user.id,
-            email: data.user.email || '',
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
-            isAdmin: false,
-            isDoctor: false,
-            isPendingApproval: false,
-            avatarUrl: null
-          };
-        }
+        const userProfile = await updateUserProfile(data.user);
         console.log("User profile after login:", userProfile);
         setUser(userProfile);
         setSession(data.session);

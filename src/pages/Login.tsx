@@ -4,6 +4,7 @@ import AuthForm from "@/components/AuthForm";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { toast } from "sonner";
+import { handleAuthError } from "@/utils/authUtils";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -107,16 +108,24 @@ const Login = () => {
       
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
 
-      // Check for specific suspension error
+      // Check for specific suspension error - this needs special handling for the dialog
       if (errorMsg === "ACCOUNT_SUSPENDED") {
         setSuspendedEmail(data.email); // Store the email for the dialog
         setIsSuspendedDialogOpen(true); // Open the dialog
         // Don't show a generic error toast in this case
-      } else if (errorMsg.includes("Email not confirmed")) {
-        toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
       } else {
-        // Generic login error
-        toast.error(errorMsg || "Login failed. Please check your credentials.");
+        // Use our utility function for consistent error handling
+        const friendlyErrorMessage = handleAuthError(error);
+        toast.error(friendlyErrorMessage);
+        
+        // For refresh token errors, we should clear any stale tokens
+        if (errorMsg.includes("Invalid Refresh Token")) {
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.error("Error signing out after token error:", signOutError);
+          }
+        }
       }
     } finally {
       setFormLoading(false);

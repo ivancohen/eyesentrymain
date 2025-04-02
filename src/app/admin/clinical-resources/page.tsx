@@ -3,13 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { FixedAdminService, ClinicalResource } from '@/services/FixedAdminService';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import ClinicalResourcesTable from '@/components/admin/ClinicalResourcesTable';
 import ClinicalResourceForm from '@/components/admin/ClinicalResourceForm';
-// import ClinicalResourceForm from '@/components/admin/ClinicalResourceForm';
+import Navbar from '@/components/Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const ClinicalResourcesAdminPage: React.FC = () => {
+  const navigate = useNavigate();
   const [resources, setResources] = useState<ClinicalResource[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
@@ -60,8 +62,20 @@ const ClinicalResourcesAdminPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="min-h-screen flex flex-col bg-blue-50">
+      <Navbar showProfile={true} />
+      <main className="flex-1 container px-6 py-6 mx-auto">
+        <div className="mb-6 flex items-center">
+          <Button
+            variant="outline"
+            className="border-blue-500 text-blue-500 hover:bg-blue-50"
+            onClick={() => navigate('/new-admin')}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+        <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Manage Clinical Resources</h1>
         <Button onClick={handleAddResource}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Resource
@@ -88,6 +102,7 @@ const ClinicalResourcesAdminPage: React.FC = () => {
             </div>
          </div>
       )}
+      </main>
     </div>
   );
 };

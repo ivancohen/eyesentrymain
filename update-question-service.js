@@ -1,4 +1,5 @@
 // Script to update QuestionService.ts to use the display_order column
+// Script to update QuestionService.ts to use the display_order column
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
