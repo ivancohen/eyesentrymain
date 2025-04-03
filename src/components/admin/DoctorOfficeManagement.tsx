@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FixedAdminService, UserProfile } from "@/services/FixedAdminService";
+import { UserService, DoctorService, UserProfile } from "@/services"; // Import from barrel file
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Edit, MapPin, Users, RefreshCw, Ban, Undo, CheckCircle, XCircle, Shield, Trash2, AlertTriangle, Pencil } from "lucide-react"; // Ensure all needed icons are here
@@ -47,7 +47,7 @@ const DoctorManagement = () => {
     setIsLoading(true);
     try {
       console.log("Loading doctors (non-admin users)...");
-      const allUsers = await FixedAdminService.fetchUsers();
+      const allUsers = await UserService.fetchUsers();
       const doctorUsers = allUsers.filter(u => !u.is_admin);
       console.log("Doctors fetched:", doctorUsers.length, "results");
       setDoctors(doctorUsers);
@@ -68,7 +68,7 @@ const DoctorManagement = () => {
     if (!doctorToDelete) return;
     setIsDeleting(true);
     try {
-      const success = await FixedAdminService.deleteDoctor(doctorToDelete.id);
+      const success = await DoctorService.deleteDoctor(doctorToDelete.id);
       if (success) {
         setDoctors(current => current.filter(d => d.id !== doctorToDelete.id));
         setShowDeleteConfirm(false);
@@ -89,7 +89,7 @@ const DoctorManagement = () => {
     if (!confirm(`Are you sure you want to suspend doctor ${userName}? They will lose access.`)) return;
     setIsLoading(true);
     try {
-      const success = await FixedAdminService.suspendUser(userId);
+      const success = await UserService.suspendUser(userId);
       if (success) {
         setDoctors(doctors.map(d => d.id === userId ? { ...d, is_suspended: true } : d));
         toast.success(`Doctor ${userName} suspended successfully.`);
@@ -108,7 +108,7 @@ const DoctorManagement = () => {
     if (!confirm(`Are you sure you want to unsuspend doctor ${userName}? They will regain access.`)) return;
     setIsLoading(true);
     try {
-      const success = await FixedAdminService.unsuspendUser(userId);
+      const success = await UserService.unsuspendUser(userId);
       if (success) {
         setDoctors(doctors.map(d => d.id === userId ? { ...d, is_suspended: false } : d));
         toast.success(`Doctor ${userName} unsuspended successfully.`);
@@ -157,7 +157,7 @@ const DoctorManagement = () => {
       };
 
 
-      const success = await FixedAdminService.updateUser(fullPayload);
+      const success = await UserService.updateUser(fullPayload);
 
       if (success) {
         toast.success("Doctor profile updated successfully");

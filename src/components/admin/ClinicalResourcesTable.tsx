@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ClinicalResource } from '@/services/FixedAdminService';
+import { ClinicalResource } from '@/services'; // Import from barrel file
 import {
   Table,
   TableBody,

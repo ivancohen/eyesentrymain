@@ -31,7 +31,7 @@ const QuestionFormManager = ({
   const [dropdownOptions, setDropdownOptions] = useState<Partial<DropdownOption>[]>([]);
   const [newOptionText, setNewOptionText] = useState("");
   const [newOptionValue, setNewOptionValue] = useState("");
-  const [newOptionScore, setNewOptionScore] = useState("0");
+  const [newOptionScore, setNewOptionScore] = useState("0"); // Default score back to 0
   const [formInitialData, setFormInitialData] = useState<Record<string, string | number>>({});
 
   // Update the form data when the question data is fetched
@@ -335,7 +335,7 @@ const QuestionFormManager = ({
                   <SelectValue placeholder="Score" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[0, 2, 4, 6, 8, 10].map((score) => (
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => ( // Changed score range to 0-10
                     <SelectItem key={score} value={score.toString()}>
                       {score}
                     </SelectItem>

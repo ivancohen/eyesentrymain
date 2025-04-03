@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FixedAdminService, QuestionScore } from "@/services/FixedAdminService";
+import { QuestionScoreService, QuestionScore } from "@/services"; // Import from barrel file
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, FileQuestion, Pencil, RefreshCw } from "lucide-react";
@@ -45,7 +45,7 @@ const QuestionManager = () => {
   const loadQuestionScores = async () => {
     setIsLoading(true);
     try {
-      const scores = await FixedAdminService.fetchQuestionScores();
+      const scores = await QuestionScoreService.fetchQuestionScores();
       setQuestionScores(scores);
     } catch (error) {
       console.error("Error loading question scores:", error);
@@ -73,8 +73,8 @@ const QuestionManager = () => {
     try {
       setIsLoading(true);
       
-      const success = await FixedAdminService.updateQuestionScore(
-        editingScore.questionId,
+      const success = await QuestionScoreService.updateQuestionScore(
+        editingScore.questionId, // Assuming this is the correct ID for the score record
         editingScore.optionId,
         editingScore.score
       );

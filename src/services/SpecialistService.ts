@@ -15,9 +15,14 @@ export const SpecialistService = {
             const { error } = await supabase
                 .from('specialist_questions')
                 .insert([{
-                    ...question,
-                    created_at: new Date().toISOString(),
-                    dropdown_options: question.question_type === 'select' ? question.dropdown_options : null
+                    // Explicitly define the payload, omitting conditional fields
+                    question: question.question,
+                    question_type: question.question_type,
+                    required: question.required,
+                    dropdown_options: question.question_type === 'select' ? question.dropdown_options : null,
+                    is_active: true, // Default to active on creation
+                    // display_order might need to be handled separately or by DB default/trigger
+                    // created_at is handled automatically by Supabase
                 }]);
 
             if (error) throw error;

@@ -8,7 +8,7 @@ const ChatbotFAQ = lazy(() => import("@/components/chat/ChatbotFAQ"));
 import { QuestionnaireService } from "@/services/QuestionnaireService";
 import { riskAssessmentService } from "@/services/RiskAssessmentService";
 // Import the admin service and the correct interface
-import { FixedAdminService, ClinicalResource as FetchedClinicalResource } from "@/services/FixedAdminService";
+import { ClinicalResourceService, ClinicalResource as FetchedClinicalResource } from "@/services"; // Import from barrel file
 import {
   Card,
   CardContent,
@@ -254,7 +254,7 @@ const Doctor = () => {
         setRecentActivities(initialActivities);
         
         // Fetch clinical resources from the service
-        const fetchedResources = await FixedAdminService.fetchClinicalResources();
+        const fetchedResources = await ClinicalResourceService.fetchClinicalResources();
         // Filter only active resources for display on the dashboard
         const activeResources = fetchedResources.filter(res => res.is_active);
         setClinicalResources(activeResources);

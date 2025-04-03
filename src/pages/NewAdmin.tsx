@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { FixedAdminService } from "@/services/FixedAdminService"; 
+// Removed FixedAdminService import, specific services will be used where needed
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
@@ -48,7 +48,7 @@ import PatientAnalyticsDashboard from "@/components/admin/PatientAnalyticsDashbo
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import RiskAssessmentAdmin from "@/components/admin/RiskAssessmentAdmin";
 import { SpecialistQuestionManager } from "@/components/admin/SpecialistQuestionManager";
-import { UserProfile } from "@/services/FixedAdminService";
+import { UserProfile } from "@/services"; // Import UserProfile from the barrel file
 
 // Admin section types
 type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq' | 'clinical-resources';

@@ -21,9 +21,7 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
     const [loading, setLoading] = useState(true);
     const [accessCode, setAccessCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
-    const [emailModalOpen, setEmailModalOpen] = useState(false);
-    const [recipientEmail, setRecipientEmail] = useState('');
-    const [sendingEmail, setSendingEmail] = useState(false);
+    // Removed email-related state: emailModalOpen, recipientEmail, sendingEmail
     const { user } = useAuth();
 
     useEffect(() => {
@@ -74,32 +72,7 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
         }
     };
 
-    const handleSendEmail = async () => {
-        if (!accessCode || !user?.name) return;
-        
-        setSendingEmail(true);
-        try {
-            const success = await SpecialistService.sendAccessLinkEmail(
-                recipientEmail,
-                accessCode,
-                patientName || 'Unknown Patient',
-                user.name
-            );
-            
-            if (success) {
-                toast.success('Access link sent successfully');
-                setEmailModalOpen(false);
-                setRecipientEmail('');
-            } else {
-                toast.error('Failed to send access link');
-            }
-        } catch (error) {
-            console.error('Error sending email:', error);
-            toast.error('Failed to send access link');
-        } finally {
-            setSendingEmail(false);
-        }
-    };
+    // Removed handleSendEmail function
 
     const formatDate = (date: string) => {
         const d = new Date(date);
@@ -193,23 +166,15 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
                                 )}
                             </Button>
                         </div>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => setEmailModalOpen(true)}
-                                className="w-full"
-                            >
-                                <Mail className="h-4 w-4 mr-2" />
-                                Send via Email
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => setAccessCode(null)}
-                                className="shrink-0"
-                            >
-                                <RefreshCw className="h-4 w-4" />
-                            </Button>
-                        </div>
+                        {/* Removed Email Button */}
+                        {/* Kept Refresh Button */}
+                        <Button
+                            variant="outline"
+                            onClick={() => setAccessCode(null)}
+                            className="shrink-0"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                        </Button>
                     </div>
                 ) : (
                     <Button onClick={generateAccessCode} disabled={loading}>
@@ -219,52 +184,7 @@ export const SpecialistTab = ({ patientId, patientName }: SpecialistTabProps) =>
                 )}
             </div>
 
-            <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
-                <DialogContent className="max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Send Access Link</DialogTitle>
-                        <DialogDescription>
-                            Enter the specialist's email address to send them the access link.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="specialist@example.com"
-                                value={recipientEmail}
-                                onChange={(e) => setRecipientEmail(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setEmailModalOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleSendEmail}
-                            disabled={!recipientEmail || sendingEmail}
-                        >
-                            {sendingEmail ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Sending...
-                                </>
-                            ) : (
-                                <>
-                                    <Send className="h-4 w-4 mr-2" />
-                                    Send Link
-                                </>
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            {/* Removed Email Dialog */}
 
             {responses.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">

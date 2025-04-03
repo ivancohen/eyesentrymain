@@ -46,12 +46,13 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
         e.preventDefault();
 
         // Validate required questions
-        const unansweredRequired = questions.filter(q => 
-            q.required && (!responses[q.id] || responses[q.id].trim() === '')
+        // Validate ALL questions, not just those marked as required
+        const unansweredQuestions = questions.filter(q =>
+            (!responses[q.id] || responses[q.id].trim() === '')
         );
 
-        if (unansweredRequired.length > 0) {
-            toast.error(`Please answer all required questions (${unansweredRequired.length} remaining)`);
+        if (unansweredQuestions.length > 0) {
+            toast.error(`Please answer all questions (${unansweredQuestions.length} remaining). If an answer is not available, please enter "Not Available".`);
             return;
         }
 
@@ -115,7 +116,7 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
                             ...prev,
                             [question.id]: e.target.value
                         }))}
-                        placeholder="Enter your answer"
+                        placeholder='Enter your answer or "Not Available"'
                         required={question.required}
                     />
                 );
@@ -127,7 +128,7 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
                             ...prev,
                             [question.id]: e.target.value
                         }))}
-                        placeholder="Enter your answer"
+                        placeholder='Enter your answer or "Not Available"'
                         required={question.required}
                     />
                 );
@@ -140,7 +141,7 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
                             ...prev,
                             [question.id]: e.target.value
                         }))}
-                        placeholder="Enter a number"
+                        placeholder='Enter a number or "Not Available"' // Also suggest for number inputs
                         required={question.required}
                     />
                 );
@@ -152,7 +153,7 @@ export const SpecialistQuestionnaireForm: React.FC<SpecialistQuestionnaireFormPr
                             ...prev,
                             [question.id]: e.target.value
                         }))}
-                        placeholder="Enter your answer"
+                        placeholder='Enter your answer or "Not Available"'
                         required={question.required}
                     />
                 );

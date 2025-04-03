@@ -140,10 +140,10 @@ const SpecialistQuestionForm = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="text">Text Input</SelectItem>
-                <SelectItem value="textarea">Text Area</SelectItem>
+                {/* <SelectItem value="textarea">Text Area</SelectItem> */}
                 <SelectItem value="select">Dropdown Menu</SelectItem>
-                <SelectItem value="radio">Radio Buttons</SelectItem>
-                <SelectItem value="checkbox">Checkbox</SelectItem>
+                {/* <SelectItem value="radio">Radio Buttons</SelectItem> */}
+                {/* <SelectItem value="checkbox">Checkbox</SelectItem> */}
               </SelectContent>
             </Select>
           </div>
@@ -164,47 +164,7 @@ const SpecialistQuestionForm = ({
             </Select>
           </div>
 
-          {/* Conditional Logic Fields */}
-          <div className="space-y-4 border-t pt-4">
-            <h3 className="text-lg font-medium">Conditional Logic (Optional)</h3>
-            <p className="text-sm text-muted-foreground">
-              Show this question only if another question has a specific answer.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="conditional_parent_id">Parent Question ID</Label>
-              <Input
-                id="conditional_parent_id"
-                value={formData.conditional_parent_id || ""}
-                onChange={(e) => handleInputChange('conditional_parent_id', e.target.value || null)} // Store null if empty
-                placeholder="Enter the UUID of the parent question"
-              />
-              {/* TODO: Replace with a Select populated with questions */}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="conditional_required_value">Required Parent Answer</Label>
-              <Input
-                id="conditional_required_value"
-                value={formData.conditional_required_value}
-                onChange={(e) => handleInputChange('conditional_required_value', e.target.value)}
-                placeholder="Enter the exact answer value from the parent"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="conditional_display_mode">Display Mode</Label>
-              <Select
-                value={formData.conditional_display_mode}
-                onValueChange={(value) => handleInputChange('conditional_display_mode', value)}
-              >
-                <SelectTrigger id="conditional_display_mode">
-                  <SelectValue placeholder="Select display mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="show">Show when condition met</SelectItem>
-                  <SelectItem value="hide">Hide when condition met</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* Conditional Logic Fields Removed */}
 
           {formData.question_type === 'select' && (
             <div className="space-y-4 border-t pt-4">

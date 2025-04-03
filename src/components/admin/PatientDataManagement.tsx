@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FixedAdminService, PatientData, LocationFilter } from "@/services/FixedAdminService";
+import { PatientDataService, LocationService, UserService, PatientData, LocationFilter } from "@/services"; // Import from barrel file
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Database, Filter, MapPin, RefreshCw } from "lucide-react";
@@ -65,7 +65,7 @@ const PatientDataManagement = () => {
   const loadPatientData = async (filters?: LocationFilter) => {
     setIsLoading(true);
     try {
-      const data = await FixedAdminService.fetchPatientData(filters || locationFilter);
+      const data = await PatientDataService.fetchPatientData(filters || locationFilter);
       setPatientData(data);
     } catch (error) {
       console.error("Error loading patient data:", error);
@@ -78,11 +78,11 @@ const PatientDataManagement = () => {
   const loadFilterOptions = async () => {
     try {
       // Load location data
-      const locationData = await FixedAdminService.getUniqueLocations();
+      const locationData = await LocationService.getUniqueLocations();
       setLocations(locationData);
       
       // Load doctors
-      const usersData = await FixedAdminService.fetchUsers();
+      const usersData = await UserService.fetchUsers();
       // Filter for only doctors (those with specialties)
       const doctorsList = usersData
         .filter(user => user.specialty && user.is_approved)

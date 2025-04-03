@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FixedAdminService, DoctorApproval } from "@/services/FixedAdminService";
+import { DoctorService, DoctorApproval } from "@/services"; // Import from barrel file
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, CheckCircle, XCircle, UserCheck, UserX, MapPin, BadgeCheck, Calendar } from "lucide-react";
@@ -32,7 +32,7 @@ const DoctorApprovals = () => {
       console.log("Loading pending doctor approvals...");
       
       // Use FixedAdminService to fetch pending approvals
-      const approvals = await FixedAdminService.fetchPendingDoctorApprovals();
+      const approvals = await DoctorService.fetchPendingDoctorApprovals();
       
       console.log("Pending approvals fetched:", approvals.length, "results");
       setPendingApprovals(approvals);
@@ -47,7 +47,7 @@ const DoctorApprovals = () => {
   const handleApprove = async (doctorId: string) => {
     setProcessingIds((current) => [...current, doctorId]);
     try {
-      const success = await FixedAdminService.approveDoctor(doctorId);
+      const success = await DoctorService.approveDoctor(doctorId);
       
       if (success) {
         setPendingApprovals((current) => current.filter((doctor) => doctor.id !== doctorId));
@@ -64,7 +64,7 @@ const DoctorApprovals = () => {
   const handleReject = async (doctorId: string) => {
     setProcessingIds((current) => [...current, doctorId]);
     try {
-      const success = await FixedAdminService.rejectDoctor(doctorId);
+      const success = await DoctorService.rejectDoctor(doctorId);
       
       if (success) {
         setPendingApprovals((current) => current.filter((doctor) => doctor.id !== doctorId));

@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { FixedAdminService, ClinicalResource } from '@/services/FixedAdminService';
+import { ClinicalResourceService, ClinicalResource } from '@/services'; // Import from barrel file
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,7 +67,7 @@ const ClinicalResourceForm: React.FC<ClinicalResourceFormProps> = ({ resource, o
       let success = false;
       if (resource) {
         // Update existing resource
-        success = await FixedAdminService.updateClinicalResource(resource.id, data);
+        success = await ClinicalResourceService.updateClinicalResource(resource.id, data);
       } else {
         // Create new resource
         // Explicitly create payload to satisfy the Omit type expected by the service
@@ -79,7 +79,7 @@ const ClinicalResourceForm: React.FC<ClinicalResourceFormProps> = ({ resource, o
             link: data.link, // Optional
             icon_name: data.icon_name, // Optional
         };
-        const newResource = await FixedAdminService.createClinicalResource(payload);
+        const newResource = await ClinicalResourceService.createClinicalResource(payload);
         success = !!newResource;
       }
 

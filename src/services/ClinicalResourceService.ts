@@ -1,141 +1,151 @@
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { safeQueryWithFallback } from "@/utils/supabaseErrorHandler";
 
+/**
+ * @fileoverview Service for managing clinical resources data.
+ */
+
+/**
+ * Represents the structure of a clinical resource in the database.
+ */
 export interface ClinicalResource {
   id: string;
   title: string;
   description?: string;
   link?: string;
-  category: 'diagnostics' | 'equipment' | 'community';
-  icon_name?: string; // Optional: Store Lucide icon name
+  category: 'diagnostics' | 'equipment' | 'community'; // Example categories
+  icon_name?: string; // Name of the Lucide icon to use
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// Type for creating/updating (omitting auto-generated fields)
-export type ClinicalResourceData = Omit<ClinicalResource, 'id' | 'created_at' | 'updated_at'>;
+/**
+ * Provides methods for interacting with clinical resources data.
+ */
+export const ClinicalResourceService = {
+  /**
+   * Fetches all clinical resources from the database.
+   * Orders results by creation date descending.
+   * @returns {Promise<ClinicalResource[]>} A promise resolving to an array of clinical resources.
+   */
+  async fetchClinicalResources(): Promise<ClinicalResource[]> {
+    console.log("Fetching clinical resources...");
 
-export class ClinicalResourceService {
-  private tableName = 'clinical_resources';
-
-  // Fetch all active resources
-  async getResources(): Promise<ClinicalResource[]> {
-    try {
-      const { data, error } = await supabase
-        .from(this.tableName)
+    const data = await safeQueryWithFallback(
+      () => supabase
+        .from('clinical_resources')
         .select('*')
-        .eq('is_active', true)
-        .order('category')
-        .order('title'); // Add secondary sort if needed
+        .order('created_at', { ascending: false }),
+      [], // Fallback to empty array
+      2   // Retries
+    );
 
-      if (error) {
-        console.error("Error fetching clinical resources:", error);
-        throw error;
-      }
-      return data || [];
-    } catch (error) {
-      console.error("Error in getResources:", error);
-      return []; // Return empty array on error
-    }
-  }
+    // Ensure data conforms to the interface, handling potential nulls/undefined
+    const resources: ClinicalResource[] = (data || []).map((res: any) => ({
+      id: res.id,
+      title: res.title || 'Untitled Resource',
+      description: res.description || undefined,
+      link: res.link || undefined,
+      category: res.category || 'community', // Default category
+      icon_name: res.icon_name || undefined,
+      is_active: res.is_active === true, // Ensure boolean
+      created_at: res.created_at,
+      updated_at: res.updated_at,
+    }));
 
-  // Fetch all resources (for admin)
-  async getAllResourcesAdmin(): Promise<ClinicalResource[]> {
-     try {
-      const { data, error } = await supabase
-        .from(this.tableName)
-        .select('*')
-        .order('category')
-        .order('title');
+    console.log("Clinical resources fetched successfully:", resources.length, "results");
+    return resources;
+  },
 
-      if (error) {
-        console.error("Error fetching all clinical resources for admin:", error);
-        throw error;
-      }
-      return data || [];
-    } catch (error) {
-      console.error("Error in getAllResourcesAdmin:", error);
-      return [];
-    }
-  }
-
-  // Create a new resource
-  async createResource(resourceData: ClinicalResourceData): Promise<ClinicalResource | null> {
+  /**
+   * Creates a new clinical resource in the database.
+   * @param {Omit<ClinicalResource, 'id' | 'created_at' | 'updated_at'>} resourceData - The data for the new resource.
+   * @returns {Promise<ClinicalResource | null>} A promise resolving to the created resource or null if creation failed.
+   */
+  async createClinicalResource(resourceData: Omit<ClinicalResource, 'id' | 'created_at' | 'updated_at'>): Promise<ClinicalResource | null> {
     try {
+      console.log("Creating new clinical resource:", resourceData.title);
       const { data, error } = await supabase
-        .from(this.tableName)
-        .insert({ ...resourceData, is_active: true }) // Ensure new resources are active
+        .from('clinical_resources')
+        .insert([resourceData])
         .select()
-        .single();
+        .single(); // Assuming insert returns the created row
 
       if (error) {
         console.error("Error creating clinical resource:", error);
         throw error;
       }
-      return data;
-    } catch (error) {
-       console.error("Error in createResource:", error);
-       return null;
-    }
-  }
 
-  // Update an existing resource
-  async updateResource(id: string, resourceData: Partial<ClinicalResourceData>): Promise<boolean> {
-     try {
+      if (!data) {
+        throw new Error("No data returned after creating clinical resource.");
+      }
+
+      toast.success(`Clinical resource "${data.title}" created successfully`);
+      return data as ClinicalResource;
+    } catch (error: unknown) {
+      console.error("Error creating clinical resource:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Error creating clinical resource: ${errorMessage}`);
+      return null;
+    }
+  },
+
+  /**
+   * Updates an existing clinical resource in the database.
+   * @param {string} resourceId - The ID of the resource to update.
+   * @param {Partial<Omit<ClinicalResource, 'id' | 'created_at' | 'updated_at'>>} resourceData - The data to update.
+   * @returns {Promise<boolean>} A promise resolving to true if successful, false otherwise.
+   */
+  async updateClinicalResource(resourceId: string, resourceData: Partial<Omit<ClinicalResource, 'id' | 'created_at' | 'updated_at'>>): Promise<boolean> {
+    try {
+      console.log(`Updating clinical resource: ${resourceId}`);
       const { error } = await supabase
-        .from(this.tableName)
-        .update({ ...resourceData, updated_at: new Date().toISOString() }) // Manually update timestamp if no trigger
-        .eq('id', id);
+        .from('clinical_resources')
+        .update(resourceData)
+        .eq('id', resourceId);
 
       if (error) {
         console.error("Error updating clinical resource:", error);
         throw error;
       }
-      return true;
-    } catch (error) {
-       console.error("Error in updateResource:", error);
-       return false;
-    }
-  }
 
-  // Delete a resource (soft delete by marking inactive)
-  async deleteResource(id: string): Promise<boolean> {
+      toast.success("Clinical resource updated successfully");
+      return true;
+    } catch (error: unknown) {
+      console.error("Error updating clinical resource:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Error updating clinical resource: ${errorMessage}`);
+      return false;
+    }
+  },
+
+  /**
+   * Deletes a clinical resource from the database.
+   * @param {string} resourceId - The ID of the resource to delete.
+   * @returns {Promise<boolean>} A promise resolving to true if successful, false otherwise.
+   */
+  async deleteClinicalResource(resourceId: string): Promise<boolean> {
     try {
+      console.log(`Deleting clinical resource: ${resourceId}`);
       const { error } = await supabase
-        .from(this.tableName)
-        .update({ is_active: false, updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .from('clinical_resources')
+        .delete()
+        .eq('id', resourceId);
 
       if (error) {
         console.error("Error deleting clinical resource:", error);
         throw error;
       }
+
+      toast.success("Clinical resource deleted successfully");
       return true;
-    } catch (error) {
-       console.error("Error in deleteResource:", error);
-       return false;
+    } catch (error: unknown) {
+      console.error("Error deleting clinical resource:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      toast.error(`Error deleting clinical resource: ${errorMessage}`);
+      return false;
     }
-  }
-
-   // Hard delete (optional, use with caution)
-  async hardDeleteResource(id: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from(this.tableName)
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error("Error permanently deleting clinical resource:", error);
-        throw error;
-      }
-      return true;
-    } catch (error) {
-       console.error("Error in hardDeleteResource:", error);
-       return false;
-    }
-  }
-}
-
-// Export a singleton instance
-export const clinicalResourceService = new ClinicalResourceService();
+  },
+};

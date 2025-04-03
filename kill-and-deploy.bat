@@ -1,0 +1,6 @@
+@echo off
+echo Stopping any running Node.js processes...
+taskkill /F /IM node.exe
+echo.
+echo Running direct Cloudflare deployment...
+node direct-cloudflare-deploy.js

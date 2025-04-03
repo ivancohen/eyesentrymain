@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FixedAdminService, ClinicalResource } from '@/services/FixedAdminService';
+import { ClinicalResourceService, ClinicalResource } from '@/services'; // Import from barrel file
 import { Button } from '@/components/ui/button';
 import { PlusCircle, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ const ClinicalResourcesAdminPage: React.FC = () => {
   const fetchResources = async () => {
     setIsLoading(true);
     try {
-      const data = await FixedAdminService.fetchClinicalResources();
+      const data = await ClinicalResourceService.fetchClinicalResources();
       setResources(data);
     } catch (error) {
       // Error is already handled by toast in the service
@@ -47,7 +47,7 @@ const ClinicalResourcesAdminPage: React.FC = () => {
     if (!confirm('Are you sure you want to delete this resource?')) {
       return;
     }
-    const success = await FixedAdminService.deleteClinicalResource(resourceId);
+    const success = await ClinicalResourceService.deleteClinicalResource(resourceId);
     if (success) {
       fetchResources(); // Refresh the list
     }

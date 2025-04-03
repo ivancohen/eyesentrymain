@@ -10,7 +10,7 @@ import DataTable from "@/components/DataTable";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FixedAdminService, PatientData, QuestionScore } from "@/services/FixedAdminService";
+import { PatientDataService, QuestionScoreService, PatientData, QuestionScore } from "@/services"; // Import from barrel file
 import { 
   Dialog, 
   DialogContent, 
@@ -75,10 +75,10 @@ const DataManagement = () => {
     
     try {
       if (activeTab === "patients") {
-        const data = await FixedAdminService.fetchAnonymousPatientData();
+        const data = await PatientDataService.fetchAnonymousPatientData();
         setPatientData(data);
       } else if (activeTab === "scores") {
-        const data = await FixedAdminService.fetchQuestionScores();
+        const data = await QuestionScoreService.fetchQuestionScores();
         setQuestionScores(data);
       }
     } catch (error: any) {
@@ -112,8 +112,8 @@ const DataManagement = () => {
 
     try {
       setIsLoading(true);
-      const success = await FixedAdminService.updateQuestionScore(
-        editingScore.questionId, 
+      const success = await QuestionScoreService.updateQuestionScore(
+        editingScore.questionId, // Assuming this is the correct ID for the score record
         editingScore.optionId, 
         editingScore.score
       );
