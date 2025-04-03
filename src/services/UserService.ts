@@ -43,7 +43,7 @@ export const UserService = {
     const data = await safeQueryWithFallback(
       () => supabase
         .from('profiles')
-        .select('id, email, name, is_admin, is_suspended, is_approved, created_at') // Add back is_approved, created_at
+        .select('id, email, name, is_admin, is_suspended, is_approved, created_at, specialty') // Add back specialty
         .order('created_at', { ascending: false }),
       [], // Empty array as fallback
       2  // 2 retries
@@ -60,7 +60,7 @@ export const UserService = {
       location: undefined, // Not selected
       state: undefined, // Not selected
       zip_code: undefined, // Not selected
-      specialty: undefined, // Not selected
+      specialty: profile.specialty || '', // Map added column
       phone_number: undefined, // Not selected
       address: undefined, // Not selected
       street_address: undefined, // Not selected

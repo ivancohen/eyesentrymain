@@ -39,8 +39,8 @@ import {
   Eye,
   MessageCircle,
   X,
-  // Add any other icons used by resources if needed
-  BookOpenCheck // Example if needed
+  BookOpenCheck, // Example if needed
+  MessagesSquare // Icon for Forum card
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Navbar from "@/components/Navbar";
@@ -192,8 +192,9 @@ const Doctor = () => {
             action: "Edit Profile",
             route: "/user-profile"
           }
+          // Removed Forum Card from here, will be added separately in JSX
         ];
-        
+
         setDashboardCards(cards);
         
         // Set initial statistics with basic data
@@ -611,10 +612,35 @@ const Doctor = () => {
                 </Tabs>
               </CardContent>
             </Card>
-
-            {/* Chatbot FAQ removed from here, moved to the second column */}
+            
+            {/* Doctor Forum Card - Moved here */}
+            <div className="mt-6"> {/* Add margin top for spacing */}
+               {/* Removed redundant title h2 */}
+               <Card className="glass-panel hover:shadow-lg transition-shadow flex flex-col">
+                 <CardHeader>
+                   <div className="flex items-start gap-3">
+                     <div className="mt-1"><MessagesSquare className="h-5 w-5 text-purple-500" /></div>
+                     <div>
+                       <CardTitle className="text-lg">Doctor Forum</CardTitle>
+                       <CardDescription>Discuss cases and share insights with colleagues</CardDescription>
+                     </div>
+                   </div>
+                 </CardHeader>
+                 <CardFooter className="mt-auto pt-4">
+                   <Button
+                     className="w-full hover-lift"
+                     onClick={() => navigate("/forum")}
+                   >
+                     Go to Forum
+                   </Button>
+                 </CardFooter>
+               </Card>
+            </div>
+            
           </div>
         </div>
+        
+        {/* Forum card JSX removed from here */}
       </main>
       
       {/* Chat Introduction Notification */}

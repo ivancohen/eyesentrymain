@@ -4,38 +4,39 @@ import { useAuth } from "@/contexts/AuthContext";
 // Removed FixedAdminService import, specific services will be used where needed
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  AlertTriangle, 
+import {
+  AlertTriangle,
   Users,
-  Database, 
-  Shield, 
-  FileQuestion, 
-  UserCheck, 
-  Bot, 
-  ArrowLeft, 
-  HelpCircle, 
-  BarChart3, 
+  Database,
+  Shield,
+  FileQuestion,
+  UserCheck,
+  Bot,
+  ArrowLeft,
+  HelpCircle,
+  BarChart3,
   Building,
   User,
   Home,
   Settings,
   LogOut,
   Stethoscope,
-  BookOpen // Added icon for Clinical Resources
+  BookOpen, // Added icon for Clinical Resources
+  MessageSquare // Added icon for Forum
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { toast } from "sonner";
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarHeader, 
-  SidebarContent, 
-  SidebarGroup, 
-  SidebarGroupLabel, 
-  SidebarMenu, 
-  SidebarMenuItem, 
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
   SidebarInset,
@@ -48,42 +49,36 @@ import PatientAnalyticsDashboard from "@/components/admin/PatientAnalyticsDashbo
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import RiskAssessmentAdmin from "@/components/admin/RiskAssessmentAdmin";
 import { SpecialistQuestionManager } from "@/components/admin/SpecialistQuestionManager";
+import ForumCategoryManager from "@/components/admin/ForumCategoryManager"; // Import Forum Category Manager
 import { UserProfile } from "@/services"; // Import UserProfile from the barrel file
 
 // Admin section types
-type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq' | 'clinical-resources';
+type AdminSection = 'dashboard' | 'users' | 'approvals' | 'offices' | 'analytics' | 'questions' | 'ai' | 'risk-assessment' | 'specialist-questions' | 'faq' | 'chatbot-faq' | 'clinical-resources' | 'forum'; // Add 'forum'
 
-const validAdminSections: AdminSection[] = ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq', 'clinical-resources'];
+const validAdminSections: AdminSection[] = ['dashboard', 'users', 'approvals', 'offices', 'analytics', 'questions', 'ai', 'risk-assessment', 'specialist-questions', 'faq', 'chatbot-faq', 'clinical-resources', 'forum']; // Add 'forum'
 const NewAdmin = () => {
   const { user, isAdmin, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  
+  const [users, setUsers] = useState<UserProfile[]>([]); // Keep if needed for other parts, otherwise remove
+
   // Get section from URL params, or default to dashboard
   const sectionParam = searchParams.get('section') as AdminSection | null;
-  
+
   // State to track which admin section is currently being displayed
   const [currentSection, setCurrentSection] = useState<AdminSection>(
     sectionParam && validAdminSections.includes(sectionParam)
       ? sectionParam
       : 'dashboard'
   );
-  
+
   // Handle browser navigation (back/forward buttons)
   useEffect(() => {
-    // Function to handle popstate (when user clicks back/forward)
     const handlePopState = (event: PopStateEvent) => {
-      // Get the section from history state
       const section = event.state?.section || 'dashboard';
-      // Update our section state
       setCurrentSection(section as AdminSection);
     };
-
-    // Add popstate event listener
     window.addEventListener('popstate', handlePopState);
-
-    // Clean up when component unmounts
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
@@ -91,11 +86,8 @@ const NewAdmin = () => {
 
   // Function to change section with proper history management
   const changeSection = (section: AdminSection) => {
-    // Only push new state if we're changing to a different section
     if (section !== currentSection) {
-      // Push the new state to history
       window.history.pushState({ section }, '', `/new-admin?section=${section}`);
-      // Update our state
       setCurrentSection(section);
     }
   };
@@ -103,21 +95,17 @@ const NewAdmin = () => {
   // Update section based on URL search params
   useEffect(() => {
     if (sectionParam && sectionParam !== currentSection && validAdminSections.includes(sectionParam)) {
-        // Note: 'clinical-resources' won't be handled here as it navigates away
       setCurrentSection(sectionParam);
     }
-  }, [sectionParam]);
+  }, [sectionParam, currentSection]); // Added currentSection dependency
 
   // Check auth status when component mounts or auth state changes
   useEffect(() => {
-    // Auth check is complete and user is not logged in
     if (!loading && !user) {
       toast.error("You must be logged in to access the admin panel");
       navigate("/login");
       return;
     }
-
-    // Auth check is complete and user is not admin
     if (!loading && !isAdmin) {
       toast.error("You don't have admin privileges");
       navigate("/dashboard");
@@ -148,20 +136,24 @@ const NewAdmin = () => {
 
   // Render the appropriate content based on current section
   const renderContent = () => {
+    const BackToDashboardButton = () => (
+       <div className="mb-6 flex items-center justify-center">
+         <Button
+           variant="outline"
+           className="border-blue-500 text-blue-500 hover:bg-blue-50"
+           onClick={() => changeSection('dashboard')}
+         >
+           <Home className="mr-2 h-4 w-4" />
+           Back to Dashboard
+         </Button>
+       </div>
+    );
+
     switch (currentSection) {
       case 'faq':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <div className="text-center mb-4">
               <h2 className="text-2xl font-bold">FAQ Management</h2>
               <p className="text-muted-foreground">
@@ -181,16 +173,7 @@ const NewAdmin = () => {
       case 'chatbot-faq':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <div className="text-center mb-4">
               <h2 className="text-2xl font-bold">Chatbot Knowledge Base</h2>
               <p className="text-muted-foreground">
@@ -210,85 +193,39 @@ const NewAdmin = () => {
       case 'users':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <EnhancedUserManagement />
           </>
         );
       case 'approvals':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <DoctorApprovals />
           </>
         );
       case 'offices':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <DoctorOfficeManagement />
           </>
         );
       case 'analytics':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <PatientAnalyticsDashboard />
           </>
         );
       case 'questions':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <EnhancedQuestionManager />
           </>
         );
       case 'ai':
-        // Instead of rendering content here, redirect immediately
         navigate('/ai-assistant');
         return (
           <div className="flex items-center justify-center h-32">
@@ -299,36 +236,25 @@ const NewAdmin = () => {
       case 'risk-assessment':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <RiskAssessmentAdmin />
           </>
         );
       case 'specialist-questions':
         return (
           <>
-            <div className="mb-6 flex items-center justify-center">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-50"
-                onClick={() => changeSection('dashboard')}
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </div>
+            <BackToDashboardButton />
             <SpecialistQuestionManager />
           </>
         );
-      default:
+      case 'forum': // Add case for forum management
+        return (
+          <>
+            <BackToDashboardButton />
+            <ForumCategoryManager />
+          </>
+        );
+      default: // Dashboard View
         return (
           <>
             <div className="mb-8 text-center">
@@ -342,6 +268,7 @@ const NewAdmin = () => {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* User Management Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -361,6 +288,7 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Doctor Approvals Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -380,13 +308,14 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Doctor Management Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
-                    <Stethoscope className="h-5 w-5 text-amber-500" /> Doctor Management {/* Changed Icon & Title */}
+                    <Stethoscope className="h-5 w-5 text-amber-500" /> Doctor Management
                   </CardTitle>
                   <CardDescription className="text-center">
-                    Manage doctor accounts, approval, and suspension status {/* Changed Description */}
+                    Manage doctor accounts, approval, and suspension status
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
@@ -394,11 +323,12 @@ const NewAdmin = () => {
                     className="w-full hover-lift"
                     onClick={() => changeSection('offices')} // Keep 'offices' section key for now
                   >
-                    Manage Doctors {/* Changed Button Text */}
+                    Manage Doctors
                   </Button>
                 </CardFooter>
               </Card>
 
+              {/* Patient Analytics Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -418,6 +348,7 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Question Management Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -437,6 +368,7 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Risk Assessment Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -456,6 +388,7 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Specialist Questions Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -475,6 +408,7 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* AI Assistant Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
@@ -493,13 +427,15 @@ const NewAdmin = () => {
                   </Button>
                 </CardFooter>
               </Card>
+
+              {/* Website FAQs Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
                     <FileQuestion className="h-5 w-5 text-cyan-500" /> Website FAQs
                   </CardTitle>
                   <CardDescription className="text-center">
-                    Manage frequently asked questions for the website
+                    Manage frequently asked questions for the public website
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
@@ -512,10 +448,11 @@ const NewAdmin = () => {
                 </CardFooter>
               </Card>
 
+              {/* Chatbot FAQs Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
-                    <Bot className="h-5 w-5 text-emerald-500" /> Chatbot Knowledge Base
+                    <Bot className="h-5 w-5 text-teal-500" /> Chatbot Knowledge Base
                   </CardTitle>
                   <CardDescription className="text-center">
                     Manage the knowledge base for the doctor chatbot assistant
@@ -526,16 +463,16 @@ const NewAdmin = () => {
                     className="w-full hover-lift"
                     onClick={() => changeSection('chatbot-faq')}
                   >
-                    Manage Knowledge Base
+                    Manage Chatbot FAQs
                   </Button>
                 </CardFooter>
               </Card>
 
-              {/* New Card for Clinical Resources */}
+              {/* Clinical Resources Card */}
               <Card className="glass-panel hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-center gap-2">
-                    <BookOpen className="h-5 w-5 text-teal-500" /> Clinical Resources
+                    <BookOpen className="h-5 w-5 text-lime-500" /> Clinical Resources
                   </CardTitle>
                   <CardDescription className="text-center">
                     Manage clinical info for the doctor dashboard
@@ -546,10 +483,31 @@ const NewAdmin = () => {
                     className="w-full hover-lift"
                     onClick={() => navigate('/admin/clinical-resources')} // Navigate directly
                   >
-                    Manage Clinical Resources
+                    Manage Resources
                   </Button>
                 </CardFooter>
               </Card>
+
+              {/* Forum Management Card */}
+              <Card className="hover-lift transition-shadow duration-200 glass-panel">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-purple-500" /> Forum Management
+                  </CardTitle>
+                  <CardDescription className="text-center">
+                    Manage forum categories and moderate discussions
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter>
+                   <Button
+                     className="w-full hover-lift"
+                     onClick={() => changeSection('forum')}
+                   >
+                     Manage Forum
+                   </Button>
+                </CardFooter>
+              </Card>
+
             </div>
           </>
         );
@@ -557,9 +515,9 @@ const NewAdmin = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-blue-50">
-      <Navbar showProfile={true} />
-      <main className="flex-1 container px-6 py-6 mx-auto">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <Navbar showProfile={true} /> {/* Removed isAdmin prop */}
+      <main className="flex-1 container px-6 py-8 mx-auto">
         {renderContent()}
       </main>
     </div>

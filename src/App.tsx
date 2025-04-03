@@ -21,11 +21,12 @@ import SpecialistQuestionnaire from "@/pages/SpecialistQuestionnaire";
 import SpecialistThankYou from "@/pages/SpecialistThankYou";
 // Import the new admin page component (assuming it exports default)
 import ClinicalResourcesAdminPage from "@/app/admin/clinical-resources/page";
-import { AuthProvider } from "@/contexts/index";;
+import ForumPage from "@/pages/Forum"; // Import the Forum page
+import { AuthProvider } from "@/contexts/index";
 import "./App.css";
 
 function App() {
-  
+
   return (
     <AuthProvider>
       <Routes>
@@ -36,7 +37,7 @@ function App() {
         <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/reset-confirmation" element={<ResetConfirmation />} />
         <Route path="/pending-approval" element={<PendingApproval />} />
-        
+
         {/* Specialist routes - no auth required */}
         <Route path="/specialist" element={<SpecialistQuestionnaire />} />
         <Route path="/specialist/:code" element={<SpecialistQuestionnaire />} />
@@ -51,6 +52,11 @@ function App() {
         <Route path="/admin/chatbot-faq" element={<ChatbotFaqAdmin />} />
         <Route path="/doctor" element={<Doctor />} />
         <Route path="/profile" element={<UserProfile />} />
+        {/* Forum Routes */}
+        <Route path="/forum" element={<ForumPage />} />
+        <Route path="/forum/create-post" element={<ForumPage />} /> {/* Handled within ForumPage */}
+        <Route path="/forum/:categoryId" element={<ForumPage />} />
+        <Route path="/forum/post/:postId" element={<ForumPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
         {/* Add route for the new Clinical Resources admin page */}
         <Route path="/admin/clinical-resources" element={<ClinicalResourcesAdminPage />} />
@@ -63,7 +69,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster richColors />
-      
+
       {/* Global Chat Widget - conditionally rendered based on auth status and route */}
       <ConditionalChatWidget />
     </AuthProvider>
